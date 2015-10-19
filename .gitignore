@@ -1,0 +1,19 @@
+# Intellij
+*.iml
+.idea
+.idea/*
+*.iws
+
+# Maven
+*/target
+*target*
+log/
+
+/classes
+.project
+.settings/*
+
+/bin
+
+# Mac
+.DS_Store
