@@ -11,6 +11,7 @@ import java.io.IOException;
  * Created by nickozoulis on 20/10/2015.
  */
 public class Shell {
+    
     private static ConsoleReader console;
 
     public Shell() {
