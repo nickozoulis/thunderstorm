@@ -13,6 +13,11 @@ public class Cons {
     public static String queries = "queries";
     public static String batch_views = "batch_views";
     public static String stream_views = "stream_views";
-    public static String columnnFamilyQ = "q"; // column family for Queries table
-    public static String columnnFamilyV = "v"; // column familly for batch and stream Views
+    public static String cfQueries = "q"; // column family for Queries table
+    public static String cfViews = "v"; // column family for batch and stream Views
+    public static String qid_ = "qid_";
+    public static String qid_0 = "qid_0";
+    public static String max_qid = "max_qid";
+    public static String clusters = "clusters";
+
 }

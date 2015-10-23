@@ -24,7 +24,7 @@ public class Shell {
             console = new ConsoleReader();
             console.setPrompt("serving_layer> ");
 
-            String line = null;
+            String line;
             // Gets user's input
             while ((line = console.readLine()) != null) {
                 parse(line.trim());
