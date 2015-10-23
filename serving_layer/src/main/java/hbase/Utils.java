@@ -44,9 +44,9 @@ public class Utils {
             System.out.println("Query has been inserted");
 
             //TODO: Maybe update max counter with a coprocessor.
-            Put p2 = new Put(Bytes.toBytes(Cons.qid_ + max_quid));
+            Put p2 = new Put(Bytes.toBytes(Cons.qid_0));
             p2.add(Bytes.toBytes(Cons.cfQueries),
-                    Bytes.toBytes(Cons.max_qid), Bytes.toBytes(max_quid));
+                    Bytes.toBytes(Cons.max_qid), Bytes.toBytes(Integer.toString(max_quid)));
             hTable.put(p2);
             System.out.println("Max query counter has been updated");
 
