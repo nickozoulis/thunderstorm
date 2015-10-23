@@ -2,6 +2,8 @@ package com.constambeys.storm.bolt;
 
 import java.util.Map;
 
+import com.constambeys.storm.DataFilter;
+import com.constambeys.storm.KMeansOnline;
 import com.constambeys.storm.Point;
 
 import backtype.storm.task.OutputCollector;
@@ -10,19 +12,22 @@ import backtype.storm.topology.IRichBolt;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
-import backtype.storm.tuple.Values;
 
-public class PointProcessor implements IRichBolt {
+public class BoltProcessor implements IRichBolt {
 
-	int id;
+	Integer id;
 	String name;
+	KMeansOnline k;
+	DataFilter f;
 	private OutputCollector collector;
 
-	public PointProcessor() {
-
+	public BoltProcessor(int k) {
+		this.k = new KMeansOnline(k);
+		this.f = new DataFilter("{0}+{1}", "<", "{1}+{2}");
 	}
 
 	public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
+
 		this.collector = collector;
 		this.name = context.getThisComponentId();
 		this.id = context.getThisTaskId();
@@ -30,26 +35,34 @@ public class PointProcessor implements IRichBolt {
 	}
 
 	public void execute(Tuple input) {
-		String sentence = input.getString(0);
-		String[] values = sentence.split(",");
+		/**
+		 * Handle signal to clear cache
+		 */
 
-		Point p = new Point(values);
+		if (input.getSourceStreamId().equals("signals")) {
+			if ("refresh".equals(input.getStringByField("action"))) {
+				// counters.clear();
+				return;
+			} else if ("print".equals(input.getStringByField("action"))) {
+				k.print();
+			}
+			return;
+		}
 
-		// Emit the word
-		collector.emit(new Values(p));
+		Point p = (Point) input.getValue(0);
 
-		// Acknowledge the tuple
+		k.run(p);
+		// Set the tuple as Acknowledge
 		collector.ack(input);
 
 	}
 
 	public void cleanup() {
-		// TODO Auto-generated method stub
 
 	}
 
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		declarer.declare(new Fields("point"));
+		declarer.declare(new Fields("word"));
 
 	}
 

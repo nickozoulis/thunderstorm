@@ -1,6 +1,6 @@
 package com.constambeys.storm;
 
-import com.constambeys.storm.bolt.KMeansOnline;
+import com.constambeys.storm.bolt.BoltProcessor;
 import com.constambeys.storm.bolt.PointProcessor;
 import com.constambeys.storm.spouts.PointsReader;
 import com.constambeys.storm.spouts.SignalsSpout;
@@ -20,10 +20,11 @@ public class TopologyMain {
 
 			builder.setBolt("point-processor", new PointProcessor()).shuffleGrouping("points-reader");
 
-			builder.setBolt("k-means-online", new KMeansOnline(2), 1).shuffleGrouping("point-processor")
+			builder.setBolt("k-means-online", new BoltProcessor(3), 1).shuffleGrouping("point-processor")
 					.allGrouping("signals-spout", "signals");
 
 			Config conf = new Config();
+			conf.registerSerialization(Point.class);
 			conf.put("file", args[0]);
 			conf.setDebug(false);
 			conf.put(Config.TOPOLOGY_MAX_SPOUT_PENDING, 1);
