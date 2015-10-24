@@ -1,5 +1,6 @@
 package hbase;
 
+import com.constambeys.storm.DataFilter;
 import com.google.protobuf.ServiceException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.*;
@@ -59,8 +60,9 @@ public class Utils {
      * Enqueues this constrained KMeans query in an HBase table, where all queries are being stored with unique ID.
      * @param numOfClusters
      */
-    public static void queryKMeansConstrained(String numOfClusters, String constraint) {
-
+    public static void queryKMeansConstrained(String numOfClusters, DataFilter filter) {
+        System.out.println(numOfClusters);
+        System.out.println(filter);
     }
 
     /**
