@@ -64,4 +64,9 @@ public class DataFilter implements Serializable {
 		return expr;
 	}
 
+	@Override
+	public String toString() {
+		return expr1 + " " + op + " " + expr2;
+	}
+
 }

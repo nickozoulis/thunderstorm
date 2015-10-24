@@ -25,7 +25,7 @@ public class Point implements Serializable {
 
 	}
 
-	public void multibly(int x) {
+	public void multiply(int x) {
 		for (int i = 0; i < components.length; i++) {
 			components[i] = components[i] * x;
 		}
@@ -37,7 +37,7 @@ public class Point implements Serializable {
 		}
 	}
 
-	public int getDimesion() {
+	public int getDimension() {
 		return components.length;
 	}
 
