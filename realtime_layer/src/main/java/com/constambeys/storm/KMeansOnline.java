@@ -66,7 +66,7 @@ public class KMeansOnline implements Serializable {
 			// meansX[index]);
 			// meansY[index] = meansY[index] + 1.0 / counters[index] * (y -
 			// meansY[index]);
-			means[index].multibly(counters[index] - 1);
+			means[index].multiply(counters[index] - 1);
 			means[index].add(point);
 			means[index].divide(counters[index]);
 		}
@@ -92,7 +92,7 @@ public class KMeansOnline implements Serializable {
 					}
 				}
 
-				Point s = new Point(means[u1].getDimesion());
+				Point s = new Point(means[u1].getDimension());
 				s.add(means[u1]);
 				for (int i = 0; i < ds.d.length; i++) {
 					s.add(means[ds.d[i].index]);
