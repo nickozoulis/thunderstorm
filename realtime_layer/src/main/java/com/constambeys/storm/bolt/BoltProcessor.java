@@ -2,6 +2,8 @@ package com.constambeys.storm.bolt;
 
 import java.util.Map;
 
+import javax.script.ScriptException;
+
 import com.constambeys.storm.DataFilter;
 import com.constambeys.storm.KMeansOnline;
 import com.constambeys.storm.Point;
@@ -23,7 +25,7 @@ public class BoltProcessor implements IRichBolt {
 
 	public BoltProcessor(int k) {
 		this.k = new KMeansOnline(k);
-		this.f = new DataFilter("{0}+{1}", "<", "{1}+{2}");
+		this.f = new DataFilter("{0}", "<", "50");
 	}
 
 	public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
@@ -50,10 +52,15 @@ public class BoltProcessor implements IRichBolt {
 		}
 
 		Point p = (Point) input.getValue(0);
-
-		k.run(p);
-		// Set the tuple as Acknowledge
-		collector.ack(input);
+		try {
+			if (f.run(p))
+				k.run(p);
+			// Set the tuple as Acknowledge
+			collector.ack(input);
+		} catch (ScriptException e) {
+			// Set the tuple as error
+			collector.fail(input);
+		}
 
 	}
 
