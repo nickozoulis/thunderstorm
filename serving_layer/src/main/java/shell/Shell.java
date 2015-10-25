@@ -74,7 +74,6 @@ public class Shell {
         if (splits.length == 2) { // Plain KMeans
             Utils.queryKMeans(splits[1]);
         } else if (splits.length > 2) { // Constrained KMeans
-            //FIXME
             parseConstraints(line);
         } else {
             usage();
@@ -123,6 +122,8 @@ public class Shell {
             String leftExpr = parseExpression(splits[0].trim());
             String rightExpr = parseExpression(splits[1].trim());
 
+            if (leftExpr.equals("") || rightExpr.equals("")) { return; }
+
             DataFilter filter = new DataFilter(leftExpr, operator, rightExpr);
 
             // Get numOfClusters
@@ -139,14 +140,14 @@ public class Shell {
         }
     }
 
-    private String parseExpression(String leftStr) {
+    private String parseExpression(String str) {
         String expr = "";
-        String pattern = "(\\w+)(((\\s*)(\\+|-|\\*|/)(\\s*)(\\w*))*)";
+        String pattern = "(\\w+)(((\\s+)(\\+|-|\\*|/)(\\s+)(\\w*))*)";
         Pattern r = Pattern.compile(pattern);
-        Matcher m = r.matcher(leftStr);
+        Matcher m = r.matcher(str);
 
         if (m.matches()) {
-            String splits[] = leftStr.split(" ");
+            String splits[] = str.split(" ");
 
             expr += "{" + splits[0] + "}";
 
