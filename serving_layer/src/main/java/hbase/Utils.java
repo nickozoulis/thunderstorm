@@ -25,7 +25,8 @@ public class Utils {
      */
     public static void queryKMeans(String numOfClusters) {
         try {
-            HTable hTable = new HTable(config, Cons.queries);
+            HConnection connection = HConnectionManager.createConnection(config);
+            HTableInterface hTable = connection.getTable(Cons.queries);
 
             // First get max query counter, so as to know how to format the new query key.
             int max_quid = getMaxQueryID(hTable);
@@ -54,7 +55,8 @@ public class Utils {
      */
     public static void queryKMeansConstrained(String numOfClusters, DataFilter filter) {
         try {
-            HTable hTable = new HTable(config, Cons.queries);
+            HConnection connection = HConnectionManager.createConnection(config);
+            HTableInterface hTable = connection.getTable(Cons.queries);
 
             // First get max query counter, so as to know how to format the new query key.
             int max_quid = getMaxQueryID(hTable);
@@ -80,7 +82,7 @@ public class Utils {
         } catch (IOException e) {e.printStackTrace();}
     }
 
-    private static int getMaxQueryID(HTable hTable) throws IOException {
+    public static int getMaxQueryID(HTableInterface hTable) throws IOException {
         Get g = new Get(Bytes.toBytes(Cons.qid_0));
         Result result = hTable.get(g);
         byte [] value = result.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.max_qid));
@@ -88,7 +90,7 @@ public class Utils {
         return Integer.parseInt(max_quidString);
     }
 
-    private static void updateMaxQueryID(HTable hTable, int max_quid) throws IOException {
+    public static void updateMaxQueryID(HTableInterface hTable, int max_quid) throws IOException {
         Put p2 = new Put(Bytes.toBytes(Cons.qid_0));
         p2.add(Bytes.toBytes(Cons.cfQueries),
                 Bytes.toBytes(Cons.max_qid), Bytes.toBytes(Integer.toString(max_quid)));
