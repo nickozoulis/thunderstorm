@@ -45,6 +45,7 @@ public class Utils {
             updateMaxQueryID(hTable, max_quid);
 
             hTable.close();
+            connection.close();
             System.out.println("Table closed");
         } catch (IOException e) {e.printStackTrace();}
     }
@@ -78,6 +79,7 @@ public class Utils {
             updateMaxQueryID(hTable, max_quid);
 
             hTable.close();
+            connection.close();
             System.out.println("Table closed");
         } catch (IOException e) {e.printStackTrace();}
     }
