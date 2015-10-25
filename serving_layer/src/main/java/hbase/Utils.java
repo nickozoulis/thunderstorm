@@ -28,11 +28,7 @@ public class Utils {
             HTable hTable = new HTable(config, Cons.queries);
 
             // First get max query counter, so as to know how to format the new query key.
-            Get g = new Get(Bytes.toBytes(Cons.qid_0));
-            Result result = hTable.get(g);
-            byte [] value = result.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.max_qid));
-            String max_quidString = Bytes.toString(value);
-            int max_quid = Integer.parseInt(max_quidString);
+            int max_quid = getMaxQueryID(hTable);
 
             // Increment max query counter.
             max_quid++;
@@ -42,14 +38,10 @@ public class Utils {
             p1.add(Bytes.toBytes(Cons.cfQueries),
                     Bytes.toBytes(Cons.clusters), Bytes.toBytes(numOfClusters));
             hTable.put(p1);
-            System.out.println("Query has been inserted");
+            System.out.println("Inserting query with id: " + max_quid);
 
             //TODO: Maybe update max counter with a coprocessor.
-            Put p2 = new Put(Bytes.toBytes(Cons.qid_0));
-            p2.add(Bytes.toBytes(Cons.cfQueries),
-                    Bytes.toBytes(Cons.max_qid), Bytes.toBytes(Integer.toString(max_quid)));
-            hTable.put(p2);
-            System.out.println("Max query counter has been updated");
+            updateMaxQueryID(hTable, max_quid);
 
             hTable.close();
             System.out.println("Table closed");
@@ -61,8 +53,47 @@ public class Utils {
      * @param numOfClusters
      */
     public static void queryKMeansConstrained(String numOfClusters, DataFilter filter) {
-        System.out.println(numOfClusters);
-        System.out.println(filter);
+        try {
+            HTable hTable = new HTable(config, Cons.queries);
+
+            // First get max query counter, so as to know how to format the new query key.
+            int max_quid = getMaxQueryID(hTable);
+
+            // Increment max query counter.
+            max_quid++;
+
+            // Format the put command
+            Put p1 = new Put(Bytes.toBytes(Cons.qid_ + max_quid));
+            p1.add(Bytes.toBytes(Cons.cfQueries),
+                    Bytes.toBytes(Cons.clusters), Bytes.toBytes(numOfClusters));
+            p1.add(Bytes.toBytes(Cons.cfQueries),
+                    Bytes.toBytes(Cons.filter), Bytes.toBytes(filter.toString()));
+            hTable.put(p1);
+            System.out.println("Inserting query with id: " + max_quid);
+            System.out.println("Filter: " + filter);
+
+            //TODO: Maybe update max counter with a coprocessor.
+            updateMaxQueryID(hTable, max_quid);
+
+            hTable.close();
+            System.out.println("Table closed");
+        } catch (IOException e) {e.printStackTrace();}
+    }
+
+    private static int getMaxQueryID(HTable hTable) throws IOException {
+        Get g = new Get(Bytes.toBytes(Cons.qid_0));
+        Result result = hTable.get(g);
+        byte [] value = result.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.max_qid));
+        String max_quidString = Bytes.toString(value);
+        return Integer.parseInt(max_quidString);
+    }
+
+    private static void updateMaxQueryID(HTable hTable, int max_quid) throws IOException {
+        Put p2 = new Put(Bytes.toBytes(Cons.qid_0));
+        p2.add(Bytes.toBytes(Cons.cfQueries),
+                Bytes.toBytes(Cons.max_qid), Bytes.toBytes(Integer.toString(max_quid)));
+        hTable.put(p2);
+        System.out.println("Max query counter has been updated");
     }
 
     /**

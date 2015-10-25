@@ -6,7 +6,7 @@ package hbase;
 public class Cons {
 
     // HBase Configuration constants
-    public static String hbase_IP_address = "192.168.0.9";
+    public static String hbase_IP_address = "127.0.0.1";//192.168.0.9
     public static String hbase_port = "2181";
 
     // HBase table constants
@@ -19,5 +19,6 @@ public class Cons {
     public static String qid_0 = "qid_0";
     public static String max_qid = "max_qid";
     public static String clusters = "clusters";
+    public static String filter = "filter";
 
 }

@@ -86,7 +86,7 @@ public class Shell {
      */
     private void usage() {
         try {
-            console.println("Usage example: kmeans [numOfClusters] or kmeans [numOfClusters] ; [constraints]");
+            console.println("Example input: 'kmeans 4' or 'kmeans 4 ; x1 + x2 < 6'");
         } catch (IOException e) {e.printStackTrace();}
 
     }
@@ -155,6 +155,8 @@ public class Shell {
                     expr += splits[i] + "{" + splits[i+1] + "}";
                 }
             }
+        } else {
+            usage();
         }
 
         return expr;
