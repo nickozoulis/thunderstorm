@@ -1,5 +1,6 @@
 package com.constambeys.storm;
 
+import java.io.Serializable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -7,11 +8,9 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
-public class DataFilter {
+public class DataFilter implements Serializable {
 
-	ScriptEngineManager mgr = new ScriptEngineManager();
-	ScriptEngine engine = mgr.getEngineByName("JavaScript");
-
+	transient ScriptEngine engine;
 	Pattern pattern1 = Pattern.compile("\\{([0-9])+\\}");
 	String expr1;
 	String expr2;
@@ -25,6 +24,10 @@ public class DataFilter {
 
 	public boolean run(Point p) throws ScriptException {
 
+		if (engine == null) {
+			ScriptEngineManager mgr = new ScriptEngineManager();
+			engine = mgr.getEngineByName("JavaScript");
+		}
 		Object aa = engine.eval(substitute(expr1, p));
 		Object bb = engine.eval(substitute(expr2, p));
 
