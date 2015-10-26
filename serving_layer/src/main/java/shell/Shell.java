@@ -91,16 +91,17 @@ public class Shell {
     }
 
     private void parseConstraints(String line) {
-        String constraint = "", operator = "", numOfClusters = "";
+        String constraintExpr = "", clustersExpr = "", operator = "", numOfClusters = "";
         String pattern1 = "(.*);(.*)",
-                pattern2 = "kmeans (\\d)(\\s*);",
+                pattern2 = "kmeans(\\s*)(\\d+)(\\s*)",
                 pattern3 = "<|>|==|!=|>=|<=";
 
         // Get constraint
         Pattern r = Pattern.compile(pattern1);
         Matcher m = r.matcher(line);
         if (m.find()) {
-            constraint = m.group(2);
+            clustersExpr = m.group(1);
+            constraintExpr = m.group(2);
         } else {
             usage();
             return;
@@ -118,7 +119,7 @@ public class Shell {
 
         // Get left and right expressions and create a DataFilter
         if (!operator.equals("")) {
-            String splits[] = constraint.split(operator);
+            String splits[] = constraintExpr.split(operator);
             String leftExpr = parseExpression(splits[0].trim());
             String rightExpr = parseExpression(splits[1].trim());
 
@@ -128,9 +129,9 @@ public class Shell {
 
             // Get numOfClusters
             r = Pattern.compile(pattern2);
-            m = r.matcher(line);
+            m = r.matcher(clustersExpr);
             if (m.find()) {
-                numOfClusters = m.group(1);
+                numOfClusters = m.group(2);
 
                 Utils.queryKMeansConstrained(numOfClusters, filter);
             }
