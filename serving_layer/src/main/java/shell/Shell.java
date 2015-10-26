@@ -60,6 +60,9 @@ public class Shell {
             case "create":
                 Utils.createSchemaTables();
                 break;
+            case "scan":
+                scanTable(line);
+                break;
             case "exit":
                 System.exit(0);
                 break;
@@ -68,6 +71,16 @@ public class Shell {
                 break;
         }
 
+    }
+
+    private void scanTable(String line) {
+        String pattern = "scan(\\s*)(\\w+)(\\s*)";
+        Pattern r = Pattern.compile(pattern);
+        Matcher m = r.matcher(line);
+
+        if (m.find()) {
+            Utils.scanTable(m.group(2));
+        }
     }
 
     private void parseKMeans(String line, String[] splits) {
