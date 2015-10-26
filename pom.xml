@@ -15,6 +15,7 @@
         <module>realtime_layer</module>
         <module>serving_layer</module>
         <module>fusion</module>
+        <module>coprocessors</module>
     </modules>
 
     <dependencies>

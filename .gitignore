@@ -3,6 +3,10 @@
 .idea
 .idea/*
 *.iws
+META-INF/*
+META-INF
+out/*
+out
 
 # Maven
 */target

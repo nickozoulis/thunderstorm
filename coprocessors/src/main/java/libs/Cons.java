@@ -1,4 +1,4 @@
-package hbase;
+package libs;
 
 /**
  * Created by nickozoulis on 23/10/2015.

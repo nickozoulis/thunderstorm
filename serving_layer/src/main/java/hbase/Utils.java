@@ -8,7 +8,6 @@ import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 
 /**
@@ -42,7 +41,8 @@ public class Utils {
             System.out.println("Inserting query with id: " + max_quid);
 
             //TODO: Maybe update max counter with a coprocessor.
-            updateMaxQueryID(hTable, max_quid);
+//            updateMaxQueryID(hTable, max_quid);
+//            System.out.println("Max query counter has been updated");
 
             hTable.close();
             connection.close();
@@ -76,7 +76,8 @@ public class Utils {
             System.out.println("Filter: " + filter);
 
             //TODO: Maybe update max counter with a coprocessor.
-            updateMaxQueryID(hTable, max_quid);
+//            updateMaxQueryID(hTable, max_quid);
+//            System.out.println("Max query counter has been updated");
 
             hTable.close();
             connection.close();
@@ -97,11 +98,10 @@ public class Utils {
         p2.add(Bytes.toBytes(Cons.cfQueries),
                 Bytes.toBytes(Cons.max_qid), Bytes.toBytes(Integer.toString(max_quid)));
         hTable.put(p2);
-        System.out.println("Max query counter has been updated");
     }
 
     /**
-     * Sets HBaseConfiguration according to constants specified in Cons.java
+     * Sets HBaseConfiguration according to constants specified in libs.Cons.java
      */
     public static void setHBaseConfig() {
         config = HBaseConfiguration.create();
