@@ -249,9 +249,9 @@ public class Utils {
     }
 
     /**
-     *
+     * Scans a Queries HTable.
      * @param hTable
-     * @param option
+     * @param option 0 for all records, 1 for only plain KMeans, 2 for Constrained KMeans
      * @throws IOException
      */
     private static void scanQueriesHTable(HTableInterface hTable, int option) throws IOException {
