@@ -9,19 +9,25 @@ import org.apache.hadoop.hbase.coprocessor.ObserverContext;
 import org.apache.hadoop.hbase.coprocessor.RegionCoprocessorEnvironment;
 import org.apache.hadoop.hbase.regionserver.wal.WALEdit;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 
-/**
+/** A Test Coprocessor to see how it works
  * Created by nickozoulis on 25/10/2015.
  */
 
 public class PrePutQueryCoprocessor extends BaseRegionObserver {
 
+    static final Logger logger = LoggerFactory.getLogger(PrePutQueryCoprocessor.class);
     private Configuration config;
 
     @Override
     public void start(CoprocessorEnvironment e) throws IOException {
+        logger.info("Coprocessor started.");
         config = e.getConfiguration();
     }
 
@@ -36,10 +42,9 @@ public class PrePutQueryCoprocessor extends BaseRegionObserver {
         // Increment max query counter.
         max_quid++;
 
-        updateMaxQueryID(hTable, max_quid);
-
         hTable.close();
         connection.close();
+        logger.info("Coprocessor finished.");
     }
 
     public static int getMaxQueryID(HTableInterface hTable) throws IOException {
@@ -50,11 +55,5 @@ public class PrePutQueryCoprocessor extends BaseRegionObserver {
         return Integer.parseInt(max_quidString);
     }
 
-    public static void updateMaxQueryID(HTableInterface hTable, int max_quid) throws IOException {
-        Put p2 = new Put(Bytes.toBytes(Cons.qid_0));
-        p2.add(Bytes.toBytes(Cons.cfQueries),
-                Bytes.toBytes(Cons.max_qid), Bytes.toBytes(Integer.toString(max_quid)));
-        hTable.put(p2);
-    }
 
 }
