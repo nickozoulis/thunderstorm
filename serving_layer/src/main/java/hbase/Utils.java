@@ -106,7 +106,7 @@ public class Utils {
     }
 
     /**
-     * Sets HBaseConfiguration according to constants specified in libs.Cons.java
+     * Sets HBaseConfiguration according to constants specified in Cons.java
      */
     public static void setHBaseConfig() {
         config = HBaseConfiguration.create();
