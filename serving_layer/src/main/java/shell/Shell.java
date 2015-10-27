@@ -4,12 +4,10 @@ import com.constambeys.storm.DataFilter;
 import jline.TerminalFactory;
 import jline.console.ConsoleReader;
 import hbase.Utils;
-import org.apache.hadoop.hbase.client.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -107,9 +105,10 @@ public class Shell {
         System.out.println("kmeans [numOfClusters] -> Inserts a kmeans query into HBase.");
         System.out.println("kmeans [numOfClusters] ; [filter] -> Inserts a constrained kmeans query into HBase.");
         System.out.println("test -> Tests the connection with HBase.");
-        System.out.println("scan [tableName] -> Performs a scan of the input table.");
+        System.out.println("scan [tableName] [options: 0,1,2] -> Performs a scan of the input table.");
         System.out.println("create -> Create the schema tables of the HBase.");
         System.out.println("man -> Displays serving layer's manual.");
+        System.out.println("clear -> Clears screen.");
     }
 
     private void scanTable(String line) {
@@ -130,8 +129,6 @@ public class Shell {
             } else {
                 Utils.scanTable(tableName, 0);
             }
-
-
         }
     }
 
