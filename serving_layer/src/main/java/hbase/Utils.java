@@ -319,11 +319,11 @@ public class Utils {
             HTableInterface hTable = connection.getTable(table);
 
             if (tableName.equalsIgnoreCase("queries"))
-                getRowFromQueriesHTable();
+                getRowFromQueriesHTable(row);
             else if (tableName.equalsIgnoreCase("batch"))
-                getRowFromBatchHTable();
+                getRowFromBatchHTable(row);
             else if (tableName.equalsIgnoreCase("stream"))
-                getRowFromStreamHTable();
+                getRowFromStreamHTable(row);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -331,17 +331,17 @@ public class Utils {
     }
 
     //TODO
-    private static void getRowFromStreamHTable() {
+    private static void getRowFromStreamHTable(String row) {
 
     }
 
     //TODO
-    private static void getRowFromBatchHTable() {
+    private static void getRowFromBatchHTable(String row) {
 
     }
 
     //TODO
-    private static void getRowFromQueriesHTable() {
+    private static void getRowFromQueriesHTable(String row) {
 
     }
 
