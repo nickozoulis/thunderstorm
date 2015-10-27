@@ -213,7 +213,7 @@ public class Utils {
         }
     }
 
-    public static void scanTable(String tableName) {
+    public static void scanTable(String tableName, int option) {
         String table = "";
 
         if (tableName.equalsIgnoreCase("queries"))
@@ -233,7 +233,7 @@ public class Utils {
             ResultScanner scanner = hTable.getScanner(scan);
 
             if (tableName.equalsIgnoreCase("queries"))
-                scanQueriesHTable(scanner);
+                scanQueriesHTable(scanner, option);
             else if (tableName.equalsIgnoreCase("batch"))
                 scanBatchHTable(scanner);
             else if (tableName.equalsIgnoreCase("stream"))
@@ -283,19 +283,32 @@ public class Utils {
         }
     }
 
-    private static void scanQueriesHTable(ResultScanner scanner) throws IOException {
+    /**
+     *
+     * @param scanner
+     * @param option 0 for all columns, 1 for only cluster column, 2 for only filter column
+     * @throws IOException
+     */
+    private static void scanQueriesHTable(ResultScanner scanner, int option) throws IOException {
         for (Result result = scanner.next(); result != null; result = scanner.next()) {
             String s = "";
 
             s += " [row:" + Bytes.toString(result.getRow()) + "]";
 
-            byte[] value = result.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.clusters));
-            if (value != null)
-                s += " [clusters:" + Bytes.toString(value) + "]";
+            byte[] value;
+            if (option == 0 || option == 1 || option == 2) {
+                if (option == 0 || option == 1) {
+                    value = result.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.clusters));
+                    if (value != null)
+                        s += " [clusters:" + Bytes.toString(value) + "]";
+                }
 
-            value = result.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.filter));
-            if (value != null)
-                s += " [filter:" + Bytes.toString(value) + "]";
+                if (option == 0 || option == 2) {
+                    value = result.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.filter));
+                    if (value != null)
+                        s += " [filter:" + Bytes.toString(value) + "]";
+                }
+            }
 
             System.out.println(s);
         }

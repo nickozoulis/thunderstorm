@@ -66,6 +66,9 @@ public class Shell {
             case "man":
                 displayManual();
                 break;
+            case "clear":
+               clearScreen();
+                break;
             case "exit":
                 System.exit(0);
                 break;
@@ -74,6 +77,12 @@ public class Shell {
                 break;
         }
 
+    }
+
+    private void clearScreen() {
+        try {
+            console.clearScreen();
+        } catch (IOException e) {e.printStackTrace();}
     }
 
     private void displayManual() {
@@ -91,7 +100,8 @@ public class Shell {
         Matcher m = r.matcher(line);
 
         if (m.find()) {
-            Utils.scanTable(m.group(2));
+            //FIXME scan option
+            Utils.scanTable(m.group(2), 0);
         }
     }
 
@@ -119,7 +129,7 @@ public class Shell {
         String constraintExpr = "", clustersExpr = "", operator = "", numOfClusters = "";
         String pattern1 = "(.*);(.*)",
                 pattern2 = "kmeans(\\s*)(\\d+)(\\s*)",
-                pattern3 = "<|>|==|!=|>=|<=";
+                pattern3 = "(==|!=|>=|<=|<|>)";
 
         // Get constraint
         Pattern r = Pattern.compile(pattern1);
@@ -136,7 +146,7 @@ public class Shell {
         r = Pattern.compile(pattern3);
         m = r.matcher(line);
         if (m.find()) {
-            operator = m.group(0);
+            operator = m.group(1);
         } else {
             usage();
             return;
