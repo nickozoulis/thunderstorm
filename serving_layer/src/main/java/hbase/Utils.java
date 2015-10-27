@@ -301,7 +301,47 @@ public class Utils {
         }
     }
 
+    //TODO
     public static void getRowFromTable(String tableName, String row) {
+        String table = "";
+
+        if (tableName.equalsIgnoreCase("queries"))
+            table = Cons.queries;
+        else if (tableName.equalsIgnoreCase("batch"))
+            table = Cons.batch_views;
+        else if (tableName.equalsIgnoreCase("stream"))
+            table = Cons.stream_views;
+        else
+            return;
+
+        try {
+            HConnection connection = HConnectionManager.createConnection(config);
+            HTableInterface hTable = connection.getTable(table);
+
+            if (tableName.equalsIgnoreCase("queries"))
+                getRowFromQueriesHTable();
+            else if (tableName.equalsIgnoreCase("batch"))
+                getRowFromBatchHTable();
+            else if (tableName.equalsIgnoreCase("stream"))
+                getRowFromStreamHTable();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //TODO
+    private static void getRowFromStreamHTable() {
+
+    }
+
+    //TODO
+    private static void getRowFromBatchHTable() {
+
+    }
+
+    //TODO
+    private static void getRowFromQueriesHTable() {
 
     }
 
