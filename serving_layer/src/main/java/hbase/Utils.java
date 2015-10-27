@@ -24,7 +24,7 @@ public class Utils {
      *
      * @param numOfClusters
      */
-    public static void queryKMeans(String numOfClusters) {
+    public static void putQueryKMeans(String numOfClusters) {
         try {
             HConnection connection = HConnectionManager.createConnection(config);
             HTableInterface hTable = connection.getTable(Cons.queries);
@@ -42,7 +42,6 @@ public class Utils {
             hTable.put(p1);
             System.out.println("Inserting query with id: " + max_quid);
 
-            //TODO: Maybe update max counter with a coprocessor.
             updateMaxQueryID(hTable, max_quid);
             System.out.println("Max query counter has been updated");
 
@@ -59,7 +58,7 @@ public class Utils {
      *
      * @param numOfClusters
      */
-    public static void queryKMeansConstrained(String numOfClusters, DataFilter filter) {
+    public static void putQueryKMeansConstrained(String numOfClusters, DataFilter filter) {
         try {
             HConnection connection = HConnectionManager.createConnection(config);
             HTableInterface hTable = connection.getTable(Cons.queries);
@@ -80,7 +79,6 @@ public class Utils {
             System.out.println("Inserting query with id: " + max_quid);
             System.out.println("Filter: " + filter);
 
-            //TODO: Maybe update max counter with a coprocessor.
             updateMaxQueryID(hTable, max_quid);
             System.out.println("Max query counter has been updated");
 
@@ -155,7 +153,6 @@ public class Utils {
             HTableDescriptor tableDescriptor = new HTableDescriptor(TableName.valueOf(Cons.queries));
             // Adding column families to table descriptor
             tableDescriptor.addFamily(new HColumnDescriptor(Cons.cfQueries));
-            //TODO: Maybe add a column for enabling or disabling this query.
 
             // Create the table through admin
             if (!admin.tableExists(Cons.queries)) {
@@ -229,93 +226,69 @@ public class Utils {
             HConnection connection = HConnectionManager.createConnection(config);
             HTableInterface hTable = connection.getTable(table);
 
-            Scan scan = new Scan();
-            ResultScanner scanner = hTable.getScanner(scan);
-
             if (tableName.equalsIgnoreCase("queries"))
-                scanQueriesHTable(scanner, option);
+                scanQueriesHTable(hTable, option);
             else if (tableName.equalsIgnoreCase("batch"))
-                scanBatchHTable(scanner);
+                scanBatchHTable(hTable, option);
             else if (tableName.equalsIgnoreCase("stream"))
-                scanStreamHTable(scanner);
+                scanStreamHTable(hTable, option);
 
-            scanner.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     //TODO
-    private static void scanStreamHTable(ResultScanner scanner) throws IOException {
-        for (Result result = scanner.next(); result != null; result = scanner.next()) {
-            String s = "";
+    private static void scanStreamHTable(HTableInterface hTable, int option) throws IOException {
 
-            s += " [row:" + Bytes.toString(result.getRow()) + "]";
-
-//            byte[] value = result.getValue(Bytes.toBytes(Cons.cfViews), Bytes.toBytes(Cons.clusters));
-//            if (value != null)
-//                s += " [clusters:" + Bytes.toString(value) + "]";
-//
-//            value = result.getValue(Bytes.toBytes(Cons.c), Bytes.toBytes(Cons.filter));
-//            if (value != null)
-//                s += " [filter:" + Bytes.toString(value) + "]";
-
-            System.out.println(s);
-        }
     }
 
     //TODO
-    private static void scanBatchHTable(ResultScanner scanner) throws IOException {
-        for (Result result = scanner.next(); result != null; result = scanner.next()) {
-            String s = "";
+    private static void scanBatchHTable(HTableInterface hTable, int option) throws IOException {
 
-            s += " [row:" + Bytes.toString(result.getRow()) + "]";
-
-//            byte[] value = result.getValue(Bytes.toBytes(Cons.cfViews), Bytes.toBytes(Cons.clusters));
-//            if (value != null)
-//                s += " [clusters:" + Bytes.toString(value) + "]";
-//
-//            value = result.getValue(Bytes.toBytes(Cons.c), Bytes.toBytes(Cons.filter));
-//            if (value != null)
-//                s += " [filter:" + Bytes.toString(value) + "]";
-
-            System.out.println(s);
-        }
     }
 
     /**
      *
-     * @param scanner
-     * @param option 0 for all columns, 1 for only cluster column, 2 for only filter column
+     * @param hTable
+     * @param option
      * @throws IOException
      */
-    private static void scanQueriesHTable(ResultScanner scanner, int option) throws IOException {
-        for (Result result = scanner.next(); result != null; result = scanner.next()) {
+    private static void scanQueriesHTable(HTableInterface hTable, int option) throws IOException {
+        Scan scan = new Scan();
+        ResultScanner rs = hTable.getScanner(scan);
+
+        for (Result result : rs) {
             String s = "";
+            byte[] valueClusters = result.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.clusters));
+            byte[] valueFilter = result.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.filter));
 
-            s += " [row:" + Bytes.toString(result.getRow()) + "]";
+            String row = " [row:" + Bytes.toString(result.getRow()) + "]";
 
-            byte[] value;
-            if (option == 0 || option == 1 || option == 2) {
-                if (option == 0 || option == 1) {
-                    value = result.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.clusters));
-                    if (value != null)
-                        s += " [clusters:" + Bytes.toString(value) + "]";
-                }
 
-                if (option == 0 || option == 2) {
-                    value = result.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.filter));
-                    if (value != null)
-                        s += " [filter:" + Bytes.toString(value) + "]";
+            if (option == 0) {
+                if (valueClusters != null)
+                    s += row + " [clusters:" + Bytes.toString(valueClusters) + "]";
+
+                if (valueFilter != null)
+                    s += " [filter:" + Bytes.toString(valueFilter) + "]";
+            } else if (option == 1) {
+
+                if (valueClusters != null && valueFilter == null)
+                    s += row + " [clusters:" + Bytes.toString(valueClusters) + "]";
+            } else if (option == 2) {
+                if (valueFilter != null) {
+                    s += row + " [clusters:" + Bytes.toString(valueClusters) + "]";
+                    s += " [filter:" + Bytes.toString(valueFilter) + "]";
                 }
             }
-
-            System.out.println(s);
+            if (!s.isEmpty()) System.out.println(s);
         }
+
+        rs.close();
     }
 
-    //TODO
-    public static void getRowFromTable(String tableName, String row) {
+    public static Result getRowFromHTable(String tableName, String row) {
         String table = "";
 
         if (tableName.equalsIgnoreCase("queries"))
@@ -325,37 +298,24 @@ public class Utils {
         else if (tableName.equalsIgnoreCase("stream"))
             table = Cons.stream_views;
         else
-            return;
+            return null;
+
+        Result result = null;
 
         try {
             HConnection connection = HConnectionManager.createConnection(config);
             HTableInterface hTable = connection.getTable(table);
 
-            if (tableName.equalsIgnoreCase("queries"))
-                getRowFromQueriesHTable(row);
-            else if (tableName.equalsIgnoreCase("batch"))
-                getRowFromBatchHTable(row);
-            else if (tableName.equalsIgnoreCase("stream"))
-                getRowFromStreamHTable(row);
+            Get g = new Get(Bytes.toBytes(Cons.qid_ + row));
+            result = hTable.get(g);
 
+            hTable.close();
+            connection.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
 
-    //TODO
-    private static void getRowFromStreamHTable(String row) {
-
-    }
-
-    //TODO
-    private static void getRowFromBatchHTable(String row) {
-
-    }
-
-    //TODO
-    private static void getRowFromQueriesHTable(String row) {
-
+        return result;
     }
 
 }

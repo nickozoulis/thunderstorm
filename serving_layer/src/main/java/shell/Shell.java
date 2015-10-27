@@ -4,10 +4,12 @@ import com.constambeys.storm.DataFilter;
 import jline.TerminalFactory;
 import jline.console.ConsoleReader;
 import hbase.Utils;
+import org.apache.hadoop.hbase.client.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,7 +40,7 @@ public class Shell {
             // Does some cleanup and restores the original terminal configuration.
             try {
                 TerminalFactory.get().restore();
-            } catch(Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -46,11 +48,15 @@ public class Shell {
 
     /**
      * Decides what the user's input is about.
+     *
      * @param line
      */
     private void parse(String line) {
         String[] splits = line.split(" ");
-        switch(splits[0]) {
+        switch (splits[0]) {
+            case "get":
+                parseGet(splits[1]);
+                break;
             case "kmeans":
                 parseKMeans(line, splits);
                 break;
@@ -67,7 +73,7 @@ public class Shell {
                 displayManual();
                 break;
             case "clear":
-               clearScreen();
+                clearScreen();
                 break;
             case "exit":
                 System.exit(0);
@@ -76,16 +82,28 @@ public class Shell {
                 usage();
                 break;
         }
+    }
 
+    /**
+     * Where the magic will happen.
+     *
+     * @param qid
+     */
+    private void parseGet(String qid) {
+        //TODO: Call fusion module to get fused results from batch and stream views.
+        //TODO: Implement iterator loop with for-each generics for the results
     }
 
     private void clearScreen() {
         try {
             console.clearScreen();
-        } catch (IOException e) {e.printStackTrace();}
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void displayManual() {
+        System.out.println("get [qid] -> Gets the views of the input query ID.");
         System.out.println("kmeans [numOfClusters] -> Inserts a kmeans query into HBase.");
         System.out.println("kmeans [numOfClusters] ; [filter] -> Inserts a constrained kmeans query into HBase.");
         System.out.println("test -> Tests the connection with HBase.");
@@ -95,19 +113,31 @@ public class Shell {
     }
 
     private void scanTable(String line) {
-        String pattern = "scan(\\s*)(\\w+)(\\s*)";
+        String pattern = "scan(\\s*)(\\w+)(\\s*)(\\d*)";
         Pattern r = Pattern.compile(pattern);
         Matcher m = r.matcher(line);
 
         if (m.find()) {
-            //FIXME scan option
-            Utils.scanTable(m.group(2), 0);
+            String tableName = m.group(2);
+            String option = m.group(4);
+
+            if (!option.equals("")) {
+                try {
+                    Utils.scanTable(tableName, Integer.parseInt(m.group(4)));
+                } catch (NumberFormatException e) {
+                    System.out.println("Example usage: 'scan queries [0|1|2]");
+                }
+            } else {
+                Utils.scanTable(tableName, 0);
+            }
+
+
         }
     }
 
     private void parseKMeans(String line, String[] splits) {
         if (splits.length == 2) { // Plain KMeans
-            Utils.queryKMeans(splits[1]);
+            Utils.putQueryKMeans(splits[1]);
         } else if (splits.length > 2) { // Constrained KMeans
             parseConstraints(line);
         } else {
@@ -121,7 +151,9 @@ public class Shell {
     private void usage() {
         try {
             console.println("Example input: 'kmeans 4' or 'kmeans 4 ; x1 + x2 < 6'");
-        } catch (IOException e) {e.printStackTrace();}
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -158,7 +190,9 @@ public class Shell {
             String leftExpr = parseExpression(splits[0].trim());
             String rightExpr = parseExpression(splits[1].trim());
 
-            if (leftExpr.equals("") || rightExpr.equals("")) { return; }
+            if (leftExpr.equals("") || rightExpr.equals("")) {
+                return;
+            }
 
             DataFilter filter = new DataFilter(leftExpr, operator, rightExpr);
 
@@ -168,7 +202,7 @@ public class Shell {
             if (m.find()) {
                 numOfClusters = m.group(2);
 
-                Utils.queryKMeansConstrained(numOfClusters, filter);
+                Utils.putQueryKMeansConstrained(numOfClusters, filter);
             }
         } else {
             usage();
@@ -188,8 +222,8 @@ public class Shell {
             expr += "{" + splits[0] + "}";
 
             if (splits.length >= 3) {
-                for (int i=1; i<splits.length; i+=2) {
-                    expr += splits[i] + "{" + splits[i+1] + "}";
+                for (int i = 1; i < splits.length; i += 2) {
+                    expr += splits[i] + "{" + splits[i + 1] + "}";
                 }
             }
         } else {
