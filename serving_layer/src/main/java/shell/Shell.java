@@ -63,6 +63,9 @@ public class Shell {
             case "scan":
                 scanTable(line);
                 break;
+            case "man":
+                displayManual();
+                break;
             case "exit":
                 System.exit(0);
                 break;
@@ -71,6 +74,15 @@ public class Shell {
                 break;
         }
 
+    }
+
+    private void displayManual() {
+        System.out.println("kmeans [numOfClusters] -> Inserts a kmeans query into HBase.");
+        System.out.println("kmeans [numOfClusters] ; [filter] -> Inserts a constrained kmeans query into HBase.");
+        System.out.println("test -> Tests the connection with HBase.");
+        System.out.println("scan [tableName] -> Performs a scan of the input table.");
+        System.out.println("create -> Create the schema tables of the HBase.");
+        System.out.println("man -> Displays serving layer's manual.");
     }
 
     private void scanTable(String line) {
