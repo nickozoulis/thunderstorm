@@ -9,20 +9,20 @@ import backtype.storm.topology.base.BaseRichSpout;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
 
-public class SignalsSpout extends BaseRichSpout{
+public class SignalsSpout extends BaseRichSpout {
 
 	private SpoutOutputCollector collector;
 
-
-	private void refreshCache(){
-		collector.emit("signals", new Values("refresh"));
+	private void refreshCache() {
+		collector.emit("signals", new Values("clear"));
 	}
-	
+
 	public void nextTuple() {
 		try {
 			Thread.sleep(5000);
 			collector.emit("signals", new Values("print"));
-		} catch (InterruptedException e) {}
+		} catch (InterruptedException e) {
+		}
 	}
 
 	public void open(Map conf, TopologyContext context, SpoutOutputCollector collector) {

@@ -1,32 +1,47 @@
 package com.constambeys.storm;
 
+import com.constambeys.storm.bolt.BoltOutput;
 import com.constambeys.storm.bolt.BoltProcessor;
 import com.constambeys.storm.bolt.PointProcessor;
-import com.constambeys.storm.spouts.PointsReader;
+import com.constambeys.storm.bolt.PointsReader;
+import com.constambeys.storm.spouts.CommandsSpout;
 import com.constambeys.storm.spouts.SignalsSpout;
 
 import backtype.storm.Config;
 import backtype.storm.LocalCluster;
+import backtype.storm.topology.BoltDeclarer;
 import backtype.storm.topology.TopologyBuilder;
-//import backtype.storm.tuple.Fields;
 
 public class TopologyMain {
 
 	public static void main(String[] args) throws InterruptedException {
 		try {
 			TopologyBuilder builder = new TopologyBuilder();
-			builder.setSpout("points-reader", new PointsReader());
 			builder.setSpout("signals-spout", new SignalsSpout());
+			builder.setSpout("commands-spout", new CommandsSpout());
 
-			builder.setBolt("point-processor", new PointProcessor()).shuffleGrouping("points-reader");
+			BoltDeclarer reader = builder.setBolt("points-reader", new PointsReader("Input.txt"));
+			reader.allGrouping("commands-spout", "commands");
 
-			builder.setBolt("k-means-online", new BoltProcessor(3), 1).shuffleGrouping("point-processor")
-					.allGrouping("signals-spout", "signals");
+			BoltDeclarer processor = builder.setBolt("point-processor", new PointProcessor());
+			processor.shuffleGrouping("points-reader");
+
+			BoltDeclarer kmeans = builder.setBolt("k-means-online", new BoltProcessor(), 2);
+			// All bolts must get input data
+			kmeans.allGrouping("point-processor");
+			// All bolts must get signals
+			kmeans.allGrouping("signals-spout", "signals");
+			// Share jobs between bolts
+			kmeans.shuffleGrouping("commands-spout", "commands");
+			
+			// Only one output point
+			BoltDeclarer output = builder.setBolt("output-bolt", new BoltOutput(), 1);
+			output.shuffleGrouping("k-means-online");
 
 			Config conf = new Config();
-			conf.registerSerialization(Point.class);
-			conf.put("file", args[0]);
-			conf.setDebug(false);
+			// conf.registerSerialization(Point.class);
+			// conf.put("file", args[0]);
+			// conf.setDebug(false);
 			conf.put(Config.TOPOLOGY_MAX_SPOUT_PENDING, 1);
 
 			LocalCluster cluster = new LocalCluster();
