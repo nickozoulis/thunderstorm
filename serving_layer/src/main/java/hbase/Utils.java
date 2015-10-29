@@ -210,10 +210,19 @@ public class Utils {
         }
     }
 
+    /**
+     * Scans an HTable. All records will be returned.
+     * @param hTableName The name of the table to be scanned.
+     */
     public static void scanTable(String hTableName) {
         scanTable(hTableName, 0);
     }
 
+    /**
+     * Scans an HTable. Using options will return filtered records.
+     * @param hTableName The name of the table to be scanned.
+     * @param option 0 return all records, 1 returns plain KMeans, 2 returns filtered KMeans
+     */
     public static void scanTable(String hTableName, int option) {
         try {
             HConnection connection = HConnectionManager.createConnection(config);
@@ -242,7 +251,8 @@ public class Utils {
     }
 
     /**
-     * Scans a Queries HTable.
+     * Scans the Queries HTable.
+     *
      * @param hTable
      * @param option 0 for all records, 1 for only plain KMeans, 2 for Constrained KMeans
      * @throws IOException
@@ -293,7 +303,8 @@ public class Utils {
         else
             return null;
 
-        Result result = null;
+        // An empty result.
+        Result result = new Result();
 
         try {
             HConnection connection = HConnectionManager.createConnection(config);
@@ -324,10 +335,10 @@ public class Utils {
             HConnection connection = HConnectionManager.createConnection(config);
             HTableInterface hTable = connection.getTable(tableName);
 
-            // Format the put command
             Put p = new Put(Bytes.toBytes(Cons.qid_ + qid));
             p.add(Bytes.toBytes(Cons.cfViews),
-                    Bytes.toBytes(Cons.clusters), Bytes.toBytes(view));
+                    Bytes.toBytes(Cons.clusters),
+                    Bytes.toBytes(view));
             hTable.put(p);
             System.out.println("Inserting view with query id: " + qid);
 
