@@ -318,4 +318,32 @@ public class Utils {
         return result;
     }
 
+    public static void putStreamView(int qid, String view) {
+        putView(Cons.stream_views, qid, view);
+    }
+
+    public static void putBatchView(int qid, String view) {
+        putView(Cons.batch_views, qid, view);
+    }
+
+    private static void putView(String tableName, int qid, String view) {
+        try {
+            HConnection connection = HConnectionManager.createConnection(config);
+            HTableInterface hTable = connection.getTable(tableName);
+
+            // Format the put command
+            Put p = new Put(Bytes.toBytes(Cons.qid_ + qid));
+            p.add(Bytes.toBytes(Cons.cfViews),
+                    Bytes.toBytes(Cons.clusters), Bytes.toBytes(view));
+            hTable.put(p);
+            System.out.println("Inserting query with id: " + qid);
+
+            hTable.close();
+            connection.close();
+            System.out.println("Table closed");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
