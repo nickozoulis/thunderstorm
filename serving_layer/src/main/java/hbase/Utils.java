@@ -210,27 +210,20 @@ public class Utils {
         }
     }
 
-    public static void scanTable(String tableName, int option) {
-        String table = "";
+    public static void scanTable(String hTableName) {
+        scanTable(hTableName, 0);
+    }
 
-        if (tableName.equalsIgnoreCase("queries"))
-            table = Cons.queries;
-        else if (tableName.equalsIgnoreCase("batch"))
-            table = Cons.batch_views;
-        else if (tableName.equalsIgnoreCase("stream"))
-            table = Cons.stream_views;
-        else
-            return;
-
+    public static void scanTable(String hTableName, int option) {
         try {
             HConnection connection = HConnectionManager.createConnection(config);
-            HTableInterface hTable = connection.getTable(table);
+            HTableInterface hTable = connection.getTable(hTableName);
 
-            if (tableName.equalsIgnoreCase("queries"))
+            if (hTableName.equalsIgnoreCase(Cons.queries))
                 scanQueriesHTable(hTable, option);
-            else if (tableName.equalsIgnoreCase("batch"))
+            else if (hTableName.equalsIgnoreCase(Cons.batch_views))
                 scanBatchHTable(hTable, option);
-            else if (tableName.equalsIgnoreCase("stream"))
+            else if (hTableName.equalsIgnoreCase(Cons.stream_views))
                 scanStreamHTable(hTable, option);
 
         } catch (IOException e) {

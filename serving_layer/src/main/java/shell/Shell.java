@@ -1,6 +1,7 @@
 package shell;
 
 import com.constambeys.storm.DataFilter;
+import hbase.Cons;
 import jline.TerminalFactory;
 import jline.console.ConsoleReader;
 import hbase.Utils;
@@ -88,6 +89,7 @@ public class Shell {
      * @param qid
      */
     private void parseGet(String qid) {
+
         //TODO: Call fusion module to get fused results from batch and stream views.
         //TODO: Implement iterator loop with for-each generics for the results
     }
@@ -117,17 +119,26 @@ public class Shell {
         Matcher m = r.matcher(line);
 
         if (m.find()) {
-            String tableName = m.group(2);
+            String tableName = m.group(2), hTableName;
             String option = m.group(4);
+
+            if (tableName.equalsIgnoreCase("queries"))
+                hTableName = Cons.queries;
+            else if (tableName.equalsIgnoreCase("batch"))
+                hTableName = Cons.batch_views;
+            else if (tableName.equalsIgnoreCase("stream"))
+                hTableName = Cons.stream_views;
+            else
+                return;
 
             if (!option.equals("")) {
                 try {
-                    Utils.scanTable(tableName, Integer.parseInt(m.group(4)));
+                    Utils.scanTable(hTableName, Integer.parseInt(m.group(4)));
                 } catch (NumberFormatException e) {
                     System.out.println("Example usage: 'scan queries [0|1|2]");
                 }
             } else {
-                Utils.scanTable(tableName, 0);
+                Utils.scanTable(hTableName);
             }
         }
     }
