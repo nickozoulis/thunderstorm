@@ -292,23 +292,12 @@ public class Utils {
     }
 
     public static Result getRowFromHTable(String tableName, String row) {
-        String table = "";
-
-        if (tableName.equalsIgnoreCase("queries"))
-            table = Cons.queries;
-        else if (tableName.equalsIgnoreCase("batch"))
-            table = Cons.batch_views;
-        else if (tableName.equalsIgnoreCase("stream"))
-            table = Cons.stream_views;
-        else
-            return null;
-
         // An empty result.
         Result result = new Result();
 
         try {
             HConnection connection = HConnectionManager.createConnection(config);
-            HTableInterface hTable = connection.getTable(table);
+            HTableInterface hTable = connection.getTable(tableName);
 
             Get g = new Get(Bytes.toBytes(Cons.qid_ + row));
             result = hTable.get(g);
