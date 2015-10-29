@@ -8,20 +8,16 @@ import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.IRichBolt;
 import backtype.storm.topology.OutputFieldsDeclarer;
-import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 
-public class PointProcessor implements IRichBolt {
+public class BoltOutput implements IRichBolt {
 
 	int id;
 	String name;
 	private OutputCollector collector;
 
-	public PointProcessor() {
-
-	}
-
+	@Override
 	public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
 		this.collector = collector;
 		this.name = context.getThisComponentId();
@@ -29,30 +25,26 @@ public class PointProcessor implements IRichBolt {
 		System.out.println("bolt: " + this.name + " id: " + this.id + " prepared #####################");
 	}
 
+	@Override
 	public void execute(Tuple input) {
-		String sentence = input.getString(0);
-		String[] values = sentence.split(",");
-
-		Point p = new Point(values);
-
-		// Emit the word
-		collector.emit(new Values(p));
-
-		// Acknowledge the tuple
-		collector.ack(input);
+		String result = input.getString(0);
+		System.out.print(result);
 
 	}
 
+	@Override
 	public void cleanup() {
 		// TODO Auto-generated method stub
 
 	}
 
+	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		declarer.declare(new Fields("point"));
+		// TODO Auto-generated method stub
 
 	}
 
+	@Override
 	public Map<String, Object> getComponentConfiguration() {
 		// TODO Auto-generated method stub
 		return null;

@@ -1,10 +1,10 @@
 package com.constambeys.storm.bolt;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 import javax.script.ScriptException;
 
-import com.constambeys.storm.DataFilter;
 import com.constambeys.storm.KMeansOnline;
 import com.constambeys.storm.Point;
 
@@ -14,18 +14,18 @@ import backtype.storm.topology.IRichBolt;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
+import backtype.storm.tuple.Values;
 
 public class BoltProcessor implements IRichBolt {
 
 	Integer id;
 	String name;
-	KMeansOnline k;
-	DataFilter f;
+	ArrayList<KMeansOnline> ks = new ArrayList<>(0);
+
 	private OutputCollector collector;
 
-	public BoltProcessor(int k) {
-		this.k = new KMeansOnline(k);
-		this.f = new DataFilter("{0}", "<", "50");
+	public BoltProcessor() {
+
 	}
 
 	public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
@@ -42,19 +42,30 @@ public class BoltProcessor implements IRichBolt {
 		 */
 
 		if (input.getSourceStreamId().equals("signals")) {
-			if ("refresh".equals(input.getStringByField("action"))) {
-				// counters.clear();
-				return;
+			if ("clear".equals(input.getStringByField("action"))) {
+				for (KMeansOnline k : ks)
+					k.clear();
 			} else if ("print".equals(input.getStringByField("action"))) {
-				k.print();
+				for (KMeansOnline k : ks) {
+					this.collector.emit(new Values(k.print()));
+				}
+			}
+			return;
+		}
+
+		if (input.getSourceStreamId().equals("commands")) {
+			if ("kmeans".equals(input.getStringByField("action"))) {
+				ks.add((KMeansOnline) input.getValue(1));
+				return;
 			}
 			return;
 		}
 
 		Point p = (Point) input.getValue(0);
 		try {
-			if (f.run(p))
+			for (KMeansOnline k : ks) {
 				k.run(p);
+			}
 			// Set the tuple as Acknowledge
 			collector.ack(input);
 		} catch (ScriptException e) {
@@ -69,8 +80,7 @@ public class BoltProcessor implements IRichBolt {
 	}
 
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		declarer.declare(new Fields("word"));
-
+		declarer.declare(new Fields("output"));
 	}
 
 	public Map<String, Object> getComponentConfiguration() {

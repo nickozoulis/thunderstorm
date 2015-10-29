@@ -1,7 +1,10 @@
 package com.constambeys.storm;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
+
+import javax.script.ScriptException;
 
 public class KMeansOnline implements Serializable {
 
@@ -22,18 +25,52 @@ public class KMeansOnline implements Serializable {
 		D[] d = new D[max];
 	}
 
-	boolean initilization = true;
+	boolean initilization;
 	int counters[];
 	Point means[]; // k points
-	int k;
+	int k; // number of clusters
+
+	// List of filters
+	ArrayList<DataFilter> filters = new ArrayList<DataFilter>(0);
 
 	public KMeansOnline(int k) {
 		this.k = k;
 		counters = new int[k * CONSTANT];
 		means = new Point[k * CONSTANT];
+		initilization = true;
 	}
 
-	public void run(Point point) {
+	public void init(Point p[]) {
+		means = p;
+	}
+
+	public void add(DataFilter f) {
+		filters.add(f);
+	}
+
+	public void clear() {
+		counters = new int[k * CONSTANT];
+		means = new Point[k * CONSTANT];
+		initilization = true;
+	}
+
+	private boolean checkFilters(Point point) throws ScriptException {
+
+		for (DataFilter f : filters) {
+			if (f.run(point) == false) {
+				return false;
+			}
+		}
+
+		return true;
+
+	}
+
+	public void run(Point point) throws ScriptException {
+
+		if (!checkFilters(point)) {
+			return;
+		}
 
 		if (initilization) {
 			boolean found = false;
@@ -72,9 +109,11 @@ public class KMeansOnline implements Serializable {
 		}
 	}
 
-	public void print() {
+	public String print() {
+
+		StringBuilder sb = new StringBuilder();
 		if (initilization) {
-			return;
+			sb.append("Not Initialized\n");
 		}
 
 		boolean[] used = new boolean[k * CONSTANT];
@@ -99,12 +138,14 @@ public class KMeansOnline implements Serializable {
 					used[ds.d[i].index] = true;
 				}
 				s.divide(CONSTANT);
-				System.out.println(s.print());
+				sb.append(s.print());
+				sb.append("\n");
 			}
 
 		}
 
-		System.out.println();
+		sb.append("\n");
+		return sb.toString();
 	}
 
 	private void insertDistance(Point x, Point y, Ds ds, int index) {
