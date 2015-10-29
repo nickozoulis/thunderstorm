@@ -170,12 +170,36 @@ public class Shell {
 
             if (!option.equals("")) {
                 try {
-                    Utils.scanTable(hTableName, Integer.parseInt(m.group(4)));
+                    switch (hTableName) {
+                        case Cons.queries:
+                            Utils.scanQueriesHTable(Integer.parseInt(m.group(4)));
+                            break;
+                        case Cons.batch_views:
+                            Utils.scanBatchHTable();
+                            break;
+                        case Cons.stream_views:
+                            Utils.scanStreamHTable();
+                            break;
+                        default:
+                            return;
+                    }
                 } catch (NumberFormatException e) {
                     System.out.println("Example usage: 'scan queries [0|1|2]");
                 }
             } else {
-                Utils.scanTable(hTableName);
+                switch (hTableName) {
+                    case Cons.queries:
+                        Utils.scanQueriesHTable();
+                        break;
+                    case Cons.batch_views:
+                        Utils.scanBatchHTable();
+                        break;
+                    case Cons.stream_views:
+                        Utils.scanStreamHTable();
+                        break;
+                    default:
+                        return;
+                }
             }
         }
     }
