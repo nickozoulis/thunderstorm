@@ -5,6 +5,8 @@ import hbase.Cons;
 import jline.TerminalFactory;
 import jline.console.ConsoleReader;
 import hbase.Utils;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,9 +91,44 @@ public class Shell {
      * @param qid
      */
     private void parseGet(String qid) {
+        Result batchClusters = Utils.getRowFromHTable(Cons.batch_views, qid);
+        Result streamClusters = Utils.getRowFromHTable(Cons.stream_views, qid);
+
+        // For the time being just print out both results, if available.
+        printTemp(batchClusters, streamClusters);
 
         //TODO: Call fusion module to get fused results from batch and stream views.
-        //TODO: Implement iterator loop with for-each generics for the results
+        //TODO: Maybe implement iterator loop with for-each generics for the results
+
+        /* example call
+        Fusion f = new Fusion(batchClusters, streamClusters);
+
+        for (String s : f.getClusters()) {
+            System.out.println(s);
+        }
+        */
+    }
+
+    private void printTemp(Result batchClusters, Result streamClusters) {
+        if (!batchClusters.isEmpty()) {
+            System.out.println("---- Printing batch view ----");
+
+            byte[] valueClusters = batchClusters.getValue(Bytes.toBytes(Cons.cfViews), Bytes.toBytes(Cons.clusters));
+            if (valueClusters != null) {
+                System.out.println(Bytes.toString(valueClusters));
+            }
+        } else
+            System.out.println("Batch view is empty.");
+
+        if (!streamClusters.isEmpty()) {
+            System.out.println("---- Printing stream view ----");
+
+            byte[] valueClusters = streamClusters.getValue(Bytes.toBytes(Cons.cfViews), Bytes.toBytes(Cons.clusters));
+            if (valueClusters != null) {
+                System.out.println(Bytes.toString(valueClusters));
+            }
+        } else
+            System.out.println("Stream view is empty.");
     }
 
     private void clearScreen() {
