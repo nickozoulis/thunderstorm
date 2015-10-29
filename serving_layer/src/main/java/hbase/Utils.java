@@ -211,19 +211,11 @@ public class Utils {
     }
 
     /**
-     * Scans an HTable. All records will be returned.
-     * @param hTableName The name of the table to be scanned.
-     */
-    public static void scanTable(String hTableName) {
-        scanTable(hTableName, 0);
-    }
-
-    /**
      * Scans an HTable. Using options will return filtered records.
      * @param hTableName The name of the table to be scanned.
      * @param option 0 return all records, 1 returns plain KMeans, 2 returns filtered KMeans
      */
-    public static void scanTable(String hTableName, int option) {
+    private static void scanHTable(String hTableName, int option) {
         try {
             HConnection connection = HConnectionManager.createConnection(config);
             HTableInterface hTable = connection.getTable(hTableName);
@@ -240,15 +232,29 @@ public class Utils {
         }
     }
 
-    //TODO
-    private static void scanStreamHTable(HTableInterface hTable, int option) throws IOException {
-
+    /**
+     * Scans an Queries HTable. Using options will return filtered records.
+     * @param option 0 return all records, 1 returns plain KMeans, 2 returns filtered KMeans
+     */
+    public static void scanQueriesHTable(int option) {
+        scanHTable(Cons.queries, option);
     }
 
-    //TODO
-    private static void scanBatchHTable(HTableInterface hTable, int option) throws IOException {
-
+    /**
+     * Scans an HTable. All records will be returned.
+     */
+    public static void scanQueriesHTable() {
+        scanHTable(Cons.queries, 0);
     }
+
+    public static void scanBatchHTable() {
+        scanHTable(Cons.batch_views, 0);
+    }
+
+    public static void scanStreamHTable() {
+        scanHTable(Cons.stream_views, 0);
+    }
+
 
     /**
      * Scans the Queries HTable.
@@ -289,6 +295,15 @@ public class Utils {
         }
 
         rs.close();
+    }
+
+    //TODO
+    private static void scanStreamHTable(HTableInterface hTable, int option) {
+    }
+
+    //TODO
+    private static void scanBatchHTable(HTableInterface hTable, int option) {
+
     }
 
     public static Result getRowFromHTable(String tableName, String row) {
