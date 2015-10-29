@@ -336,7 +336,7 @@ public class Utils {
             p.add(Bytes.toBytes(Cons.cfViews),
                     Bytes.toBytes(Cons.clusters), Bytes.toBytes(view));
             hTable.put(p);
-            System.out.println("Inserting view with id: " + qid);
+            System.out.println("Inserting view with query id: " + qid);
 
             hTable.close();
             connection.close();
