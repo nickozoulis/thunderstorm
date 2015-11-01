@@ -2,6 +2,7 @@ package com.constambeys.storm.bolt;
 
 import java.util.Map;
 
+import com.constambeys.storm.KMeansOnline;
 import com.constambeys.storm.Point;
 
 import backtype.storm.task.OutputCollector;
@@ -9,7 +10,6 @@ import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.IRichBolt;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Tuple;
-import backtype.storm.tuple.Values;
 
 public class BoltOutput implements IRichBolt {
 
@@ -27,8 +27,18 @@ public class BoltOutput implements IRichBolt {
 
 	@Override
 	public void execute(Tuple input) {
-		String result = input.getString(0);
-		System.out.print(result);
+		KMeansOnline k = (KMeansOnline) input.getValue(0);
+		Point[] result = k.print();
+		if (result == null) {
+			System.out.print(String.format("KMeans %d, clusters %d Not Initialized\n", k.id, k.k));
+		} else {
+			System.out.print(String.format("KMeans %d, clusters %d\n", k.id, k.k));
+
+			for (Point p : result) {
+				System.out.println(p.print());
+			}
+			
+		}
 
 	}
 

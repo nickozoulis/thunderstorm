@@ -1,10 +1,20 @@
 package com.constambeys.storm.spouts;
 
+import java.io.IOException;
 import java.util.Map;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.client.Get;
+import org.apache.hadoop.hbase.client.HConnection;
+import org.apache.hadoop.hbase.client.HConnectionManager;
+import org.apache.hadoop.hbase.client.HTableInterface;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.util.Bytes;
+
+import com.constambeys.storm.Cons;
 import com.constambeys.storm.DataFilter;
 import com.constambeys.storm.KMeansOnline;
-import com.constambeys.storm.Point;
 
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -16,36 +26,64 @@ import backtype.storm.tuple.Values;
 public class CommandsSpout extends BaseRichSpout {
 
 	private SpoutOutputCollector collector;
-	private boolean completed = false;
+	private HConnection connection;
+	private HTableInterface hTable;
+	private int currentID = 1;
 
 	public void nextTuple() {
-
-		if (!completed) {
-			KMeansOnline k1 = new KMeansOnline(3);
-			Point[] means1 = new Point[3];
-
-			for (int i = 0; i < 3; i++) {
-				means1[i] = new Point(3);
-			}
-			k1.init(means1);
-			DataFilter f = new DataFilter("{0}", "<", "50");
-			k1.add(f);
-			collector.emit("commands", new Values("kmeans", k1));
-
-			KMeansOnline k2 = new KMeansOnline(5);
-			collector.emit("commands", new Values("kmeans", k2));
-
-			completed = true;
-		}
-
 		try {
+			Get g;
+			Result r;
+
+			g = new Get(Bytes.toBytes(Cons.qid_ + 0));
+			r = hTable.get(g);
+
+			byte[] value = r.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.max_qid));
+			String max_quidString = Bytes.toString(value);
+			int maxID = Integer.parseInt(max_quidString);
+
+			while (currentID < maxID) {
+
+				g = new Get(Bytes.toBytes(Cons.qid_ + currentID));
+				r = hTable.get(g);
+
+				byte[] valueClusters = r.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.clusters));
+				byte[] valueFilter = r.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.filter));
+
+				KMeansOnline k = new KMeansOnline(currentID, Integer.parseInt(Bytes.toString(valueClusters)));
+
+				if (valueFilter != null) {
+					String filter = Bytes.toString(valueFilter);
+					DataFilter f = new DataFilter(filter);
+					// k.add(f);
+				}
+
+				collector.emit("commands", new Values("kmeans", k));
+
+				currentID++;
+			}
+
+			collector.emit("commands", new Values("run", null));
+
 			Thread.sleep(5000);
-		} catch (InterruptedException e) {
+		} catch (Exception e) {
+			System.err.println("CommandsSpout: " + e.getMessage());
 		}
 	}
 
 	public void open(Map conf, TopologyContext context, SpoutOutputCollector collector) {
 		this.collector = collector;
+
+		Configuration config = HBaseConfiguration.create();
+		config.set("hbase.zookeeper.quorum", Cons.hbase_IP_address);
+		config.set("hbase.zookeeper.property.clientPort", Cons.hbase_port);
+		try {
+			connection = HConnectionManager.createConnection(config);
+			hTable = connection.getTable(Cons.queries);
+		} catch (IOException e) {
+			System.err.println("CommandsSpout: " + e.getMessage());
+		}
+
 	}
 
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {

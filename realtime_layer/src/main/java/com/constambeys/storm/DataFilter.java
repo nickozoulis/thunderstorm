@@ -11,7 +11,8 @@ import javax.script.ScriptException;
 public class DataFilter implements Serializable {
 
 	transient ScriptEngine engine;
-	Pattern pattern1 = Pattern.compile("\\{([0-9])+\\}");
+
+	Pattern pattern1 = Pattern.compile("x([0-9])+");
 	String expr1;
 	String expr2;
 	String op;
@@ -20,6 +21,20 @@ public class DataFilter implements Serializable {
 		this.expr1 = expr1;
 		this.expr2 = expr2;
 		this.op = op;
+	}
+
+	public DataFilter(String filter) {
+		int index;
+		if ((index = filter.indexOf('>')) > 0) {
+			this.expr1 = filter.substring(0, index);
+			this.expr2 = filter.substring(index + 1);
+			this.op = ">";
+		} else if ((index = filter.indexOf('<')) > 0) {
+			this.expr1 = filter.substring(0, index);
+			this.expr2 = filter.substring(index + 1);
+			this.op = "<";
+		}
+
 	}
 
 	public boolean run(Point p) throws ScriptException {

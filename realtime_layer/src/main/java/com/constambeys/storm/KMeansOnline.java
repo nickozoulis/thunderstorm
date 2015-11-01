@@ -28,20 +28,18 @@ public class KMeansOnline implements Serializable {
 	boolean initilization;
 	int counters[];
 	Point means[]; // k points
-	int k; // number of clusters
+	public int k; // number of clusters
+	public int id;
 
 	// List of filters
 	ArrayList<DataFilter> filters = new ArrayList<DataFilter>(0);
 
-	public KMeansOnline(int k) {
+	public KMeansOnline(int id, int k) {
 		this.k = k;
+		this.id = id;
 		counters = new int[k * CONSTANT];
 		means = new Point[k * CONSTANT];
 		initilization = true;
-	}
-
-	public void init(Point p[]) {
-		means = p;
 	}
 
 	public void add(DataFilter f) {
@@ -54,18 +52,6 @@ public class KMeansOnline implements Serializable {
 		initilization = true;
 	}
 
-	private boolean checkFilters(Point point) throws ScriptException {
-
-		for (DataFilter f : filters) {
-			if (f.run(point) == false) {
-				return false;
-			}
-		}
-
-		return true;
-
-	}
-
 	public void run(Point point) throws ScriptException {
 
 		if (!checkFilters(point)) {
@@ -74,17 +60,25 @@ public class KMeansOnline implements Serializable {
 
 		if (initilization) {
 			boolean found = false;
-			for (int i = 0; i < counters.length; i++) {
+			for (int i = 0; i < counters.length - 1; i++) {
 				if (counters[i] == 0) {
-					means[i] = point;
+					means[i] = new Point(point.getDimension());
+					means[i].add(point); // Initialisation do not use means[i] = point
 					counters[i] = 1;
 					found = true;
 					break;
 				}
 			}
 			if (found == false) {
+				// Check last point
+				int i = counters.length - 1;
+				if (counters[i] == 0) {
+					means[i] = new Point(point.getDimension());
+					means[i].add(point); // Initialisation do not use means[i] = point
+					counters[i] = 1;
+					found = true;
+				}
 				initilization = false;
-				run(point);
 			}
 		} else {
 			int index = 0;
@@ -109,43 +103,57 @@ public class KMeansOnline implements Serializable {
 		}
 	}
 
-	public String print() {
+	public Point[] print() {
 
-		StringBuilder sb = new StringBuilder();
 		if (initilization) {
-			sb.append("Not Initialized\n");
-		}
+			return null;
+		} else {
+			int current = 0;
+			Point result[] = new Point[k];
 
-		boolean[] used = new boolean[k * CONSTANT];
+			boolean[] used = new boolean[k * CONSTANT];
 
-		for (int u1 = 0; u1 < used.length; u1++) {
-			if (used[u1] == false) {
-				used[u1] = true;
+			for (int u1 = 0; u1 < used.length; u1++) {
+				if (used[u1] == false) {
+					used[u1] = true;
 
-				Ds ds = new Ds();
+					Ds ds = new Ds();
 
-				for (int u2 = 0; u2 < used.length; u2++) {
+					for (int u2 = 0; u2 < used.length; u2++) {
 
-					if (used[u2] == false) {
-						insertDistance(means[u1], means[u2], ds, u2);
+						if (used[u2] == false) {
+							insertDistance(means[u1], means[u2], ds, u2);
+						}
 					}
+
+					Point s = new Point(means[u1].getDimension());
+					s.add(means[u1]);
+					for (int i = 0; i < ds.d.length; i++) {
+						s.add(means[ds.d[i].index]);
+						used[ds.d[i].index] = true;
+					}
+					s.divide(CONSTANT);
+
+					result[current] = s;
+					current++;
 				}
 
-				Point s = new Point(means[u1].getDimension());
-				s.add(means[u1]);
-				for (int i = 0; i < ds.d.length; i++) {
-					s.add(means[ds.d[i].index]);
-					used[ds.d[i].index] = true;
-				}
-				s.divide(CONSTANT);
-				sb.append(s.print());
-				sb.append("\n");
 			}
-
+			return result;
 		}
 
-		sb.append("\n");
-		return sb.toString();
+	}
+
+	private boolean checkFilters(Point point) throws ScriptException {
+
+		for (DataFilter f : filters) {
+			if (f.run(point) == false) {
+				return false;
+			}
+		}
+
+		return true;
+
 	}
 
 	private void insertDistance(Point x, Point y, Ds ds, int index) {

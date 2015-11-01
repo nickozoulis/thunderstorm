@@ -38,7 +38,7 @@ public class PointsReader implements IRichBolt {
 	public void execute(Tuple input) {
 
 		if (input.getSourceStreamId().equals("commands")) {
-			if ("kmeans".equals(input.getStringByField("action"))) {
+			if ("run".equals(input.getStringByField("action"))) {
 
 				if (!completed) {
 					BufferedReader reader = null;

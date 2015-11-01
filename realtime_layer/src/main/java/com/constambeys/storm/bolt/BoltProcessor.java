@@ -47,7 +47,7 @@ public class BoltProcessor implements IRichBolt {
 					k.clear();
 			} else if ("print".equals(input.getStringByField("action"))) {
 				for (KMeansOnline k : ks) {
-					this.collector.emit(new Values(k.print()));
+					this.collector.emit(new Values(k));
 				}
 			}
 			return;

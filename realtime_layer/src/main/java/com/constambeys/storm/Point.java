@@ -67,4 +67,9 @@ public class Point implements Serializable {
 		return Math.sqrt(distance);
 	}
 
+	@Override
+	public String toString() {
+		return components.toString();
+	}
+
 }
