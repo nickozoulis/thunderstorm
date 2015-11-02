@@ -19,7 +19,7 @@ public class SignalsSpout extends BaseRichSpout {
 
 	public void nextTuple() {
 		try {
-			Thread.sleep(5000);
+			Thread.sleep(10000);
 			collector.emit("signals", new Values("print"));
 		} catch (InterruptedException e) {
 		}

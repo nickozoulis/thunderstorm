@@ -42,7 +42,7 @@ public class CommandsSpout extends BaseRichSpout {
 			String max_quidString = Bytes.toString(value);
 			int maxID = Integer.parseInt(max_quidString);
 
-			while (currentID < maxID) {
+			while (currentID <= maxID) {
 
 				g = new Get(Bytes.toBytes(Cons.qid_ + currentID));
 				r = hTable.get(g);
@@ -55,7 +55,7 @@ public class CommandsSpout extends BaseRichSpout {
 				if (valueFilter != null) {
 					String filter = Bytes.toString(valueFilter);
 					DataFilter f = new DataFilter(filter);
-					// k.add(f);
+					k.add(f);
 				}
 
 				collector.emit("commands", new Values("kmeans", k));

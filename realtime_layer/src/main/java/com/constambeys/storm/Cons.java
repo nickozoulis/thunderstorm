@@ -12,7 +12,7 @@ public class Cons {
 	// 100.74.13.25 debian
 	// # ::1 localhost
 
-	public static final String hbase_IP_address = "100.74.13.25";
+	public static final String hbase_IP_address = "192.168.1.232";
 	public static final String hbase_port = "2181";
 
 	// HBase table constants
@@ -25,6 +25,7 @@ public class Cons {
 	public static final String qid_0 = "qid_0";
 	public static final String max_qid = "max_qid";
 	public static final String clusters = "clusters";
+	public static final String clusters_ = "c_";
 	public static final String filter = "filter";
 
 }
