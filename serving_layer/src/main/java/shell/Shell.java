@@ -229,10 +229,9 @@ public class Shell {
     private void parseConstraints(String line) {
         String constraintExpr = "", clustersExpr = "", operator = "", numOfClusters = "";
         String pattern1 = "(.*);(.*)",
-                pattern2 = "kmeans(\\s*)(\\d+)(\\s*)",
-                pattern3 = "(==|!=|>=|<=|<|>)";
+                pattern2 = "kmeans(\\s*)(\\d+)(\\s*)";
 
-        // Get constraint
+        // Get constraint and clusters expressions
         Pattern r = Pattern.compile(pattern1);
         Matcher m = r.matcher(line);
         if (m.find()) {
@@ -243,63 +242,15 @@ public class Shell {
             return;
         }
 
-        // Get operator from constraint
-        r = Pattern.compile(pattern3);
-        m = r.matcher(line);
+        // Get numOfClusters
+        r = Pattern.compile(pattern2);
+        m = r.matcher(clustersExpr);
         if (m.find()) {
-            operator = m.group(1);
-        } else {
-            usage();
-            return;
+            numOfClusters = m.group(2);
+
+            Utils.putQueryKMeansConstrained(numOfClusters, constraintExpr);
         }
 
-        // Get left and right expressions and create a DataFilter
-        if (!operator.equals("")) {
-            String splits[] = constraintExpr.split(operator);
-            String leftExpr = parseExpression(splits[0].trim());
-            String rightExpr = parseExpression(splits[1].trim());
-
-            if (leftExpr.equals("") || rightExpr.equals("")) {
-                return;
-            }
-
-            DataFilter filter = new DataFilter(leftExpr, operator, rightExpr);
-
-            // Get numOfClusters
-            r = Pattern.compile(pattern2);
-            m = r.matcher(clustersExpr);
-            if (m.find()) {
-                numOfClusters = m.group(2);
-
-                Utils.putQueryKMeansConstrained(numOfClusters, filter);
-            }
-        } else {
-            usage();
-            return;
-        }
-    }
-
-    private String parseExpression(String str) {
-        String expr = "";
-        String pattern = "(\\w+)(((\\s+)(\\+|-|\\*|/)(\\s+)(\\w*))*)";
-        Pattern r = Pattern.compile(pattern);
-        Matcher m = r.matcher(str);
-
-        if (m.matches()) {
-            String splits[] = str.split(" ");
-
-            expr += "{" + splits[0] + "}";
-
-            if (splits.length >= 3) {
-                for (int i = 1; i < splits.length; i += 2) {
-                    expr += splits[i] + "{" + splits[i + 1] + "}";
-                }
-            }
-        } else {
-            usage();
-        }
-
-        return expr;
     }
 
     public static void main(String[] args) {

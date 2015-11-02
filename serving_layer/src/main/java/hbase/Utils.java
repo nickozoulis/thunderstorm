@@ -58,7 +58,7 @@ public class Utils {
      *
      * @param numOfClusters
      */
-    public static void putQueryKMeansConstrained(String numOfClusters, DataFilter filter) {
+    public static void putQueryKMeansConstrained(String numOfClusters, String filter) {
         try {
             HConnection connection = HConnectionManager.createConnection(config);
             HTableInterface hTable = connection.getTable(Cons.queries);
@@ -74,7 +74,7 @@ public class Utils {
             p1.add(Bytes.toBytes(Cons.cfQueries),
                     Bytes.toBytes(Cons.clusters), Bytes.toBytes(numOfClusters));
             p1.add(Bytes.toBytes(Cons.cfQueries),
-                    Bytes.toBytes(Cons.filter), Bytes.toBytes(filter.toString()));
+                    Bytes.toBytes(Cons.filter), Bytes.toBytes(filter));
             hTable.put(p1);
             System.out.println("Inserting query with id: " + max_quid);
             System.out.println("Filter: " + filter);
