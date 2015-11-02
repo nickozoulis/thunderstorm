@@ -52,7 +52,7 @@ public class BoltOutput implements IRichBolt {
 	public void execute(Tuple input) {
 		try {
 			KMeansOnline k = (KMeansOnline) input.getValue(0);
-			Point[] result = k.print();
+			Point[] result = k.result();
 			if (result == null) {
 				System.out.print(String.format("KMeans %d, clusters %d Not Initialized\n", k.id, k.k));
 			} else {
