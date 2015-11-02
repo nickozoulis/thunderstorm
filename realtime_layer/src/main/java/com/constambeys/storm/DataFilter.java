@@ -64,6 +64,11 @@ public class DataFilter implements Serializable {
 				return true;
 			else
 				return false;
+		} else if (op.equals(">")) {
+			if (a > b)
+				return true;
+			else
+				return false;
 		}
 
 		return false;

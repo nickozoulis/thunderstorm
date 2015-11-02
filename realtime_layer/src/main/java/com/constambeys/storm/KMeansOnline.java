@@ -103,7 +103,7 @@ public class KMeansOnline implements Serializable {
 		}
 	}
 
-	public Point[] print() {
+	public Point[] result() {
 
 		if (initilization) {
 			return null;

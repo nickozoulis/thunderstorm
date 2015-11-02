@@ -41,21 +41,6 @@ public class Point implements Serializable {
 		return components.length;
 	}
 
-	public String print() {
-		StringBuilder sb = new StringBuilder();
-
-		sb.append("(");
-
-		for (int i = 0; i < components.length - 1; i++) {
-			sb.append(components[i]);
-			sb.append(",");
-		}
-		sb.append(components[components.length - 1]);
-		sb.append(")");
-
-		return sb.toString();
-	}
-
 	public static double distance(Point a, Point b) {
 
 		double distance = 0;
@@ -69,7 +54,15 @@ public class Point implements Serializable {
 
 	@Override
 	public String toString() {
-		return components.toString();
+		StringBuilder sb = new StringBuilder();
+
+		for (int i = 0; i < components.length - 1; i++) {
+			sb.append(String.format("%.2f", components[i]));
+			sb.append(",");
+		}
+		sb.append(components[components.length - 1]);
+
+		return sb.toString();
 	}
 
 }
