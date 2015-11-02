@@ -1,6 +1,5 @@
 package hbase;
 
-import com.constambeys.storm.DataFilter;
 import com.google.protobuf.ServiceException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.*;
@@ -306,7 +305,15 @@ public class Utils {
 
     }
 
-    public static Result getRowFromHTable(String tableName, String row) {
+    public static Result getRowFromBatchView(String qid) {
+        return getRowFromHTable(Cons.batch_views, qid);
+    }
+
+    public static Result getRowFromStreamView(String qid) {
+        return getRowFromHTable(Cons.stream_views, qid);
+    }
+
+    private static Result getRowFromHTable(String tableName, String qid) {
         // An empty result.
         Result result = new Result();
 
@@ -314,7 +321,7 @@ public class Utils {
             HConnection connection = HConnectionManager.createConnection(config);
             HTableInterface hTable = connection.getTable(tableName);
 
-            Get g = new Get(Bytes.toBytes(Cons.qid_ + row));
+            Get g = new Get(Bytes.toBytes(Cons.qid_ + qid));
             result = hTable.get(g);
 
             hTable.close();
@@ -352,6 +359,25 @@ public class Utils {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static Result pollStreamViewForResult(String qid) {
+        return pollViewForResult(Cons.stream_views, qid);
+    }
+
+    private static Result pollViewForResult(String tableName, String qid) {
+        Result result;
+
+        while ((result = getRowFromHTable(tableName, qid)) == null) {
+            try {
+                Thread.sleep(Cons.delay);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                break;
+            }
+        }
+
+        return result;
     }
 
 }

@@ -1,6 +1,5 @@
 package shell;
 
-import com.constambeys.storm.DataFilter;
 import hbase.Cons;
 import jline.TerminalFactory;
 import jline.console.ConsoleReader;
@@ -56,7 +55,7 @@ public class Shell {
         String[] splits = line.split(" ");
         switch (splits[0]) {
             case "get":
-                parseGet(splits[1]);
+                getResultsFromViews(splits[1]);
                 break;
             case "kmeans":
                 parseKMeans(line, splits);
@@ -90,11 +89,11 @@ public class Shell {
      *
      * @param qid
      */
-    private void parseGet(String qid) {
-        Result batchClusters = Utils.getRowFromHTable(Cons.batch_views, qid);
-        Result streamClusters = Utils.getRowFromHTable(Cons.stream_views, qid);
+    private void getResultsFromViews(String qid) {
+        Result batchClusters = Utils.getRowFromBatchView(qid);
+        Result streamClusters = Utils.pollStreamViewForResult(qid);
 
-        // For the time being just print out both results, if available.
+        //FIXME: For the time being just print out both results, if available.
         printTemp(batchClusters, streamClusters);
 
         //TODO: Call fusion module to get fused results from batch and stream views.
@@ -111,24 +110,31 @@ public class Shell {
 
     private void printTemp(Result batchClusters, Result streamClusters) {
         if (!batchClusters.isEmpty()) {
-            System.out.println("---- Printing batch view ----");
-
-            byte[] valueClusters = batchClusters.getValue(Bytes.toBytes(Cons.cfViews), Bytes.toBytes(Cons.clusters));
-            if (valueClusters != null) {
-                System.out.println(Bytes.toString(valueClusters));
-            }
+            System.out.println("< Printing batch view >");
+            printResultView(batchClusters);
         } else
-            System.out.println("Batch view is empty.");
+            System.out.println("> Batch view is empty <");
 
         if (!streamClusters.isEmpty()) {
-            System.out.println("---- Printing stream view ----");
-
-            byte[] valueClusters = streamClusters.getValue(Bytes.toBytes(Cons.cfViews), Bytes.toBytes(Cons.clusters));
-            if (valueClusters != null) {
-                System.out.println(Bytes.toString(valueClusters));
-            }
+            System.out.println("< Printing stream view >");
+            printResultView(streamClusters);
         } else
-            System.out.println("Stream view is empty.");
+            System.out.println("> Stream view is empty <");
+    }
+
+    private void printResultView(Result result) {
+        byte[] valueClusters;
+        int k = 0;
+
+        for (;;) {
+            valueClusters = result.getValue(Bytes.toBytes(Cons.cfViews), Bytes.toBytes(Cons.clusters_ + k));
+
+            if (valueClusters != null)
+                System.out.println(Bytes.toString(valueClusters));
+            else break;
+
+            k++;
+        }
     }
 
     private void clearScreen() {
@@ -207,8 +213,10 @@ public class Shell {
     private void parseKMeans(String line, String[] splits) {
         if (splits.length == 2) { // Plain KMeans
             Utils.putQueryKMeans(splits[1]);
+            getResultsFromViews(splits[1]);
         } else if (splits.length > 2) { // Constrained KMeans
             parseConstraints(line);
+            getResultsFromViews(splits[1]);
         } else {
             usage();
         }

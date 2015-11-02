@@ -6,7 +6,7 @@ package hbase;
 public class Cons {
 
     // HBase Configuration constants
-    public static final String hbase_IP_address = "192.168.1.232";//127.0.0.1
+    public static final String hbase_IP_address = "192.168.43.121";//127.0.0.1
     public static final String hbase_port = "2181";
 
     // HBase table constants
@@ -21,5 +21,7 @@ public class Cons {
     public static final String clusters = "clusters";
     public static final String clusters_ = "c_";
     public static final String filter = "filter";
+
+    public static final int delay = 3000; // Thread sleep delay in milliseconds
 
 }
