@@ -31,7 +31,7 @@ public class Utils {
             // First get max query counter, so as to know how to format the new query key.
             long max_quid = getMaxQueryID(hTable);
 
-            // Use incremented max query counter.
+            // Use incremented max query counter. A prePut coprocessor will perform an Increment.
             max_quid++;
 
             // Format the put command
@@ -62,7 +62,7 @@ public class Utils {
             // First get max query counter, so as to know how to format the new query key.
             long max_quid = getMaxQueryID(hTable);
 
-            // Increment max query counter.
+            // Use incremented max query counter. A prePut coprocessor will perform an Increment.
             max_quid++;
 
             // Format the put command
@@ -89,14 +89,7 @@ public class Utils {
         byte[] value = result.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.max_qid));
         return Bytes.toLong(value);
     }
-
-    public static void updateMaxQueryID(HTableInterface hTable, int max_quid) throws IOException {
-        Put p2 = new Put(Bytes.toBytes(Cons.qid_0));
-        p2.add(Bytes.toBytes(Cons.cfQueries),
-                Bytes.toBytes(Cons.max_qid), Bytes.toBytes(Integer.toString(max_quid)));
-        hTable.put(p2);
-    }
-
+    
     /**
      * Sets HBaseConfiguration according to constants specified in Cons.java
      */
