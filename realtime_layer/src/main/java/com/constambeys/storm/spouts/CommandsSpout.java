@@ -39,8 +39,7 @@ public class CommandsSpout extends BaseRichSpout {
 			r = hTable.get(g);
 
 			byte[] value = r.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.max_qid));
-			String max_quidString = Bytes.toString(value);
-			int maxID = Integer.parseInt(max_quidString);
+			int maxID = (int)Bytes.toLong(value);
 
 			while (currentID <= maxID) {
 
