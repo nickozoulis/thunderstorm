@@ -6,7 +6,7 @@ package libs;
 public class Cons {
 
     /// HBase Configuration constants
-    public static final String hbase_IP_address = "192.168.0.9";//127.0.0.1
+    public static final String hbase_IP_address = "127.0.0.1";//127.0.0.1
     public static final String hbase_port = "2181";
 
     // HBase table constants

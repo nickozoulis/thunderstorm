@@ -213,10 +213,10 @@ public class Shell {
     private void parseKMeans(String line, String[] splits) {
         if (splits.length == 2) { // Plain KMeans
             Utils.putQueryKMeans(splits[1]);
-            getResultsFromViews(splits[1]);
+//            getResultsFromViews(splits[1]);
         } else if (splits.length > 2) { // Constrained KMeans
             parseConstraints(line);
-            getResultsFromViews(splits[1]);
+//            getResultsFromViews(splits[1]);
         } else {
             usage();
         }

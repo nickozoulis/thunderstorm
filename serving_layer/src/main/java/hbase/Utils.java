@@ -29,20 +29,17 @@ public class Utils {
             HTableInterface hTable = connection.getTable(Cons.queries);
 
             // First get max query counter, so as to know how to format the new query key.
-            int max_quid = getMaxQueryID(hTable);
+            long max_quid = getMaxQueryID(hTable);
 
-            // Increment max query counter.
+            // Use incremented max query counter.
             max_quid++;
 
             // Format the put command
-            Put p1 = new Put(Bytes.toBytes(Cons.qid_ + max_quid));
+            Put p1 = new Put(Bytes.toBytes(Cons.qid_ + (int)max_quid));
             p1.add(Bytes.toBytes(Cons.cfQueries),
                     Bytes.toBytes(Cons.clusters), Bytes.toBytes(numOfClusters));
             hTable.put(p1);
             System.out.println("Inserting query with id: " + max_quid);
-
-            updateMaxQueryID(hTable, max_quid);
-            System.out.println("Max query counter has been updated");
 
             hTable.close();
             connection.close();
@@ -63,13 +60,13 @@ public class Utils {
             HTableInterface hTable = connection.getTable(Cons.queries);
 
             // First get max query counter, so as to know how to format the new query key.
-            int max_quid = getMaxQueryID(hTable);
+            long max_quid = getMaxQueryID(hTable);
 
             // Increment max query counter.
             max_quid++;
 
             // Format the put command
-            Put p1 = new Put(Bytes.toBytes(Cons.qid_ + max_quid));
+            Put p1 = new Put(Bytes.toBytes(Cons.qid_ + (int)max_quid));
             p1.add(Bytes.toBytes(Cons.cfQueries),
                     Bytes.toBytes(Cons.clusters), Bytes.toBytes(numOfClusters));
             p1.add(Bytes.toBytes(Cons.cfQueries),
@@ -77,9 +74,6 @@ public class Utils {
             hTable.put(p1);
             System.out.println("Inserting query with id: " + max_quid);
             System.out.println("Filter: " + filter);
-
-            updateMaxQueryID(hTable, max_quid);
-            System.out.println("Max query counter has been updated");
 
             hTable.close();
             connection.close();
@@ -89,12 +83,11 @@ public class Utils {
         }
     }
 
-    public static int getMaxQueryID(HTableInterface hTable) throws IOException {
+    public static long getMaxQueryID(HTableInterface hTable) throws IOException {
         Get g = new Get(Bytes.toBytes(Cons.qid_0));
         Result result = hTable.get(g);
         byte[] value = result.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.max_qid));
-        String max_quidString = Bytes.toString(value);
-        return Integer.parseInt(max_quidString);
+        return Bytes.toLong(value);
     }
 
     public static void updateMaxQueryID(HTableInterface hTable, int max_quid) throws IOException {
@@ -165,7 +158,7 @@ public class Utils {
                 HTable hTable = new HTable(config, Cons.queries);
                 Put p = new Put(Bytes.toBytes(Cons.qid_0));
                 p.add(Bytes.toBytes(Cons.cfQueries),
-                        Bytes.toBytes(Cons.max_qid), Bytes.toBytes("0"));
+                        Bytes.toBytes(Cons.max_qid), Bytes.toBytes(0l)); // Zero as Long
                 hTable.put(p);
             } else {
                 System.out.println("Table already exists: " + tableDescriptor.getNameAsString());
