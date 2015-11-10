@@ -24,7 +24,7 @@ public class Shell {
 
     public Shell() {
         Utils.setHBaseConfig();
-
+        
         try {
             console = new ConsoleReader();
             console.setPrompt("serving_layer> ");

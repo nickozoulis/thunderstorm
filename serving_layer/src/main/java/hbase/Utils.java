@@ -27,7 +27,7 @@ public class Utils {
         try {
             HConnection connection = HConnectionManager.createConnection(config);
             HTableInterface hTable = connection.getTable(Cons.queries);
-
+            
             // First get max query counter, so as to know how to format the new query key.
             long max_quid = getMaxQueryID(hTable);
 
@@ -89,7 +89,7 @@ public class Utils {
         byte[] value = result.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.max_qid));
         return Bytes.toLong(value);
     }
-    
+
     /**
      * Sets HBaseConfiguration according to constants specified in Cons.java
      */
