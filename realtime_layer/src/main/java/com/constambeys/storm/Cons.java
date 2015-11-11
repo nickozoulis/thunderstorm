@@ -12,7 +12,7 @@ public class Cons {
 	// 100.74.13.25 debian
 	// # ::1 localhost
 
-	public static final String hbase_IP_address = "192.168.1.232";
+	public static final String hbase_IP_address = "127.0.0.1";
 	public static final String hbase_port = "2181";
 
 	// HBase table constants

@@ -79,6 +79,7 @@ public class CommandsSpout extends BaseRichSpout {
 		try {
 			connection = HConnectionManager.createConnection(config);
 			hTable = connection.getTable(Cons.queries);
+			System.out.println("HBASE CONNECTED");
 		} catch (IOException e) {
 			System.err.println("CommandsSpout: " + e.getMessage());
 		}

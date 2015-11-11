@@ -1,6 +1,7 @@
 package com.constambeys.storm.bolt;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Map;
@@ -44,7 +45,10 @@ public class PointsReader implements IRichBolt {
 					BufferedReader reader = null;
 					try {
 						// Open the reader
-						reader = new BufferedReader(new FileReader(filename));
+						System.out.println("Opening file");
+						ClassLoader classLoader = getClass().getClassLoader();
+						File file = new File(classLoader.getResource(filename).getFile());
+						reader = new BufferedReader(new FileReader(file));
 						String str;
 						// Read all lines
 						while ((str = reader.readLine()) != null) {
@@ -53,6 +57,7 @@ public class PointsReader implements IRichBolt {
 							 * their
 							 */
 							this.collector.emit(new Values(str));
+							System.out.println(">>>>"+str);
 						}
 					} catch (Exception e) {
 						throw new RuntimeException("Error reading tuple", e);
