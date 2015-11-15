@@ -1,8 +1,5 @@
 package fusion.clustering;
 
-import fusion.query.Query;
-import fusion.query.QueryType;
-
 import java.util.Set;
 
 /**

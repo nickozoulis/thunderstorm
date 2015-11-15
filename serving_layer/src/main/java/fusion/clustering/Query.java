@@ -1,7 +1,5 @@
 package fusion.clustering;
 
-import fusion.query.QueryType;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -38,7 +36,7 @@ public abstract class Query {
         return s;
     }
 
-    public Set getFilters() {
+    public Set<String> getFilters() {
         return filters;
     }
 

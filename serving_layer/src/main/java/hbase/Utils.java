@@ -1,6 +1,11 @@
 package hbase;
 
 import com.google.protobuf.ServiceException;
+import fusion.clustering.KMeansQuery;
+import net.sf.javaml.core.Dataset;
+import net.sf.javaml.core.DefaultDataset;
+import net.sf.javaml.core.DenseInstance;
+import net.sf.javaml.core.Instance;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.client.*;
@@ -366,4 +371,114 @@ public class Utils {
         return result;
     }
 
+    public static Dataset loadClusters(Result result) {
+        byte[] valueClusters;
+        int k = 0;
+        Dataset ds = new DefaultDataset();
+
+        for (;;) {
+            valueClusters = result.getValue(Bytes.toBytes(Cons.cfViews), Bytes.toBytes(Cons.clusters_ + k));
+
+            if (valueClusters != null)
+                ds.add(createInstance(Bytes.toString(valueClusters)));
+            else
+                break;
+
+            k++;
+        }
+
+        return ds;
+    }
+
+    public static Dataset loadClusters(String tableName, String qid) {
+        return loadClusters(getRowFromHTable(tableName, qid));
+    }
+
+    private static Instance createInstance(String str) {
+        String[] splits = str.split(",");
+
+        double[] values = new double[splits.length];
+
+        for (int i=0; i<splits.length; i++)
+            values[i] = Double.parseDouble(splits[i]);
+
+        return new DenseInstance(values);
+    }
+
+
+    /**
+     * Adapts the results of the HBase to the ML library output.
+     * @param result
+     * @return The results are returned in an array of Datasets, where each Dataset represents a cluster.
+     */
+    public static Dataset[] resultToDataset(Result result) {
+        byte[] valueClusters;
+        int k = 0;
+        Dataset ds = new DefaultDataset();
+
+        for (;;) {
+            valueClusters = result.getValue(Bytes.toBytes(Cons.cfViews), Bytes.toBytes(Cons.clusters_ + k));
+
+            if (valueClusters != null)
+                ds.add(createInstance(Bytes.toString(valueClusters)));
+            else
+                break;
+
+            k++;
+        }
+
+        //FIXME: Write numOfClusters in views so as to avoid this second loop.
+        Dataset[] datasets = new Dataset[ds.size()];
+        Dataset temp;
+        for (int i=0; i<ds.size(); i++) {
+            temp = new DefaultDataset();
+            temp.add(ds.get(i));
+            datasets[i] = temp;
+        }
+
+        return datasets;
+    }
+
+    /**
+     * Enqueues this KMeans query in an HBase table, where all queries are being stored with unique ID.
+     * @param query
+     */
+    public static void putKMeansQuery(KMeansQuery query) {
+        try {
+            HConnection connection = HConnectionManager.createConnection(config);
+            HTableInterface hTable = connection.getTable(Cons.queries);
+
+            // First get max query counter, so as to know how to format the new query key.
+            long max_quid = getMaxQueryID(hTable);
+
+            // Use incremented max query counter. A prePut coprocessor will perform an Increment.
+            max_quid++;
+
+            // Format the put command
+            Put p1 = new Put(Bytes.toBytes(Cons.qid_ + (int)max_quid));
+            p1.add(Bytes.toBytes(Cons.cfQueries),
+                    Bytes.toBytes(Cons.clusters), Bytes.toBytes(query.getK()));
+
+            //FIXME: Make it work for more than one filter
+            if (query.getFilters().size() == 1) {
+
+                String filter = "";
+                for (String s : query.getFilters())
+                    filter += s;
+
+                p1.add(Bytes.toBytes(Cons.cfQueries),
+                        Bytes.toBytes(Cons.filter), Bytes.toBytes(filter));
+            }
+
+            hTable.put(p1);
+            System.out.println("Inserting query with id: " + max_quid);
+            System.out.println("Query: " + query.toString());
+
+            hTable.close();
+            connection.close();
+            System.out.println("Table closed");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

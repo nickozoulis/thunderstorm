@@ -1,15 +1,20 @@
 package shell;
 
+import fusion.clustering.KMeansQuery;
+import fusion.clustering.LocalKMeans;
 import hbase.Cons;
 import jline.TerminalFactory;
 import jline.console.ConsoleReader;
 import hbase.Utils;
+import net.sf.javaml.core.Dataset;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -131,7 +136,8 @@ public class Shell {
 
             if (valueClusters != null)
                 System.out.println(Bytes.toString(valueClusters));
-            else break;
+            else
+                break;
 
             k++;
         }
@@ -210,7 +216,8 @@ public class Shell {
         }
     }
 
-    private void parseKMeans(String line, String[] splits) {
+    @Deprecated
+    private void parseKMeanss(String line, String[] splits) {
         if (splits.length == 2) { // Plain KMeans
             Utils.putQueryKMeans(splits[1]);
 //            getResultsFromViews(splits[1]);
@@ -222,19 +229,36 @@ public class Shell {
         }
     }
 
+    private void parseKMeans(String line, String[] splits) {
+        KMeansQuery query = null;
+
+        if (splits.length == 2) { // Plain KMeans
+            query = new KMeansQuery(Integer.parseInt(splits[1]));
+        } else if (splits.length > 2) { // Constrained KMeans
+            query =  parseConstraints(line);
+        } else {
+            usage();
+            return;
+        }
+
+        //FIXME
+        for (Dataset d: KMeans(query))
+            System.out.println(d.instance(0));
+    }
+
     /**
      * Shows explanatory message when incorrect input is inserted.
      */
     private void usage() {
         try {
-            console.println("Example input: 'kmeans 4' or 'kmeans 4 ; x1 + x2 < 6'");
+            console.println("Example input: 'kmeans 4' or 'kmeans 4 ; x0+x1<6'");
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
-    private void parseConstraints(String line) {
+    @Deprecated
+    private void parseConstraintss(String line) {
         String constraintExpr = "", clustersExpr = "", operator = "", numOfClusters = "";
         String pattern1 = "(.*);(.*)",
                 pattern2 = "kmeans(\\s*)(\\d+)(\\s*)";
@@ -258,11 +282,77 @@ public class Shell {
 
             Utils.putQueryKMeansConstrained(numOfClusters, constraintExpr);
         }
+    }
 
+    private KMeansQuery parseConstraints(String line) {
+        String constraintExpr = "", clustersExpr = "", operator = "", numOfClusters = "";
+        String pattern1 = "(.*);(.*)",
+                pattern2 = "kmeans(\\s*)(\\d+)(\\s*)";
+
+        // Get constraint and clusters expressions
+        Pattern r = Pattern.compile(pattern1);
+        Matcher m = r.matcher(line);
+        //FIXME: Make it work for more than one filter.
+        if (m.find()) {
+            clustersExpr = m.group(1);
+            constraintExpr = m.group(2);
+        } else {
+            usage();
+            return;
+        }
+
+        // Get numOfClusters
+        r = Pattern.compile(pattern2);
+        m = r.matcher(clustersExpr);
+        if (m.find()) {
+            numOfClusters = m.group(2);
+
+            Utils.putQueryKMeansConstrained(numOfClusters, constraintExpr);
+            Set set = new HashSet<String>();
+            set.add(constraintExpr);
+
+            return new KMeansQuery(Integer.parseInt(numOfClusters), set);
+        }
     }
 
     public static void main(String[] args) {
         new Shell();
+    }
+
+    /**
+     * Performs the whole Lambda-KMeans procedure.
+     * @param query
+     */
+    private Dataset[] KMeans(KMeansQuery query) {
+        Result r;
+
+        // Check stream views if contain this query.
+        //TODO
+        r = Utils.checkStreamViews(query);
+        // If yes, return it to the user.
+        if (r != null)
+            return Utils.resultToDataset(r);
+
+        // If not, query is sent to both batch and stream layers via insertion to HBase.
+        Utils.putKMeansQuery(query);
+
+        // While these layers are computing, check whether there is a view for k'-means
+        // (e.g., k'=10,000) for the same set of constraints
+        KMeansQuery kQuery = new KMeansQuery(10000, query.getFilters()); //TODO: move k' to Cons
+        r = Utils.checkStreamViews(kQuery);
+
+        // If yes, then compute a Local k-out-of-k'-means clustering and return that to the user
+        if (r != null)
+            return new LocalKMeans(kQuery, Utils.loadClusters(r)).cluster();
+
+        // If no, send a {k' , {constraints}} query to both the streaming and batch layers via insertion to HBase.
+        Utils.putKMeansQuery(kQuery);
+
+        // While waiting, retrieve the k'-means view for the whole dataset (i.e., no constraints),
+        // and compute and return a k-out-of-k'-means result to the user.
+        //TODO
+
+        return null;
     }
 
 }

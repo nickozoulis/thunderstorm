@@ -1,6 +1,5 @@
 package fusion.clustering;
 
-import fusion.query.KMeansQuery;
 import net.sf.javaml.core.Dataset;
 
 /**
