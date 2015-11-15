@@ -343,7 +343,7 @@ public class Shell {
 
         // If yes, then compute a Local k-out-of-k'-means clustering and return that to the user
         if (r != null)
-            return new LocalKMeans(kQuery, Utils.loadClusters(r)).cluster();
+            return new LocalKMeans(query, Utils.loadClusters(r)).cluster();
 
         // If no, send a {k' , {constraints}} query to both the streaming and batch layers via insertion to HBase.
         Utils.putKMeansQuery(kQuery);
