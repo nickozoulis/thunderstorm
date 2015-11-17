@@ -1,4 +1,4 @@
-package fusion.clustering;
+package clustering;
 
 import java.util.Set;
 

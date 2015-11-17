@@ -1,7 +1,8 @@
 package hbase;
 
 import com.google.protobuf.ServiceException;
-import fusion.clustering.KMeansQuery;
+import clustering.KMeansQuery;
+import clustering.QueryType;
 import net.sf.javaml.core.Dataset;
 import net.sf.javaml.core.DefaultDataset;
 import net.sf.javaml.core.DenseInstance;
@@ -459,15 +460,16 @@ public class Utils {
             p1.add(Bytes.toBytes(Cons.cfQueries),
                     Bytes.toBytes(Cons.clusters), Bytes.toBytes(query.getK()));
 
-            //FIXME: Make it work for more than one filter
-            if (query.getFilters().size() == 1) {
+            if (query.getQueryType() == QueryType.CONSTRAINED_KMEANS) {
+                //FIXME: Make it work for more than one filter
+                if (query.getFilters().size() == 1) {
+                    String filter = "";
+                    for (String s : query.getFilters())
+                        filter += s;
 
-                String filter = "";
-                for (String s : query.getFilters())
-                    filter += s;
-
-                p1.add(Bytes.toBytes(Cons.cfQueries),
-                        Bytes.toBytes(Cons.filter), Bytes.toBytes(filter));
+                    p1.add(Bytes.toBytes(Cons.cfQueries),
+                            Bytes.toBytes(Cons.filter), Bytes.toBytes(filter));
+                }
             }
 
             hTable.put(p1);
@@ -481,4 +483,5 @@ public class Utils {
             e.printStackTrace();
         }
     }
+
 }

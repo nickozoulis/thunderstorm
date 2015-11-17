@@ -1,4 +1,4 @@
-package fusion.clustering;
+package clustering;
 
 import net.sf.javaml.clustering.Clusterer;
 import net.sf.javaml.clustering.KMeans;

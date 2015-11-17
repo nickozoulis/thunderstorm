@@ -1,11 +1,11 @@
 package shell;
 
-import fusion.clustering.KMeansQuery;
-import fusion.clustering.LocalKMeans;
+import clustering.KMeansQuery;
+import clustering.LocalKMeans;
 import hbase.Cons;
+import hbase.Utils;
 import jline.TerminalFactory;
 import jline.console.ConsoleReader;
-import hbase.Utils;
 import net.sf.javaml.core.Dataset;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -338,12 +338,12 @@ public class Shell {
 
         // While these layers are computing, check whether there is a view for k'-means
         // (e.g., k'=10,000) for the same set of constraints
-        KMeansQuery kQuery = new KMeansQuery(10000, query.getFilters()); //TODO: move k' to Cons
+        KMeansQuery kQuery = new KMeansQuery(10000, query.getFilters()); //FIXME: move k' to Cons
         r = Utils.checkStreamViews(kQuery);
 
         // If yes, then compute a Local k-out-of-k'-means clustering and return that to the user
         if (r != null)
-            return new LocalKMeans(kQuery, Utils.loadClusters(r)).cluster();
+            return new LocalKMeans(query, Utils.loadClusters(r)).cluster();
 
         // If no, send a {k' , {constraints}} query to both the streaming and batch layers via insertion to HBase.
         Utils.putKMeansQuery(kQuery);
