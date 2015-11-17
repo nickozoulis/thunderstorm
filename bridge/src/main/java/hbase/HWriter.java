@@ -30,7 +30,7 @@ public class HWriter {
 
 	public void append(long id, Point[] result) throws IOException {
 
-		Put put = new Put(Bytes.toBytes(Cons.qid_ + id));
+		Put put = new Put(Bytes.toBytes(id));
 		int i = 0;
 		for (Point p : result) {
 			put.add(Bytes.toBytes(Cons.cfViews), Bytes.toBytes(Cons.clusters_ + i), Bytes.toBytes(p.toString()));
