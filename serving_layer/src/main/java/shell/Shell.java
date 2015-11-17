@@ -1,7 +1,7 @@
 package shell;
 
-import fusion.clustering.KMeansQuery;
-import fusion.clustering.LocalKMeans;
+import clustering.KMeansQuery;
+import clustering.LocalKMeans;
 import hbase.Cons;
 import hbase.Utils;
 import jline.TerminalFactory;
