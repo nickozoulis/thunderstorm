@@ -32,7 +32,7 @@ public class HReader {
 		Get g;
 		Result r;
 
-		g = new Get(Bytes.toBytes(Cons.qid_ + 0));
+		g = new Get(Bytes.toBytes(0l));
 		r = hTable.get(g);
 
 		byte[] value = r.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.max_qid));
@@ -43,7 +43,7 @@ public class HReader {
 		long maxID = getMaxID();
 
 		if (currentID <= maxID) {
-			Get g = new Get(Bytes.toBytes(Cons.qid_ + currentID));
+			Get g = new Get(Bytes.toBytes(currentID));
 			Result r = hTable.get(g);
 
 			byte[] valueClusters = r.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.clusters));
