@@ -15,7 +15,6 @@ import backtype.storm.tuple.Values;
 import filtering.DataFilter;
 import hbase.Cons;
 import hbase.HReader;
-import hbase.KMeans;
 
 public class CommandsSpout extends BaseRichSpout {
 
@@ -35,7 +34,7 @@ public class CommandsSpout extends BaseRichSpout {
 					k.add(f);
 				}
 
-				System.out.println("NEW KMeans " + km.k);
+				System.out.println("NEW KMeans " + km.getId());
 				collector.emit("commands", new Values("kmeans", k));
 
 				collector.emit("commands", new Values("run", null));
