@@ -11,6 +11,16 @@
 
     <artifactId>bridge</artifactId>
 
+    <repositories>
+        <repository>
+            <!-- This is a random project on sourceforge I found that happens
+            to have the Java-ML jars in a maven-friendly format. -->
+            <id>spantus</id>
+            <name>spantus sourceforge</name>
+            <url>http://spantus.sourceforge.net/maven/global/</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.hbase</groupId>
