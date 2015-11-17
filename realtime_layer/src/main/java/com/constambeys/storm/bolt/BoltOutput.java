@@ -3,14 +3,6 @@ package com.constambeys.storm.bolt;
 import java.io.IOException;
 import java.util.Map;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.HBaseConfiguration;
-import org.apache.hadoop.hbase.client.HConnection;
-import org.apache.hadoop.hbase.client.HConnectionManager;
-import org.apache.hadoop.hbase.client.HTableInterface;
-import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.util.Bytes;
-
 import com.constambeys.storm.KMeansOnline;
 
 import backtype.storm.task.OutputCollector;
@@ -20,14 +12,14 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Tuple;
 import filtering.Point;
 import hbase.Cons;
+import hbase.HWriter;
 
 public class BoltOutput implements IRichBolt {
 
 	private int id;
 	private String name;
-	private HConnection connection;
-	private HTableInterface hTable;
 	private OutputCollector collector;
+	private HWriter writer;
 
 	@Override
 	public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
@@ -35,12 +27,8 @@ public class BoltOutput implements IRichBolt {
 		this.name = context.getThisComponentId();
 		this.id = context.getThisTaskId();
 
-		Configuration config = HBaseConfiguration.create();
-		config.set("hbase.zookeeper.quorum", Cons.hbase_IP_address);
-		config.set("hbase.zookeeper.property.clientPort", Cons.hbase_port);
 		try {
-			connection = HConnectionManager.createConnection(config);
-			hTable = connection.getTable(Cons.stream_views);
+			writer = new HWriter(Cons.stream_views);
 		} catch (IOException e) {
 			System.err.println("CommandsSpout: " + e.getMessage());
 		}
@@ -62,16 +50,7 @@ public class BoltOutput implements IRichBolt {
 				// System.out.println(p.print());
 				// }
 
-				Put put = new Put(Bytes.toBytes(Cons.qid_ + k.id));
-				int i = 0;
-				for (Point p : result) {
-					put.add(Bytes.toBytes(Cons.cfViews), Bytes.toBytes(Cons.clusters_ + i),
-							Bytes.toBytes(p.toString()));
-					i++;
-				}
-
-				hTable.put(put);
-
+				writer.append(k.id, result);
 			}
 		} catch (Exception e) {
 			System.err.println("BoltOutput: " + e.getMessage());
