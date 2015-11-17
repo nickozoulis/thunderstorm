@@ -15,6 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by nickozoulis on 20/10/2015.
@@ -25,7 +27,7 @@ public class Utils {
     private static Configuration config;
 
     public static long getMaxQueryID(HTableInterface hTable) throws IOException {
-        Get g = new Get(Bytes.toBytes(Cons.qid_0));
+        Get g = new Get(Bytes.toBytes(0l));
         Result result = hTable.get(g);
         byte[] value = result.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.max_qid));
         return Bytes.toLong(value);
@@ -90,7 +92,7 @@ public class Utils {
                     just to hold and initialize max query counter to zero.
                 */
                 HTable hTable = new HTable(config, Cons.queries);
-                Put p = new Put(Bytes.toBytes(Cons.qid_0));
+                Put p = new Put(Bytes.toBytes(0l));
                 p.add(Bytes.toBytes(Cons.cfQueries),
                         Bytes.toBytes(Cons.max_qid), Bytes.toBytes(0l)); // Zero as Long
                 hTable.put(p);
@@ -198,7 +200,7 @@ public class Utils {
             byte[] valueClusters = result.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.clusters));
             byte[] valueFilter = result.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.filter));
 
-            String row = " [row:" + Bytes.toString(result.getRow()) + "]";
+            String row = " [row:" + Bytes.toLong(result.getRow()) + "]";
 
 
             if (option == 0) {
@@ -232,15 +234,15 @@ public class Utils {
 
     }
 
-    public static Result getRowFromBatchView(String qid) {
+    public static Result getRowFromBatchViews(long qid) {
         return getRowFromHTable(Cons.batch_views, qid);
     }
 
-    public static Result getRowFromStreamView(String qid) {
+    public static Result getRowFromStreamViews(long qid) {
         return getRowFromHTable(Cons.stream_views, qid);
     }
 
-    private static Result getRowFromHTable(String tableName, String qid) {
+    private static Result getRowFromHTable(String tableName, long qid) {
         // An empty result.
         Result result = new Result();
 
@@ -248,7 +250,7 @@ public class Utils {
             HConnection connection = HConnectionManager.createConnection(config);
             HTableInterface hTable = connection.getTable(tableName);
 
-            Get g = new Get(Bytes.toBytes(Cons.qid_ + qid));
+            Get g = new Get(Bytes.toBytes(qid));
             result = hTable.get(g);
 
             hTable.close();
@@ -260,20 +262,20 @@ public class Utils {
         return result;
     }
 
-    public static void putStreamView(int qid, String view) {
+    public static void putStreamView(long qid, String view) {
         putView(Cons.stream_views, qid, view);
     }
 
-    public static void putBatchView(int qid, String view) {
+    public static void putBatchView(long qid, String view) {
         putView(Cons.batch_views, qid, view);
     }
 
-    private static void putView(String tableName, int qid, String view) {
+    private static void putView(String tableName, long qid, String view) {
         try {
             HConnection connection = HConnectionManager.createConnection(config);
             HTableInterface hTable = connection.getTable(tableName);
 
-            Put p = new Put(Bytes.toBytes(Cons.qid_ + qid));
+            Put p = new Put(Bytes.toBytes(qid));
             p.add(Bytes.toBytes(Cons.cfViews),
                     Bytes.toBytes(Cons.clusters),
                     Bytes.toBytes(view));
@@ -288,11 +290,11 @@ public class Utils {
         }
     }
 
-    public static Result pollStreamViewForResult(String qid) {
+    public static Result pollStreamViewForResult(long qid) {
         return pollViewForResult(Cons.stream_views, qid);
     }
 
-    private static Result pollViewForResult(String tableName, String qid) {
+    private static Result pollViewForResult(String tableName, long qid) {
         Result result;
 
         while ((result = getRowFromHTable(tableName, qid)) == null) {
@@ -378,20 +380,22 @@ public class Utils {
     /**
      * Enqueues this KMeans query in an HBase table, where all queries are being stored with unique ID.
      * @param query
+     * @return The row key of this query.
      */
-    public static void putKMeansQuery(KMeansQuery query) {
+    public static long putKMeansQuery(KMeansQuery query) {
+        long max_quid = -1;
         try {
             HConnection connection = HConnectionManager.createConnection(config);
             HTableInterface hTable = connection.getTable(Cons.queries);
 
             // First get max query counter, so as to know how to format the new query key.
-            long max_quid = getMaxQueryID(hTable);
+            max_quid = getMaxQueryID(hTable);
 
             // Use incremented max query counter. A prePut coprocessor will perform an Increment.
             max_quid++;
 
             // Format the put command
-            Put p1 = new Put(Bytes.toBytes(Cons.qid_ + (int)max_quid));
+            Put p1 = new Put(Bytes.toBytes(max_quid));
             p1.add(Bytes.toBytes(Cons.cfQueries),
                     Bytes.toBytes(Cons.clusters), Bytes.toBytes(query.getK()));
 
@@ -411,17 +415,51 @@ public class Utils {
             System.out.println("Inserting query with id: " + max_quid);
             System.out.println("Query: " + query.toString());
 
+            //TODO: Build a secondary index: each row the numOfClusters, each column the rowkey of the actual queries table
+
             hTable.close();
             connection.close();
             System.out.println("Table closed");
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        return max_quid;
     }
 
-    public static Result checkStreamViews(KMeansQuery query) {
+    //TODO: Use the secondary index
+    public static long getQueryIDIfExists(KMeansQuery query) {
+        long rowKey = -1;
 
+        try {
+            HConnection connection = HConnectionManager.createConnection(config);
 
+            // First scan queries table to find the query ID.
+            HTableInterface hTable = connection.getTable(Cons.queries);
+            Scan scan = new Scan();
 
+            ResultScanner rs = hTable.getScanner(scan);
+
+            for (Result result : rs) {
+                byte[] valueClusters = result.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.clusters));
+                byte[] valueFilter = result.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.filter));
+
+                int clusters = Integer.parseInt(Bytes.toString(valueClusters));
+                String filter = Bytes.toString(valueFilter);
+                Set set = new HashSet<>();
+                set.add(filter);
+                KMeansQuery tempQuery = new KMeansQuery(clusters, set);
+
+                if (query.equals(tempQuery)) {
+                    rowKey = Bytes.toLong(result.getRow());
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return rowKey;
     }
+
 }

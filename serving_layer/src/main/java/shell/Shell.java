@@ -95,8 +95,8 @@ public class Shell {
      * @param qid
      */
     private void getResultsFromViews(String qid) {
-        Result batchClusters = Utils.getRowFromBatchView(qid);
-        Result streamClusters = Utils.pollStreamViewForResult(qid);
+        Result batchClusters = Utils.getRowFromBatchView(Long.parseLong(qid));
+        Result streamClusters = Utils.pollStreamViewForResult(Long.parseLong(qid));
 
         //FIXME: For the time being just print out both results, if available.
         printTemp(batchClusters, streamClusters);
@@ -141,6 +141,11 @@ public class Shell {
 
             k++;
         }
+    }
+
+    private void printResultDataset(Dataset[] datasets) {
+        for (Dataset d : datasets)
+            System.out.println(d.instance(0));
     }
 
     private void clearScreen() {
@@ -216,19 +221,6 @@ public class Shell {
         }
     }
 
-    @Deprecated
-    private void parseKMeanss(String line, String[] splits) {
-        if (splits.length == 2) { // Plain KMeans
-            Utils.putQueryKMeans(splits[1]);
-//            getResultsFromViews(splits[1]);
-        } else if (splits.length > 2) { // Constrained KMeans
-            parseConstraints(line);
-//            getResultsFromViews(splits[1]);
-        } else {
-            usage();
-        }
-    }
-
     private void parseKMeans(String line, String[] splits) {
         KMeansQuery query = null;
 
@@ -242,8 +234,7 @@ public class Shell {
         }
 
         //FIXME
-        for (Dataset d: KMeans(query))
-            System.out.println(d.instance(0));
+        KMeans(query);
     }
 
     /**
@@ -307,8 +298,7 @@ public class Shell {
         if (m.find()) {
             numOfClusters = m.group(2);
 
-            Utils.putQueryKMeansConstrained(numOfClusters, constraintExpr);
-            Set set = new HashSet<String>();
+            Set set = new HashSet<>();
             set.add(constraintExpr);
 
             return new KMeansQuery(Integer.parseInt(numOfClusters), set);
@@ -323,36 +313,48 @@ public class Shell {
      * Performs the whole Lambda-KMeans procedure.
      * @param query
      */
-    private Dataset[] KMeans(KMeansQuery query) {
-        Result r;
+    private void KMeans(KMeansQuery query) {
+        Result r = null;
 
-        // Check stream views if contain this query.
-        //TODO
-        r = Utils.checkStreamViews(query);
-        // If yes, return it to the user.
-        if (r != null)
-            return Utils.resultToDataset(r);
+        // Check if query exists in Queries table.
+        long queryRowKey = Utils.getQueryIDIfExists(query);
 
-        // If not, query is sent to both batch and stream layers via insertion to HBase.
-        Utils.putKMeansQuery(query);
+        // If yes
+        if (queryRowKey != -1) {
+            // Check stream views if contain results for this query.
+            r = Utils.getRowFromStreamViews(queryRowKey);
 
-        // While these layers are computing, check whether there is a view for k'-means
-        // (e.g., k'=10,000) for the same set of constraints
-        KMeansQuery kQuery = new KMeansQuery(10000, query.getFilters()); //FIXME: move k' to Cons
-        r = Utils.checkStreamViews(kQuery);
+            // If yes, return it to the user.
+            if (r != null) {
+                printResultView(r);
+                return;
+            }
 
-        // If yes, then compute a Local k-out-of-k'-means clustering and return that to the user
-        if (r != null)
-            return new LocalKMeans(query, Utils.loadClusters(r)).cluster();
+            // While these layers are computing, check whether there is a view for k'-means
+            // (e.g., k'=10,000) for the same set of constraints
+            KMeansQuery kQuery = new KMeansQuery(10000, query.getFilters()); //FIXME: move k' to Cons
+            long kQueryRowKey = Utils.getQueryIDIfExists(kQuery);
+            r = Utils.getRowFromStreamViews(kQueryRowKey);
 
-        // If no, send a {k' , {constraints}} query to both the streaming and batch layers via insertion to HBase.
-        Utils.putKMeansQuery(kQuery);
+            // If yes, then compute a Local k-out-of-k'-means clustering and return that to the user
+            if (r != null) {
+                printResultDataset(new LocalKMeans(query, Utils.loadClusters(r)).cluster());
+                return;
+            }
 
-        // While waiting, retrieve the k'-means view for the whole dataset (i.e., no constraints),
-        // and compute and return a k-out-of-k'-means result to the user.
-        //TODO
+            // If no, send a {k' , {constraints}} query to both the streaming and batch layers via insertion to HBase.
+            long newKey = Utils.putKMeansQuery(kQuery);
+            // And start polling
+            if (newKey != -1)
+                r = Utils.pollStreamViewForResult(newKey);
 
-        return null;
+        } else { // If no, put it in the HBase table and start polling.
+            long newKey = Utils.putKMeansQuery(query);
+            if (newKey != -1)
+                r = Utils.pollStreamViewForResult(newKey);
+        }
+
+        printResultView(r);
     }
 
 }
