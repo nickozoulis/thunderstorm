@@ -1,8 +1,8 @@
 package hbase;
 
 import com.google.protobuf.ServiceException;
-import fusion.clustering.KMeansQuery;
-import fusion.clustering.QueryType;
+import clustering.KMeansQuery;
+import clustering.QueryType;
 import net.sf.javaml.core.Dataset;
 import net.sf.javaml.core.DefaultDataset;
 import net.sf.javaml.core.DenseInstance;
@@ -483,4 +483,5 @@ public class Utils {
             e.printStackTrace();
         }
     }
+
 }
