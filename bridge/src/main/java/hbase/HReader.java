@@ -50,7 +50,7 @@ public class HReader {
 			byte[] valueClusters = r.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.clusters));
 			byte[] valueFilter = r.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.filter));
 
-			KMeansQuery km = new KMeansQuery(currentID, Integer.parseInt(Bytes.toString(valueClusters)));
+			KMeansQuery km = new KMeansQuery(currentID, Bytes.toInt(valueClusters));
 
 			if (valueFilter != null) {
 				String filter = Bytes.toString(valueFilter);
