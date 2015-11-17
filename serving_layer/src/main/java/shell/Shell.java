@@ -234,7 +234,7 @@ public class Shell {
         }
 
         //FIXME
-        KMeans(query);
+        if (query != null) KMeans(query);
     }
 
     /**
@@ -245,33 +245,6 @@ public class Shell {
             console.println("Example input: 'kmeans 4' or 'kmeans 4 ; x0+x1<6'");
         } catch (IOException e) {
             e.printStackTrace();
-        }
-    }
-
-    @Deprecated
-    private void parseConstraintss(String line) {
-        String constraintExpr = "", clustersExpr = "", operator = "", numOfClusters = "";
-        String pattern1 = "(.*);(.*)",
-                pattern2 = "kmeans(\\s*)(\\d+)(\\s*)";
-
-        // Get constraint and clusters expressions
-        Pattern r = Pattern.compile(pattern1);
-        Matcher m = r.matcher(line);
-        if (m.find()) {
-            clustersExpr = m.group(1);
-            constraintExpr = m.group(2);
-        } else {
-            usage();
-            return;
-        }
-
-        // Get numOfClusters
-        r = Pattern.compile(pattern2);
-        m = r.matcher(clustersExpr);
-        if (m.find()) {
-            numOfClusters = m.group(2);
-
-            Utils.putQueryKMeansConstrained(numOfClusters, constraintExpr);
         }
     }
 
@@ -289,7 +262,7 @@ public class Shell {
             constraintExpr = m.group(2);
         } else {
             usage();
-            return;
+            return null;
         }
 
         // Get numOfClusters
@@ -303,6 +276,8 @@ public class Shell {
 
             return new KMeansQuery(Integer.parseInt(numOfClusters), set);
         }
+
+        return null;
     }
 
     public static void main(String[] args) {
