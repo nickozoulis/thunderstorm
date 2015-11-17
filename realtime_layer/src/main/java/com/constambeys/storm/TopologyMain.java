@@ -16,11 +16,12 @@ public class TopologyMain {
 
 	public static void main(String[] args) throws InterruptedException {
 		try {
+			//java -cp realtime_layer-1.0-SNAPSHOT-jar-with-dependencies.jar com.constambeys.storm.TopologyMain
 			TopologyBuilder builder = new TopologyBuilder();
 			builder.setSpout("signals-spout", new SignalsSpout());
 			builder.setSpout("commands-spout", new CommandsSpout());
 
-			BoltDeclarer reader = builder.setBolt("points-reader", new PointsReader("Input.txt"));
+			BoltDeclarer reader = builder.setBolt("points-reader", new PointsReader("/input.txt"));
 			reader.allGrouping("commands-spout", "commands");
 
 			BoltDeclarer processor = builder.setBolt("point-processor", new PointProcessor());
