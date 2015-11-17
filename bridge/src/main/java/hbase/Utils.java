@@ -24,71 +24,6 @@ public class Utils {
     static final Logger logger = LoggerFactory.getLogger(Utils.class);
     private static Configuration config;
 
-    /**
-     * Enqueues this KMeans query in an HBase table, where all queries are being stored with unique ID.
-     *
-     * @param numOfClusters
-     */
-    public static void putQueryKMeans(String numOfClusters) {
-        try {
-            HConnection connection = HConnectionManager.createConnection(config);
-            HTableInterface hTable = connection.getTable(Cons.queries);
-            
-            // First get max query counter, so as to know how to format the new query key.
-            long max_quid = getMaxQueryID(hTable);
-
-            // Use incremented max query counter. A prePut coprocessor will perform an Increment.
-            max_quid++;
-
-            // Format the put command
-            Put p1 = new Put(Bytes.toBytes(Cons.qid_ + (int)max_quid));
-            p1.add(Bytes.toBytes(Cons.cfQueries),
-                    Bytes.toBytes(Cons.clusters), Bytes.toBytes(numOfClusters));
-            hTable.put(p1);
-            System.out.println("Inserting query with id: " + max_quid);
-
-            hTable.close();
-            connection.close();
-            System.out.println("Table closed");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Enqueues this constrained KMeans query in an HBase table, where all queries are being stored with unique ID.
-     *
-     * @param numOfClusters
-     */
-    public static void putQueryKMeansConstrained(String numOfClusters, String filter) {
-        try {
-            HConnection connection = HConnectionManager.createConnection(config);
-            HTableInterface hTable = connection.getTable(Cons.queries);
-
-            // First get max query counter, so as to know how to format the new query key.
-            long max_quid = getMaxQueryID(hTable);
-
-            // Use incremented max query counter. A prePut coprocessor will perform an Increment.
-            max_quid++;
-
-            // Format the put command
-            Put p1 = new Put(Bytes.toBytes(Cons.qid_ + (int)max_quid));
-            p1.add(Bytes.toBytes(Cons.cfQueries),
-                    Bytes.toBytes(Cons.clusters), Bytes.toBytes(numOfClusters));
-            p1.add(Bytes.toBytes(Cons.cfQueries),
-                    Bytes.toBytes(Cons.filter), Bytes.toBytes(filter));
-            hTable.put(p1);
-            System.out.println("Inserting query with id: " + max_quid);
-            System.out.println("Filter: " + filter);
-
-            hTable.close();
-            connection.close();
-            System.out.println("Table closed");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     public static long getMaxQueryID(HTableInterface hTable) throws IOException {
         Get g = new Get(Bytes.toBytes(Cons.qid_0));
         Result result = hTable.get(g);
@@ -484,4 +419,9 @@ public class Utils {
         }
     }
 
+    public static Result checkStreamViews(KMeansQuery query) {
+
+
+
+    }
 }
