@@ -328,7 +328,7 @@ public class Utils {
         return ds;
     }
 
-    public static Dataset loadClusters(String tableName, String qid) {
+    public static Dataset loadClusters(String tableName, long qid) {
         return loadClusters(getRowFromHTable(tableName, qid));
     }
 

@@ -95,7 +95,7 @@ public class Shell {
      * @param qid
      */
     private void getResultsFromViews(String qid) {
-        Result batchClusters = Utils.getRowFromBatchView(Long.parseLong(qid));
+        Result batchClusters = Utils.getRowFromBatchViews(Long.parseLong(qid));
         Result streamClusters = Utils.pollStreamViewForResult(Long.parseLong(qid));
 
         //FIXME: For the time being just print out both results, if available.
