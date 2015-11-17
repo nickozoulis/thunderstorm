@@ -14,8 +14,18 @@ public class KMeansQuery extends Query {
         setK(k);
     }
 
+    public KMeansQuery(long id, int k) {
+        super(QueryType.KMEANS, id);
+        setK(k);
+    }
+
     public KMeansQuery(int k, Set filters) {
         super(QueryType.CONSTRAINED_KMEANS, filters);
+        setK(k);
+    }
+
+    public KMeansQuery(long id, int k, Set filters) {
+        super(QueryType.CONSTRAINED_KMEANS, id, filters);
         setK(k);
     }
 

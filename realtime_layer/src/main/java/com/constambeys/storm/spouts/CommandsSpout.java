@@ -3,6 +3,7 @@ package com.constambeys.storm.spouts;
 import java.io.IOException;
 import java.util.Map;
 
+import clustering.KMeansQuery;
 import com.constambeys.storm.KMeansOnline;
 
 import backtype.storm.spout.SpoutOutputCollector;
@@ -24,12 +25,12 @@ public class CommandsSpout extends BaseRichSpout {
 	public void nextTuple() {
 		try {
 
-			KMeans km;
+			KMeansQuery km;
 			while ((km = reader.next()) != null) {
 
-				KMeansOnline k = new KMeansOnline((int) km.id, km.k);
+				KMeansOnline k = new KMeansOnline((int) km.getId(), km.getK());
 
-				for (String filter : km.filters) {
+				for (String filter : km.getFilters()) {
 					DataFilter f = new DataFilter(filter);
 					k.add(f);
 				}

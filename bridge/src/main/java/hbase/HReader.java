@@ -2,6 +2,7 @@ package hbase;
 
 import java.io.IOException;
 
+import clustering.KMeansQuery;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.client.Get;
@@ -39,7 +40,7 @@ public class HReader {
 		return Bytes.toLong(value);
 	}
 
-	public KMeans next() throws IOException {
+	public KMeansQuery next() throws IOException {
 		long maxID = getMaxID();
 
 		if (currentID <= maxID) {
@@ -49,11 +50,11 @@ public class HReader {
 			byte[] valueClusters = r.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.clusters));
 			byte[] valueFilter = r.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.filter));
 
-			KMeans km = new KMeans(currentID, Integer.parseInt(Bytes.toString(valueClusters)));
+			KMeansQuery km = new KMeansQuery(currentID, Integer.parseInt(Bytes.toString(valueClusters)));
 
 			if (valueFilter != null) {
 				String filter = Bytes.toString(valueFilter);
-				km.addFilter(filter);
+				km.getFilters().add(filter);
 			}
 
 			currentID++;
