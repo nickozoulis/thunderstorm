@@ -6,6 +6,9 @@ import java.util.Arrays;
 
 import javax.script.ScriptException;
 
+import filtering.DataFilter;
+import filtering.Point;
+
 public class KMeansOnline implements Serializable {
 
 	final int CONSTANT = 1;

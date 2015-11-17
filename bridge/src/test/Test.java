@@ -1,5 +1,3 @@
-package com.constambeys.storm;
-
 public class Test {
 	public static void main(String[] args) throws Exception {
 		DataFilter f = new DataFilter("x0+x1<2");

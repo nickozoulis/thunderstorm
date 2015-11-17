@@ -12,8 +12,6 @@ import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
 
-import com.constambeys.storm.Cons;
-import com.constambeys.storm.DataFilter;
 import com.constambeys.storm.KMeansOnline;
 
 import backtype.storm.spout.SpoutOutputCollector;
@@ -22,6 +20,8 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichSpout;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
+import filtering.DataFilter;
+import hbase.Cons;
 
 public class CommandsSpout extends BaseRichSpout {
 

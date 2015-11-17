@@ -1,4 +1,4 @@
-package com.constambeys.storm;
+package filtering;
 
 import java.io.Serializable;
 
@@ -16,6 +16,10 @@ public class Point implements Serializable {
 		for (int i = 0; i < values.length; i++) {
 			components[i] = Double.parseDouble(values[i]);
 		}
+	}
+
+	public Point(double[] point) {
+		components = point;
 	}
 
 	public void add(Point x) {

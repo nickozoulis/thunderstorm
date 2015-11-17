@@ -1,4 +1,4 @@
-package com.constambeys.storm;
+package filtering;
 
 import java.io.Serializable;
 import java.util.regex.Matcher;
