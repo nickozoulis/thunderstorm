@@ -12,6 +12,12 @@ public class Cons {
 	// 100.74.13.25 debian
 	// # ::1 localhost
 
+	// HBASE
+	// usr/lib/hbase/hbase-0.98.15-hadoop2/bin
+	// .hbase shell
+	// list
+	// scan 'table name'
+
 	public static final String hbase_IP_address = "127.0.0.1";
 	public static final String hbase_port = "2181";
 

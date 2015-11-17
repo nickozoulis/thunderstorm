@@ -39,8 +39,10 @@ public class CommandsSpout extends BaseRichSpout {
 			r = hTable.get(g);
 
 			byte[] value = r.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.max_qid));
-			int maxID = (int)Bytes.toLong(value);
-
+			int maxID = (int) Bytes.toLong(value);
+			
+			//System.out.println("MAX ID " + maxID);
+			
 			while (currentID <= maxID) {
 
 				g = new Get(Bytes.toBytes(Cons.qid_ + currentID));
@@ -57,6 +59,7 @@ public class CommandsSpout extends BaseRichSpout {
 					k.add(f);
 				}
 
+				System.out.println("NEW KMeans " + valueClusters);
 				collector.emit("commands", new Values("kmeans", k));
 
 				currentID++;

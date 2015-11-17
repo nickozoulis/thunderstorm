@@ -1,9 +1,9 @@
 package com.constambeys.storm.bolt;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Map;
 
 import backtype.storm.task.OutputCollector;
@@ -45,21 +45,23 @@ public class PointsReader implements IRichBolt {
 					BufferedReader reader = null;
 					try {
 						// Open the reader
-						System.out.println("Opening file");
-						ClassLoader classLoader = getClass().getClassLoader();
-						File file = new File(classLoader.getResource(filename).getFile());
-						reader = new BufferedReader(new FileReader(file));
+						System.out.println("Opening file " + filename);
+
+						InputStream is = getClass().getResourceAsStream(filename);
+
+						reader = new BufferedReader(new InputStreamReader(is));
+
 						String str;
-						// Read all lines
 						while ((str = reader.readLine()) != null) {
-							/**
-							 * By each line emmit a new value with the line as a
-							 * their
-							 */
+
+							// By each line emmit a new value with the line as a their
 							this.collector.emit(new Values(str));
-							System.out.println(">>>>"+str);
 						}
+
+						System.out.println("Closing file " + filename);
 					} catch (Exception e) {
+						System.err.println("PointsReader: ");
+						e.printStackTrace();
 						throw new RuntimeException("Error reading tuple", e);
 					} finally {
 						completed = true;
@@ -67,8 +69,6 @@ public class PointsReader implements IRichBolt {
 							try {
 								reader.close();
 							} catch (IOException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
 							}
 						}
 					}
@@ -77,13 +77,19 @@ public class PointsReader implements IRichBolt {
 		}
 
 		/**
-		 * The nextuple it is called forever, so if we have been readed the file
-		 * we will wait and then return
+		 * The nextuple it is called forever, so if we have been readed the file we will wait and
+		 * then return
 		 */
 
-		try {
+		try
+
+		{
 			Thread.sleep(10000);
-		} catch (InterruptedException e) {
+		} catch (
+
+		InterruptedException e)
+
+		{
 			// Do nothing
 		}
 
