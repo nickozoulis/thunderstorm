@@ -297,7 +297,7 @@ public class Utils {
     private static Result pollViewForResult(String tableName, long qid) {
         Result result;
 
-        while ((result = getRowFromHTable(tableName, qid)) == null) {
+        while ((result = getRowFromHTable(tableName, qid)).isEmpty()) {
             try {
                 Thread.sleep(Cons.delay);
             } catch (InterruptedException e) {
@@ -388,11 +388,11 @@ public class Utils {
             HConnection connection = HConnectionManager.createConnection(config);
             HTableInterface hTable = connection.getTable(Cons.queries);
 
+            // Increment the query id counter.
+            hTable.incrementColumnValue(Bytes.toBytes(0l), Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.max_qid), 1);
+
             // First get max query counter, so as to know how to format the new query key.
             max_quid = getMaxQueryID(hTable);
-
-            // Use incremented max query counter. A prePut coprocessor will perform an Increment.
-            max_quid++;
 
             // Format the put command
             Put p1 = new Put(Bytes.toBytes(max_quid));
@@ -444,15 +444,25 @@ public class Utils {
                 byte[] valueClusters = result.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.clusters));
                 byte[] valueFilter = result.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.filter));
 
-                int clusters = Integer.parseInt(Bytes.toString(valueClusters));
-                String filter = Bytes.toString(valueFilter);
-                Set set = new HashSet<>();
-                set.add(filter);
-                KMeansQuery tempQuery = new KMeansQuery(clusters, set);
+                int clusters;
+                KMeansQuery tempQuery;
+                if (valueClusters != null) {
+                    clusters = Bytes.toInt(valueClusters);
 
-                if (query.equals(tempQuery)) {
-                    rowKey = Bytes.toLong(result.getRow());
-                    break;
+                    String filter;
+                    Set set = new HashSet<>();
+                    if (valueFilter != null) {
+                        filter = Bytes.toString(valueFilter);
+                        set.add(filter);
+                        tempQuery = new KMeansQuery(clusters, set);
+                    } else {
+                        tempQuery = new KMeansQuery(clusters);
+                    }
+
+                    if (query.equals(tempQuery)) {
+                        rowKey = Bytes.toLong(result.getRow());
+                        break;
+                    }
                 }
             }
         } catch (IOException e) {

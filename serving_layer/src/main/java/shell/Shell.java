@@ -222,7 +222,7 @@ public class Shell {
     }
 
     private void parseKMeans(String line, String[] splits) {
-        KMeansQuery query = null;
+        KMeansQuery query;
 
         if (splits.length == 2) { // Plain KMeans
             query = new KMeansQuery(Integer.parseInt(splits[1]));
@@ -300,29 +300,31 @@ public class Shell {
             r = Utils.getRowFromStreamViews(queryRowKey);
 
             // If yes, return it to the user.
-            if (r != null) {
+            if (!r.isEmpty()) {
                 printResultView(r);
                 return;
             }
 
             // While these layers are computing, check whether there is a view for k'-means
             // (e.g., k'=10,000) for the same set of constraints
-            KMeansQuery kQuery = new KMeansQuery(10000, query.getFilters()); //FIXME: move k' to Cons
+            KMeansQuery kQuery = new KMeansQuery(Cons.K, query.getFilters());
             long kQueryRowKey = Utils.getQueryIDIfExists(kQuery);
-            r = Utils.getRowFromStreamViews(kQueryRowKey);
 
-            // If yes, then compute a Local k-out-of-k'-means clustering and return that to the user
-            if (r != null) {
-                printResultDataset(new LocalKMeans(query, Utils.loadClusters(r)).cluster());
-                return;
+            if (kQueryRowKey != -1) {
+                r = Utils.getRowFromStreamViews(kQueryRowKey);
+
+                // If yes, then compute a Local k-out-of-k'-means clustering and return that to the user
+                if (!r.isEmpty()) {
+                    printResultDataset(new LocalKMeans(query, Utils.loadClusters(r)).cluster());
+                    return;
+                }
+            } else {
+                // If no, send a {k' , {constraints}} query to both the streaming and batch layers via insertion to HBase.
+                long newKey = Utils.putKMeansQuery(kQuery);
+                // And start polling
+                if (newKey != -1)
+                    r = Utils.pollStreamViewForResult(newKey);
             }
-
-            // If no, send a {k' , {constraints}} query to both the streaming and batch layers via insertion to HBase.
-            long newKey = Utils.putKMeansQuery(kQuery);
-            // And start polling
-            if (newKey != -1)
-                r = Utils.pollStreamViewForResult(newKey);
-
         } else { // If no, put it in the HBase table and start polling.
             long newKey = Utils.putKMeansQuery(query);
             if (newKey != -1)
