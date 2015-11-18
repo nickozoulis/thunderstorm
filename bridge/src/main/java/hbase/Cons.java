@@ -20,7 +20,7 @@ public class Cons {
     public static final String filter = "filter";
 
     public static final int delay = 3000; // Thread sleep delay in milliseconds
-    public static final int batchDelay = 60000; // Every hour
+    public static final int batchDelay = 360000; // Every hour
     public static final int K = 10000; // The fixed number of clusterHeads
     public static final String dataset = "/input.txt";
     public static final int iterations = 10;
