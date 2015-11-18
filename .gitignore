@@ -21,3 +21,6 @@ log/
 
 # Mac
 .DS_Store
+
+# Eclipse
+.classpath
