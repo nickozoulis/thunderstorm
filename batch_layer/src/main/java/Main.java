@@ -26,7 +26,7 @@ public class Main {
                 new SparkKMeans(kmQuery).run();
             }
 
-            Thread.sleep(Cons.delay);
+            Thread.sleep(Cons.batchDelay);
         }
     }
 
