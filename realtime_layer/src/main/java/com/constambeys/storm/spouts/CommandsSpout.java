@@ -36,11 +36,11 @@ public class CommandsSpout extends BaseRichSpout {
 
 				System.out.println("NEW KMeans " + km.getId());
 				collector.emit("commands", new Values("kmeans", k));
-
-				collector.emit("commands", new Values("run", null));
-
-				Thread.sleep(5000);
 			}
+
+
+			collector.emit("commands", new Values("run", null));
+			Thread.sleep(5000);
 		} catch (Exception e) {
 			System.err.println("CommandsSpout: " + e.getMessage());
 		}

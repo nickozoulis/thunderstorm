@@ -25,7 +25,19 @@ public class DataFilter implements Serializable {
 
 	public DataFilter(String filter) {
 		int index;
-		if ((index = filter.indexOf('>')) > 0) {
+		if ((index = filter.indexOf("<=")) > 0) {
+			this.expr1 = filter.substring(0, index);
+			this.expr2 = filter.substring(index + 2);
+			this.op = "<=";
+		} else if ((index = filter.indexOf(">=")) > 0) {
+			this.expr1 = filter.substring(0, index);
+			this.expr2 = filter.substring(index + 2);
+			this.op = ">=";
+		} else if ((index = filter.indexOf("==")) > 0) {
+			this.expr1 = filter.substring(0, index);
+			this.expr2 = filter.substring(index + 2);
+			this.op = "==";
+		} else if ((index = filter.indexOf('>')) > 0) {
 			this.expr1 = filter.substring(0, index);
 			this.expr2 = filter.substring(index + 1);
 			this.op = ">";
@@ -66,6 +78,21 @@ public class DataFilter implements Serializable {
 				return false;
 		} else if (op.equals(">")) {
 			if (a > b)
+				return true;
+			else
+				return false;
+		} else if (op.equals("<=")) {
+			if (a <= b)
+				return true;
+			else
+				return false;
+		} else if (op.equals(">=")) {
+			if (a >= b)
+				return true;
+			else
+				return false;
+		} else if (op.equals("==")) {
+			if (a == b)
 				return true;
 			else
 				return false;
