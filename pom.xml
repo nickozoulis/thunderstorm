@@ -15,7 +15,6 @@
         <module>realtime_layer</module>
         <module>serving_layer</module>
         <module>fusion</module>
-        <module>coprocessors</module>
         <module>bridge</module>
     </modules>
 
