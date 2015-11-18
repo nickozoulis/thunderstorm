@@ -61,8 +61,9 @@ public class HReader {
 
 			return km;
 		} else {
+			hTable.close();
+			connection.close();
 			return null;
 		}
-
 	}
 }

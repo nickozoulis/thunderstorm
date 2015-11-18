@@ -465,6 +465,9 @@ public class Utils {
                     }
                 }
             }
+
+            hTable.close();
+            connection.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
