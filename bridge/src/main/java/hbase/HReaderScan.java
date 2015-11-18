@@ -10,15 +10,18 @@ import org.apache.hadoop.hbase.client.HConnection;
 import org.apache.hadoop.hbase.client.HConnectionManager;
 import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.client.ResultScanner;
+import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.util.Bytes;
 
-public class HReader {
+public class HReaderScan {
 
 	private long currentID = 1;
 	private HConnection connection;
 	private HTableInterface hTable;
+	private ResultScanner rs;
 
-	public HReader(String tableName) throws IOException {
+	public HReaderScan(String tableName) throws IOException {
 		Configuration config = HBaseConfiguration.create();
 		config.set("hbase.zookeeper.quorum", Cons.hbase_IP_address);
 		config.set("hbase.zookeeper.property.clientPort", Cons.hbase_port);
@@ -26,6 +29,11 @@ public class HReader {
 		connection = HConnectionManager.createConnection(config);
 		hTable = connection.getTable(tableName);
 
+		rs = hTable.getScanner(new Scan(Bytes.toBytes(currentID), Bytes.toBytes(getMaxID())));
+	}
+
+	public void restart() {
+		currentID = 1;
 	}
 
 	private long getMaxID() throws IOException {
@@ -41,11 +49,11 @@ public class HReader {
 	}
 
 	public KMeansQuery next() throws IOException {
-		long maxID = getMaxID();
+		Result r = rs.next();
 
-		if (currentID <= maxID) {
+		if (r != null) {
 			Get g = new Get(Bytes.toBytes(currentID));
-			Result r = hTable.get(g);
+			r = hTable.get(g);
 
 			byte[] valueClusters = r.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.clusters));
 			byte[] valueFilter = r.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.filter));
@@ -61,7 +69,14 @@ public class HReader {
 
 			return km;
 		} else {
-			return null;
+			long maxID = getMaxID();
+
+			if (currentID <= maxID) {
+				rs = hTable.getScanner(new Scan(Bytes.toBytes(currentID), Bytes.toBytes(getMaxID())));
+				return next();
+			} else {
+				return null;
+			}
 		}
 	}
 }

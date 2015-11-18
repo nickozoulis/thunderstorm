@@ -15,11 +15,12 @@ import backtype.storm.tuple.Values;
 import filtering.DataFilter;
 import hbase.Cons;
 import hbase.HReader;
+import hbase.HReaderScan;
 
 public class CommandsSpout extends BaseRichSpout {
 
 	private SpoutOutputCollector collector;
-	private HReader reader;
+	private HReaderScan reader;
 
 	public void nextTuple() {
 		try {
@@ -49,7 +50,7 @@ public class CommandsSpout extends BaseRichSpout {
 	public void open(Map conf, TopologyContext context, SpoutOutputCollector collector) {
 		this.collector = collector;
 		try {
-			reader = new HReader(Cons.queries);
+			reader = new HReaderScan(Cons.queries);
 			System.out.println("HBASE CONNECTED");
 		} catch (IOException e) {
 			System.err.println("CommandsSpout: " + e.getMessage());

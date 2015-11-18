@@ -53,9 +53,6 @@ public class HWriter {
         }
 
         hTable.put(put);
-
-        hTable.close();
-        connection.close();
     }
 
 }
