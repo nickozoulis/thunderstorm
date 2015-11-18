@@ -1,6 +1,7 @@
 import clustering.KMeansQuery;
 import hbase.Cons;
-import hbase.HBReader;
+import hbase.HReaderScan;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,26 +10,29 @@ import org.slf4j.LoggerFactory;
  */
 public class Main {
 
-    static final Logger logger = LoggerFactory.getLogger(Main.class);
-    private static long currentID = 1;
+	static final Logger logger = LoggerFactory.getLogger(Main.class);
+	private static long currentID = 1;
 
-    public static void main(String[] args) throws InterruptedException {
+	public static void main(String[] args) throws InterruptedException {
+		try {
+			HReaderScan iter = new HReaderScan(Cons.queries);
 
-        HBReader iter;
+			for (;;) {
+				iter.restart();
 
-        for (;;) {
-            iter = new HBReader(currentID);
+				KMeansQuery kmQuery;
+				while ((kmQuery = iter.next()) != null) {
 
-            while (iter.hasNext()) {
-                KMeansQuery kmQuery = iter.next();
+					System.out.println("Starting spark kmeans for query: " + kmQuery);
 
-                System.out.println("Starting spark kmeans for query: " + kmQuery);
+					new SparkKMeans(kmQuery).run();
+				}
 
-                new SparkKMeans(kmQuery).run();
-            }
-
-            Thread.sleep(Cons.batchDelay);
-        }
-    }
+				Thread.sleep(Cons.batchDelay);
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
 
 }
