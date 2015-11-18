@@ -19,10 +19,11 @@ public class Main {
         for (;;) {
             iter = new HBReader(currentID);
 
-            KMeansQuery kmQuery = iter.next();
-
-            System.out.println("Starting spark kmeans for query: " + kmQuery);
             while (iter.hasNext()) {
+                KMeansQuery kmQuery = iter.next();
+
+                System.out.println("Starting spark kmeans for query: " + kmQuery);
+
                 new SparkKMeans(kmQuery).run();
             }
 
