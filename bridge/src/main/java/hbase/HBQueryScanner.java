@@ -75,19 +75,6 @@ public class HBQueryScanner implements Iterator<KMeansQuery> {
         } catch (IOException e) {e.printStackTrace();}
     }
 
-    public void restart(long currentID) {
-        ResultScanner rs;
-        try {
-            rs = hTable.getScanner(new Scan(Bytes.toBytes(currentID), Bytes.toBytes(maxID)));
-            iterator = rs.iterator();
-        } catch (IOException e) {e.printStackTrace();}
-    }
-
-    public void restart() {
-        currentID = 1;
-        restart(currentID);
-    }
-
     private long getMaxID() throws IOException {
         Get g;
         Result r;
