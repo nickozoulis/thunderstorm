@@ -52,8 +52,6 @@ public class HReaderScan {
 		Result r = rs.next();
 
 		if (r != null) {
-			Get g = new Get(Bytes.toBytes(currentID));
-			r = hTable.get(g);
 
 			byte[] valueClusters = r.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.clusters));
 			byte[] valueFilter = r.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.filter));
@@ -72,7 +70,7 @@ public class HReaderScan {
 			long maxID = getMaxID();
 
 			if (currentID <= maxID) {
-				rs = hTable.getScanner(new Scan(Bytes.toBytes(currentID), Bytes.toBytes(getMaxID())));
+				rs = hTable.getScanner(new Scan(Bytes.toBytes(currentID), Bytes.toBytes(maxID)));
 				return next();
 			} else {
 				return null;
