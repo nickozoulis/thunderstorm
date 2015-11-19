@@ -14,6 +14,8 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
@@ -123,6 +125,19 @@ public class Utils {
             } else {
                 System.out.println("Table already exists: " + tableDescriptor.getNameAsString());
             }
+
+
+            // Raw Data table
+            tableDescriptor = new HTableDescriptor(TableName.valueOf(Cons.raw_data));
+            tableDescriptor.addFamily(new HColumnDescriptor(Cons.cfAttributes));
+
+            if (!admin.tableExists(Cons.raw_data)) {
+                admin.createTable(tableDescriptor);
+                System.out.println("Table created: " + tableDescriptor.getNameAsString());
+            } else {
+                System.out.println("Table already exists: " + tableDescriptor.getNameAsString());
+            }
+
 
             // List all tables.
             HTableDescriptor[] tableDescriptors = admin.listTables();
@@ -473,6 +488,42 @@ public class Utils {
         }
 
         return rowKey;
+    }
+
+    public static void insertRawData(String[] split) {
+        String path = split[1];
+
+        try {
+            HConnection connection = HConnectionManager.createConnection(config);
+            HTableInterface hTable = connection.getTable(Cons.raw_data);
+
+            BufferedReader br = new BufferedReader(new FileReader(path));
+            String line;
+
+            while ((line = br.readLine()) != null) {
+                String[] splits = line.split("\\s+");
+                // Rowkey will be a long number representing the system time it was put in hbase.
+                Put p = new Put(Bytes.toBytes(System.currentTimeMillis()));
+
+                int k = 0;
+                double attr;
+                for (int i=11; i<=18; i++) {
+                    try {
+                        attr = Double.parseDouble(splits[i]);
+                        p.add(Bytes.toBytes(Cons.cfAttributes),
+                                Bytes.toBytes(k++), Bytes.toBytes(attr));
+                    } catch(NumberFormatException e) {e.printStackTrace();
+                    } catch(ArrayIndexOutOfBoundsException e) {e.printStackTrace();}
+                }
+
+                hTable.put(p);
+            }
+
+            hTable.close();
+            connection.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }
