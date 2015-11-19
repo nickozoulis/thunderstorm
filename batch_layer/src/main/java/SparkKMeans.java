@@ -28,11 +28,7 @@ public class SparkKMeans implements Runnable {
     private KMeansQuery kmQuery;
     private JavaRDD<Vector> points;
 
-    public SparkKMeans(KMeansQuery kmQuery) {
-        SparkConf sparkConf = new SparkConf();
-        sparkConf.setAppName("JavaKMeans");
-        sparkConf.setMaster("local");
-        JavaSparkContext sc = new JavaSparkContext(sparkConf);
+    public SparkKMeans(JavaSparkContext sc, KMeansQuery kmQuery) {
         JavaRDD<String> lines = sc.textFile(Cons.dataset);
         points = lines.map(new ParsePoint());
 

@@ -1,7 +1,9 @@
 import clustering.KMeansQuery;
 import hbase.Cons;
-import hbase.HReaderScan;
+import hbase.HBQueryScanner;
 
+import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,20 +16,25 @@ public class Main {
 	private static long currentID = 1;
 
 	public static void main(String[] args) throws InterruptedException {
+        SparkConf sparkConf = new SparkConf();
+        sparkConf.setAppName("JavaKMeans");
+        sparkConf.setMaster("local");
+        JavaSparkContext sc = new JavaSparkContext(sparkConf);
+
 		try {
-			HReaderScan iter = new HReaderScan(Cons.queries);
+			HBQueryScanner iterator;
 
 			for (;;) {
-				iter.restart();
+                iterator = new HBQueryScanner(currentID);
 
-				KMeansQuery kmQuery;
-				while ((kmQuery = iter.next()) != null) {
+				while (iterator.hasNext()) {
+                    KMeansQuery kmQuery = iterator.next();
 
 					System.out.println("Starting spark kmeans for query: " + kmQuery);
 
-					new SparkKMeans(kmQuery).run();
+					new SparkKMeans(sc, kmQuery).run();
 				}
-
+                iterator.close();
 				Thread.sleep(Cons.batchDelay);
 			}
 		} catch (Exception ex) {
