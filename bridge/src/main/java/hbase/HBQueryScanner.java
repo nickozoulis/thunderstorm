@@ -68,7 +68,7 @@ public class HBQueryScanner implements Iterator<KMeansQuery> {
         return km;
     }
 
-    public void close() {
+    public void closeHBConnection() {
         try {
             hTable.close();
             connection.close();
