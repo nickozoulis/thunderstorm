@@ -34,7 +34,7 @@ public class Main {
 
 					new SparkKMeans(sc, kmQuery).run();
 				}
-                iterator.close();
+                iterator.closeHBConnection();
 				Thread.sleep(Cons.batchDelay);
 			}
 		} catch (Exception ex) {
