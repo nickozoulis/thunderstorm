@@ -22,7 +22,6 @@ public class HBQueryScanner implements Iterator<KMeansQuery> {
     private HConnection connection;
     private HTableInterface hTable;
     private long maxID = -1;
-    private long currentID = -1;
     private Iterator<Result> iterator;
 
     public HBQueryScanner(long currentID) {
@@ -34,7 +33,6 @@ public class HBQueryScanner implements Iterator<KMeansQuery> {
             connection = HConnectionManager.createConnection(config);
             hTable = connection.getTable(Cons.queries);
 
-            this.currentID = currentID;
             maxID = getMaxID();
             ResultScanner rs;
 
