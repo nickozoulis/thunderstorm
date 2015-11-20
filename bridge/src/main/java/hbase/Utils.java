@@ -154,21 +154,21 @@ public class Utils {
     }
 
     /**
-     * Scans an HTable. Using options will return filtered records.
+     * Scans an HTable and lists its results. Using options will return filtered records.
      * @param hTableName The name of the table to be scanned.
      * @param option 0 return all records, 1 returns plain KMeans, 2 returns filtered KMeans
      */
-    private static void scanHTable(String hTableName, int option) {
+    private static void listHTable(String hTableName, int option) {
         try {
             HConnection connection = HConnectionManager.createConnection(config);
             HTableInterface hTable = connection.getTable(hTableName);
 
             if (hTableName.equalsIgnoreCase(Cons.queries))
-                scanQueriesHTable(hTable, option);
+                listQueriesHTable(hTable, option);
             else if (hTableName.equalsIgnoreCase(Cons.batch_views))
-                scanBatchHTable(hTable, option);
+                listBatchHTable(hTable, option);
             else if (hTableName.equalsIgnoreCase(Cons.stream_views))
-                scanStreamHTable(hTable, option);
+                listStreamHTable(hTable, option);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -179,23 +179,23 @@ public class Utils {
      * Scans an Queries HTable. Using options will return filtered records.
      * @param option 0 return all records, 1 returns plain KMeans, 2 returns filtered KMeans
      */
-    public static void scanQueriesHTable(int option) {
-        scanHTable(Cons.queries, option);
+    public static void listQueriesHTable(int option) {
+        listHTable(Cons.queries, option);
     }
 
     /**
      * Scans an HTable. All records will be returned.
      */
-    public static void scanQueriesHTable() {
-        scanHTable(Cons.queries, 0);
+    public static void listQueriesHTable() {
+        listHTable(Cons.queries, 0);
     }
 
-    public static void scanBatchHTable() {
-        scanHTable(Cons.batch_views, 0);
+    public static void listBatchHTable() {
+        listHTable(Cons.batch_views, 0);
     }
 
-    public static void scanStreamHTable() {
-        scanHTable(Cons.stream_views, 0);
+    public static void listStreamHTable() {
+        listHTable(Cons.stream_views, 0);
     }
 
 
@@ -206,7 +206,7 @@ public class Utils {
      * @param option 0 for all records, 1 for only plain KMeans, 2 for Constrained KMeans
      * @throws IOException
      */
-    private static void scanQueriesHTable(HTableInterface hTable, int option) throws IOException {
+    private static void listQueriesHTable(HTableInterface hTable, int option) throws IOException {
         Scan scan = new Scan();
         ResultScanner rs = hTable.getScanner(scan);
 
@@ -241,11 +241,11 @@ public class Utils {
     }
 
     //TODO
-    private static void scanStreamHTable(HTableInterface hTable, int option) {
+    private static void listStreamHTable(HTableInterface hTable, int option) {
     }
 
     //TODO
-    private static void scanBatchHTable(HTableInterface hTable, int option) {
+    private static void listBatchHTable(HTableInterface hTable, int option) {
 
     }
 
@@ -500,21 +500,22 @@ public class Utils {
             BufferedReader br = new BufferedReader(new FileReader(path));
             String line;
 
-            int counter = 0;
+            long counter = 0;
             while ((line = br.readLine()) != null) {
-                if (counter++ == 1000) break;
+                //TODO: Remove
+                if (counter == 1000) break;
                 String[] splits = line.split("\\s+");
-                // Rowkey will be a long number representing the system time it was put in hbase.
-                Put p = new Put(Bytes.toBytes(System.currentTimeMillis()));
 
-                int k = 0;
+                Put p = new Put(Bytes.toBytes(counter++));
+
+                int numOfAttr = 0;
                 double attr;
                 boolean flag = true;
                 for (int i=11; i<=18; i++) {
                     try {
                         attr = Double.parseDouble(splits[i]);
                         p.add(Bytes.toBytes(Cons.cfAttributes),
-                                Bytes.toBytes(k++), Bytes.toBytes(attr));
+                                Bytes.toBytes(numOfAttr++), Bytes.toBytes(attr));
                     } catch(NumberFormatException e) {
                         e.printStackTrace();
                         flag = false;
@@ -523,6 +524,10 @@ public class Utils {
                         flag = false;
                     }
                 }
+
+                // A column will contain the number of attributes contained in this row.
+                p.add(Bytes.toBytes(Cons.cfAttributes),
+                        Bytes.toBytes(Cons.numOfAttr), Bytes.toBytes(numOfAttr));
 
                 if (flag) hTable.put(p);
             }

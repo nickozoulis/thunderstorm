@@ -20,6 +20,7 @@ public class Cons {
     public static final String clusters = "clusters";
     public static final String clusters_ = "c_";
     public static final String filter = "filter";
+    public static final String numOfAttr = "numOfAttr";
 
     public static final int delay = 3000; // Thread sleep delay in milliseconds
     public static final int batchDelay = 30000; // Every hour 360000
