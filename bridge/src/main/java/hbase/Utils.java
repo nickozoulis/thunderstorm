@@ -500,23 +500,31 @@ public class Utils {
             BufferedReader br = new BufferedReader(new FileReader(path));
             String line;
 
+            int counter = 0;
             while ((line = br.readLine()) != null) {
+                if (counter++ == 1000) break;
                 String[] splits = line.split("\\s+");
                 // Rowkey will be a long number representing the system time it was put in hbase.
                 Put p = new Put(Bytes.toBytes(System.currentTimeMillis()));
 
                 int k = 0;
                 double attr;
+                boolean flag = true;
                 for (int i=11; i<=18; i++) {
                     try {
                         attr = Double.parseDouble(splits[i]);
                         p.add(Bytes.toBytes(Cons.cfAttributes),
                                 Bytes.toBytes(k++), Bytes.toBytes(attr));
-                    } catch(NumberFormatException e) {e.printStackTrace();
-                    } catch(ArrayIndexOutOfBoundsException e) {e.printStackTrace();}
+                    } catch(NumberFormatException e) {
+                        e.printStackTrace();
+                        flag = false;
+                    } catch(ArrayIndexOutOfBoundsException e) {
+                        e.printStackTrace();
+                        flag = false;
+                    }
                 }
 
-                hTable.put(p);
+                if (flag) hTable.put(p);
             }
 
             hTable.close();
