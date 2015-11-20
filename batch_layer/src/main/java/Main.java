@@ -37,7 +37,7 @@ public class Main {
         connection = initHBaseConnection();
         if (connection == null) System.exit(1);
 
-        // Get argument values, if they exist.
+        // Get argument values, if they exist, or use the default ones.
         OptionParser parser = new OptionParser("t:s:e:");
         OptionSet options = parser.parse(args);
 
@@ -57,7 +57,7 @@ public class Main {
         sparkConf.setMaster("local");
         sc = new JavaSparkContext(sparkConf);
 
-        // Inititialize a thread pool for SparkKmeans threads
+        // Initialize a thread pool for SparkKMeans threads
         ScheduledExecutorService ex = new ScheduledThreadPoolExecutor(5);
 
         HBQueryScanner iterator;
