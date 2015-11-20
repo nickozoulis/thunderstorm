@@ -2,6 +2,8 @@ import clustering.KMeansQuery;
 import hbase.Cons;
 import hbase.HBQueryScanner;
 
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.client.*;
@@ -25,6 +27,7 @@ public class Main {
 
     static final Logger logger = LoggerFactory.getLogger(Main.class);
     private static long currentID = 1, start = 0, end = Long.MAX_VALUE;
+    private static String tableName = Cons.raw_data;
     private static HConnection connection;
     private static JavaSparkContext sc;
 
@@ -34,13 +37,27 @@ public class Main {
         connection = initHBaseConnection();
         if (connection == null) System.exit(1);
 
-        //TODO: Get table, start and end from args
+        // Get argument values, if they exist.
+        OptionParser parser = new OptionParser("t:s:e:");
+        OptionSet options = parser.parse(args);
 
+        if (options.hasArgument("t")) {
+            tableName = options.valueOf("t").toString();
+        }
+        if (options.hasArgument("s")) {
+            start = Long.parseLong(options.valueOf("s").toString());
+        }
+        if (options.hasArgument("e")) {
+            end = Long.parseLong(options.valueOf("e").toString());
+        }
+
+        // Set Spark configuration
         SparkConf sparkConf = new SparkConf();
         sparkConf.setAppName("SparKMeans");
         sparkConf.setMaster("local");
         sc = new JavaSparkContext(sparkConf);
 
+        // Inititialize a thread pool for SparkKmeans threads
         ScheduledExecutorService ex = new ScheduledThreadPoolExecutor(5);
 
         HBQueryScanner iterator;
@@ -48,7 +65,7 @@ public class Main {
 
         for (;;) {
             // Load DataSet
-            dataSet = loadDataSetFromHBase(Cons.raw_data, start, end);
+            dataSet = loadDataSetFromHBase(tableName, start, end);
             // Foreach Query execute SparkKMeans
             iterator = new HBQueryScanner(currentID);
 
