@@ -4,9 +4,7 @@ import filtering.DataFilter;
 import filtering.Point;
 import hbase.Cons;
 import hbase.HWriter;
-import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.mllib.clustering.KMeans;
 import org.apache.spark.mllib.clustering.KMeansModel;
@@ -28,10 +26,8 @@ public class SparkKMeans implements Runnable {
     private KMeansQuery kmQuery;
     private JavaRDD<Vector> points;
 
-    public SparkKMeans(JavaSparkContext sc, KMeansQuery kmQuery) {
-        JavaRDD<String> lines = sc.textFile(Cons.dataset);
-        points = lines.map(new ParsePoint());
-
+    public SparkKMeans(JavaRDD<String> dataset, KMeansQuery kmQuery) {
+        points = dataset.map(new ParsePoint());
         this.kmQuery = kmQuery;
     }
 
@@ -54,7 +50,9 @@ public class SparkKMeans implements Runnable {
     private void writeToHBase(Vector[] vectors) {
         try {
             System.out.println("Writing results for query: " + kmQuery);
-            new HWriter(Cons.batch_views).append(kmQuery.getId(), vectors);
+            HWriter hw = new HWriter(Cons.batch_views);
+            hw.append(kmQuery.getId(), vectors);
+            hw.close();
         } catch (IOException e) {e.printStackTrace();}
     }
 
