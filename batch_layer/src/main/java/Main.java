@@ -32,7 +32,7 @@ public class Main {
 
 					System.out.println("Starting spark kmeans for query: " + kmQuery);
 
-					new SparkKMeans(sc, kmQuery).run();
+					new Thread(new SparkKMeans(sc, kmQuery)).start();
 				}
                 iterator.closeHBConnection();
 				Thread.sleep(Cons.batchDelay);
