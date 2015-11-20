@@ -74,6 +74,9 @@ public class Shell {
             case "scan":
                 scanTable(line);
                 break;
+            case "put":
+                Utils.insertRawData(splits);
+                break;
             case "man":
                 displayManual();
                 break;
@@ -189,13 +192,13 @@ public class Shell {
                 try {
                     switch (hTableName) {
                         case Cons.queries:
-                            Utils.scanQueriesHTable(Integer.parseInt(m.group(4)));
+                            Utils.listQueriesHTable(Integer.parseInt(m.group(4)));
                             break;
                         case Cons.batch_views:
-                            Utils.scanBatchHTable();
+                            Utils.listBatchHTable();
                             break;
                         case Cons.stream_views:
-                            Utils.scanStreamHTable();
+                            Utils.listStreamHTable();
                             break;
                         default:
                             return;
@@ -206,13 +209,13 @@ public class Shell {
             } else {
                 switch (hTableName) {
                     case Cons.queries:
-                        Utils.scanQueriesHTable();
+                        Utils.listQueriesHTable();
                         break;
                     case Cons.batch_views:
-                        Utils.scanBatchHTable();
+                        Utils.listBatchHTable();
                         break;
                     case Cons.stream_views:
-                        Utils.scanStreamHTable();
+                        Utils.listStreamHTable();
                         break;
                     default:
                         return;
