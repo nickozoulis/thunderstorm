@@ -79,7 +79,7 @@
                     <archive>
                         <manifest>
                             <!-- Put module's main class below -->
-                            <mainClass></mainClass>
+                            <mainClass>TopologyMain</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
