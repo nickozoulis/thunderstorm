@@ -102,20 +102,23 @@ public class Main {
             HTableInterface hTable = connection.getTable(tableName);
 
             ResultScanner rs = hTable.getScanner(new Scan(Bytes.toBytes(start), Bytes.toBytes(end + 1)));
-
+            int numOfAttr = 0;
             for (Result r : rs) {
                 byte[] value = r.getValue(Bytes.toBytes(Cons.cfAttributes), Bytes.toBytes(Cons.numOfAttr));
-                int numOfAttr = Bytes.toInt(value);
+                numOfAttr = Bytes.toInt(value);
 
+                String s = "";
                 for (int i = 0; i < numOfAttr; i++) {
                     value = r.getValue(Bytes.toBytes(Cons.cfAttributes), Bytes.toBytes(i));
 
                     double attr = Bytes.toDouble(value);
-                    dataSet.add(attr + "");
+                    s += attr + ",";
                 }
+                s = s.substring(0, s.length()-1);  // remove last comma
+                dataSet.add(s);
             }
 
-            return sc.parallelize(dataSet);
+            return sc.parallelize(dataSet, numOfAttr);
         } catch (IOException e) {
             e.printStackTrace();
         }
