@@ -29,5 +29,5 @@ log/
 *.toc
 *.out
 *.log
-*aux
-
+*.aux
+*.pdf
