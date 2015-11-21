@@ -107,6 +107,7 @@ public class Main {
                 byte[] value = r.getValue(Bytes.toBytes(Cons.cfAttributes), Bytes.toBytes(Cons.numOfAttr));
                 numOfAttr = Bytes.toInt(value);
 
+                // Foreach result, form a String containing each attribute separated by comma. 
                 String s = "";
                 for (int i = 0; i < numOfAttr; i++) {
                     value = r.getValue(Bytes.toBytes(Cons.cfAttributes), Bytes.toBytes(i));
