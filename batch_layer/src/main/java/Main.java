@@ -24,7 +24,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
  * Created by nickozoulis on 18/11/2015.
  */
 public class Main {
-
+    // Execute jar as: java -cp batch_layer-1.0-SNAPSHOT-allinone.jar Main
     static final Logger logger = LoggerFactory.getLogger(Main.class);
     private static long currentID = 1, start = 0, end = Long.MAX_VALUE;
     private static String tableName = Cons.raw_data;
@@ -107,7 +107,7 @@ public class Main {
                 byte[] value = r.getValue(Bytes.toBytes(Cons.cfAttributes), Bytes.toBytes(Cons.numOfAttr));
                 numOfAttr = Bytes.toInt(value);
 
-                // Foreach result, form a String containing each attribute separated by comma. 
+                // Foreach result, form a String containing each attribute separated by comma.
                 String s = "";
                 for (int i = 0; i < numOfAttr; i++) {
                     value = r.getValue(Bytes.toBytes(Cons.cfAttributes), Bytes.toBytes(i));
