@@ -24,3 +24,10 @@ log/
 
 # Eclipse
 .classpath
+
+# Latex
+*.toc
+*.out
+*.log
+*aux
+
