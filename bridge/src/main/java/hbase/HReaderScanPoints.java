@@ -1,6 +1,5 @@
 package hbase;
 
-import clustering.KMeansQuery;
 import filtering.Point;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
@@ -13,24 +12,24 @@ import java.util.ArrayList;
 public class HReaderScanPoints {
 
 	private long currentID = 0;
-	private long maxID=System.currentTimeMillis();
 	private HConnection connection;
 	private HTableInterface hTable;
 	private ResultScanner rs;
 
-	public HReaderScanPoints(String tableName) throws IOException {
+	public HReaderScanPoints() throws IOException {
 		Configuration config = HBaseConfiguration.create();
 		config.set("hbase.zookeeper.quorum", Cons.hbase_IP_address);
 		config.set("hbase.zookeeper.property.clientPort", Cons.hbase_port);
 
 		connection = HConnectionManager.createConnection(config);
-		hTable = connection.getTable(tableName);
-
-		rs = hTable.getScanner(new Scan(Bytes.toBytes(currentID), Bytes.toBytes(5)));
+		hTable = connection.getTable(Cons.raw_data);
+		Scan scan = new Scan(Bytes.toBytes(currentID));
+		scan.setCaching(100);
+		rs = hTable.getScanner(scan);
 	}
 
 	public void restart() {
-		currentID = 1;
+		currentID = 0;
 	}
 
 	public Point next() throws IOException {
@@ -43,38 +42,36 @@ public class HReaderScanPoints {
 			for (;;) {
 
 				byte[] value = r.getValue(Bytes.toBytes(Cons.cfAttributes), Bytes.toBytes(k));
-				if (value == null) break;
+				if (value == null)
+					break;
 				ar.add(Bytes.toDouble(value));
 				k++;
 			}
-			
+
 			Point p = new Point(ar.toArray(new Double[ar.size()]));
 
-			currentID++;
+			currentID = Bytes.toLong(r.getRow());
 
 			return p;
 		} else {
-
-			if (currentID == maxID) {
-				maxID = maxID + 1000;
-				rs = hTable.getScanner(new Scan(Bytes.toBytes(currentID), Bytes.toBytes(maxID)));
-				return next();
-			} else {
-				return null;
-			}
+			Scan scan = new Scan(Bytes.toBytes(currentID + 1));
+			scan.setCaching(100);
+			rs = hTable.getScanner(scan);
+			return null;
 		}
 	}
 
 	public static void main(String argv[]) throws IOException {
 
-		HReaderScanPoints r = new HReaderScanPoints(Cons.raw_data);
+		HReaderScanPoints r = new HReaderScanPoints();
 
 		Point p;
-		int i=0;
-		while ((p=r.next())!=null) {
+		int i = 0;
+		while ((p = r.next()) != null) {
 			System.out.println(p.toString());
 			i++;
 		}
+		
 		System.out.println(i);
 	}
 }

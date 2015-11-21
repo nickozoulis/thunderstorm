@@ -7,13 +7,10 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
-import hbase.Cons;
-import hbase.HReaderScan;
+import filtering.Point;
+import hbase.HReaderScanPoints;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.Map;
 
 public class PointsReaderHBase implements IRichBolt {
@@ -21,9 +18,11 @@ public class PointsReaderHBase implements IRichBolt {
 	private int id;
 	private String name;
 	private OutputCollector collector;
-	private HReaderScan reader;
+	private HReaderScanPoints reader;
+	private boolean run;
 
 	public PointsReaderHBase() {
+		run = false;
 	}
 
 	@Override
@@ -34,7 +33,7 @@ public class PointsReaderHBase implements IRichBolt {
 
 		this.collector = collector;
 		try {
-			reader = new HReaderScan(Cons.queries);
+			reader = new HReaderScanPoints();
 			System.out.println("HBASE CONNECTED");
 		} catch (IOException e) {
 			System.err.println("Points Reader HBase: " + e.getMessage());
@@ -45,29 +44,33 @@ public class PointsReaderHBase implements IRichBolt {
 
 	@Override
 	public void execute(Tuple input) {
-
-		if (input.getSourceStreamId().equals("commands")) {
-			if ("run".equals(input.getStringByField("action"))) {
-
-
+		try {
+			if (input.getSourceStreamId().equals("commands")) {
+				if ("run".equals(input.getStringByField("action"))) {
+					run = true;
+				}
 			}
-		}
 
-		/**
-		 * The nextuple it is called forever, so if we have been readed the file we will wait and
-		 * then return
-		 */
+			if (run) {
+				Point p;
+				if ((p = reader.next()) != null) {
+					// Emit the word
+					collector.emit(new Values(p));
+					System.out.println("Reading new points");
+				}
 
-		try
-
-		{
+				while ((p = reader.next()) != null) {
+					// Emit the word
+					collector.emit(new Values(p));
+				}
+			}
+			/**
+			 * The nextuple it is called forever, so if we have been readed the file we will wait
+			 * and then return
+			 */
 			Thread.sleep(10000);
-		} catch (
-
-		InterruptedException e)
-
-		{
-			// Do nothing
+		} catch (Exception e) {
+			System.err.println("PointsReaderHBase: " + e.getMessage());
 		}
 
 	}

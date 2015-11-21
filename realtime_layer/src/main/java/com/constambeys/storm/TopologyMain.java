@@ -4,6 +4,7 @@ import com.constambeys.storm.bolt.BoltOutput;
 import com.constambeys.storm.bolt.BoltProcessor;
 import com.constambeys.storm.bolt.PointProcessor;
 import com.constambeys.storm.bolt.PointsReader;
+import com.constambeys.storm.bolt.PointsReaderHBase;
 import com.constambeys.storm.spouts.CommandsSpout;
 import com.constambeys.storm.spouts.SignalsSpout;
 
@@ -20,16 +21,22 @@ public class TopologyMain {
 			TopologyBuilder builder = new TopologyBuilder();
 			builder.setSpout("signals-spout", new SignalsSpout());
 			builder.setSpout("commands-spout", new CommandsSpout());
+			
+			//Reading from file
+			//BoltDeclarer reader = builder.setBolt("points-reader", new PointsReader("/input.txt"));
+			//reader.allGrouping("commands-spout", "commands");
 
-			BoltDeclarer reader = builder.setBolt("points-reader", new PointsReader("/input.txt"));
+			//BoltDeclarer processor = builder.setBolt("point-processor", new PointProcessor());
+			//processor.shuffleGrouping("points-reader");
+
+			//Reading from hbase
+			BoltDeclarer reader = builder.setBolt("points-reader-hbase", new PointsReaderHBase());
 			reader.allGrouping("commands-spout", "commands");
-
-			BoltDeclarer processor = builder.setBolt("point-processor", new PointProcessor());
-			processor.shuffleGrouping("points-reader");
-
+			
 			BoltDeclarer kmeans = builder.setBolt("k-means-online", new BoltProcessor(), 2);
 			// All bolts must get input data
-			kmeans.allGrouping("point-processor");
+			//kmeans.allGrouping("point-processor");
+			kmeans.allGrouping("points-reader-hbase");
 			// All bolts must get signals
 			kmeans.allGrouping("signals-spout", "signals");
 			// Share jobs between bolts

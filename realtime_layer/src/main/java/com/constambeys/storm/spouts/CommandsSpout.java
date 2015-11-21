@@ -39,7 +39,10 @@ public class CommandsSpout extends BaseRichSpout {
 				collector.emit("commands", new Values("kmeans", k));
 			}
 
-
+			/**
+			 * The nextuple it is called forever, so if we have been readed the file we will wait and
+			 * then return
+			 */
 			collector.emit("commands", new Values("run", null));
 			Thread.sleep(5000);
 		} catch (Exception e) {

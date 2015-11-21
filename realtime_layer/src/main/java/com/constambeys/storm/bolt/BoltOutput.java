@@ -44,11 +44,11 @@ public class BoltOutput implements IRichBolt {
 			if (result == null) {
 				System.out.print(String.format("KMeans %d, clusters %d Not Initialized\n", k.id, k.k));
 			} else {
-				// System.out.print(String.format("KMeans %d, clusters %d\n", k.id, k.k));
+				System.out.print(String.format("KMeans %d, clusters %d\n", k.id, k.k));
 
-				// for (Point p : result) {
-				// System.out.println(p.print());
-				// }
+				for (Point p : result) {
+					System.out.println(p.toString());
+				}
 
 				writer.append(k.id, result);
 			}
