@@ -328,8 +328,8 @@ public class Shell {
 //                r = Utils.pollStreamViewForResult(newKey);
         }
 
-        if (r != null)
-            printResultView(r);
+        // While they are computing, we retrieve the k'-means view for the whole dataset (i.e., no constraints),
+        // and compute and return a k-out-of-k'-means result to the user.
     }
 
 }
