@@ -60,7 +60,7 @@ public class Shell {
         String[] splits = line.split(" ");
         switch (splits[0]) {
             case "get":
-                getResultsFromViews(splits[1]);
+                get(splits);
                 break;
             case "kmeans":
                 parseKMeans(line, splits);
@@ -92,42 +92,36 @@ public class Shell {
         }
     }
 
-    /**
-     * Where the magic will happen.
-     *
-     * @param qid
-     */
-    private void getResultsFromViews(String qid) {
-        Result batchClusters = Utils.getRowFromBatchViews(Long.parseLong(qid));
-        Result streamClusters = Utils.pollStreamViewForResult(Long.parseLong(qid));
 
-        //FIXME: For the time being just print out both results, if available.
-        printTemp(batchClusters, streamClusters);
-
-        //TODO: Call fusion module to get fused results from batch and stream views.
-        //TODO: Maybe implement iterator loop with for-each generics for the results
-
-        /* example call
-        Fusion f = new Fusion(batchClusters, streamClusters);
-
-        for (String s : f.getClusters()) {
-            System.out.println(s);
+    private void get(String[] splits) {
+        long qid;
+        try {
+            qid = Long.parseLong(splits[2]);
+        } catch (NumberFormatException e) {
+            System.err.println("Example use: get [batch/stream] [qid]");
+            return;
         }
-        */
-    }
 
-    private void printTemp(Result batchClusters, Result streamClusters) {
-        if (!batchClusters.isEmpty()) {
-            System.out.println("< Printing batch view >");
-            printResultView(batchClusters);
-        } else
-            System.out.println("> Batch view is empty <");
-
-        if (!streamClusters.isEmpty()) {
-            System.out.println("< Printing stream view >");
-            printResultView(streamClusters);
-        } else
-            System.out.println("> Stream view is empty <");
+        Result r;
+        switch (splits[1]) {
+            case "batch":
+                r = Utils.getRowFromBatchViews(qid);
+                if (r != null)
+                    printResultView(r);
+                else
+                    System.out.println("No batch view for qid: " + qid);
+                break;
+            case "stream":
+                r = Utils.getRowFromStreamViews(qid);
+                if (r != null)
+                    printResultView(r);
+                else
+                    System.out.println("No stream view for qid: " + qid);
+                break;
+            default:
+                System.err.println("Example use: get [batch/stream] [qid]");
+                break;
+        }
     }
 
     private void printResultView(Result result) {
@@ -160,9 +154,9 @@ public class Shell {
     }
 
     private void displayManual() {
-        System.out.println("get [qid] -> Gets the views of the input query ID.");
-        System.out.println("kmeans [numOfClusters] -> Inserts a kmeans query into HBase.");
-        System.out.println("kmeans [numOfClusters] ; [filter] -> Inserts a constrained kmeans query into HBase.");
+        System.out.println("get [batch/stream] [qid] -> Gets the views of the input query ID from the specified table.");
+        System.out.println("kmeans [numOfClusters] (; [filter]) -> Inserts a (constrained) KMeans query into HBase.");
+        System.out.println("put [absolute file path] -> Inserts data to the raw_data table.");
         System.out.println("test -> Tests the connection with HBase.");
         System.out.println("scan [tableName] [options: 0,1,2] -> Performs a scan of the input table.");
         System.out.println("create -> Create the schema tables of the HBase.");
@@ -324,17 +318,18 @@ public class Shell {
             } else {
                 // If no, send a {k' , {constraints}} query to both the streaming and batch layers via insertion to HBase.
                 long newKey = Utils.putKMeansQuery(kQuery);
-                // And start polling
-                if (newKey != -1)
-                    r = Utils.pollStreamViewForResult(newKey);
+//                // And start polling
+//                if (newKey != -1)
+//                    r = Utils.pollStreamViewForResult(newKey);
             }
         } else { // If no, put it in the HBase table and start polling.
             long newKey = Utils.putKMeansQuery(query);
-            if (newKey != -1)
-                r = Utils.pollStreamViewForResult(newKey);
+//            if (newKey != -1)
+//                r = Utils.pollStreamViewForResult(newKey);
         }
 
-        printResultView(r);
+        if (r != null)
+            printResultView(r);
     }
 
 }
