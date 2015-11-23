@@ -434,7 +434,6 @@ public class Utils {
 
             hTable.close();
             connection.close();
-            System.out.println("Table closed");
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -29,7 +29,7 @@ public class Shell {
 
     public Shell() {
         Utils.setHBaseConfig();
-        
+
         try {
             console = new ConsoleReader();
             console.setPrompt("serving_layer> ");
@@ -60,7 +60,7 @@ public class Shell {
         String[] splits = line.split(" ");
         switch (splits[0]) {
             case "get":
-                getResultsFromViews(splits[1]);
+                get(splits);
                 break;
             case "kmeans":
                 parseKMeans(line, splits);
@@ -92,49 +92,43 @@ public class Shell {
         }
     }
 
-    /**
-     * Where the magic will happen.
-     *
-     * @param qid
-     */
-    private void getResultsFromViews(String qid) {
-        Result batchClusters = Utils.getRowFromBatchViews(Long.parseLong(qid));
-        Result streamClusters = Utils.pollStreamViewForResult(Long.parseLong(qid));
 
-        //FIXME: For the time being just print out both results, if available.
-        printTemp(batchClusters, streamClusters);
-
-        //TODO: Call fusion module to get fused results from batch and stream views.
-        //TODO: Maybe implement iterator loop with for-each generics for the results
-
-        /* example call
-        Fusion f = new Fusion(batchClusters, streamClusters);
-
-        for (String s : f.getClusters()) {
-            System.out.println(s);
+    private void get(String[] splits) {
+        long qid;
+        try {
+            qid = Long.parseLong(splits[2]);
+        } catch (NumberFormatException e) {
+            System.err.println("Example use: get [batch/stream] [qid]");
+            return;
         }
-        */
-    }
 
-    private void printTemp(Result batchClusters, Result streamClusters) {
-        if (!batchClusters.isEmpty()) {
-            System.out.println("< Printing batch view >");
-            printResultView(batchClusters);
-        } else
-            System.out.println("> Batch view is empty <");
-
-        if (!streamClusters.isEmpty()) {
-            System.out.println("< Printing stream view >");
-            printResultView(streamClusters);
-        } else
-            System.out.println("> Stream view is empty <");
+        Result r;
+        switch (splits[1]) {
+            case "batch":
+                r = Utils.getRowFromBatchViews(qid);
+                if (r != null)
+                    printResultView(r);
+                else
+                    System.out.println("No batch view for qid: " + qid);
+                break;
+            case "stream":
+                r = Utils.getRowFromStreamViews(qid);
+                if (r != null)
+                    printResultView(r);
+                else
+                    System.out.println("No stream view for qid: " + qid);
+                break;
+            default:
+                System.err.println("Example use: get [batch/stream] [qid]");
+                break;
+        }
     }
 
     private void printResultView(Result result) {
         byte[] valueClusters;
         int k = 0;
 
-        for (;;) {
+        for (; ; ) {
             valueClusters = result.getValue(Bytes.toBytes(Cons.cfViews), Bytes.toBytes(Cons.clusters_ + k));
 
             if (valueClusters != null)
@@ -160,9 +154,9 @@ public class Shell {
     }
 
     private void displayManual() {
-        System.out.println("get [qid] -> Gets the views of the input query ID.");
-        System.out.println("kmeans [numOfClusters] -> Inserts a kmeans query into HBase.");
-        System.out.println("kmeans [numOfClusters] ; [filter] -> Inserts a constrained kmeans query into HBase.");
+        System.out.println("get [batch/stream] [qid] -> Gets the views of the input query ID from the specified table.");
+        System.out.println("kmeans [numOfClusters] (; [filter]) -> Inserts a (constrained) KMeans query into HBase.");
+        System.out.println("put [absolute file path] -> Inserts data to the raw_data table.");
         System.out.println("test -> Tests the connection with HBase.");
         System.out.println("scan [tableName] [options: 0,1,2] -> Performs a scan of the input table.");
         System.out.println("create -> Create the schema tables of the HBase.");
@@ -230,7 +224,7 @@ public class Shell {
         if (splits.length == 2) { // Plain KMeans
             query = new KMeansQuery(Integer.parseInt(splits[1]));
         } else if (splits.length > 2) { // Constrained KMeans
-            query =  parseConstraints(line);
+            query = parseConstraints(line);
         } else {
             usage();
             return;
@@ -289,52 +283,55 @@ public class Shell {
 
     /**
      * Performs the whole Lambda-KMeans procedure.
+     *
      * @param query
      */
     private void KMeans(KMeansQuery query) {
-        Result r = null;
+        Result r;
 
         // Check if query exists in Queries table.
         long queryRowKey = Utils.getQueryIDIfExists(query);
 
-        // If yes
-        if (queryRowKey != -1) {
-            // Check stream views if contain results for this query.
-            r = Utils.getRowFromStreamViews(queryRowKey);
+        // If no, add it to HBase
+        if (queryRowKey == -1)
+            Utils.putKMeansQuery(query);
 
-            // If yes, return it to the user.
-            if (!r.isEmpty()) {
-                printResultView(r);
-                return;
-            }
+        // Check stream views if contain results for this query.
+        r = Utils.getRowFromStreamViews(queryRowKey);
 
-            // While these layers are computing, check whether there is a view for k'-means
-            // (e.g., k'=10,000) for the same set of constraints
-            KMeansQuery kQuery = new KMeansQuery(Cons.K, query.getFilters());
-            long kQueryRowKey = Utils.getQueryIDIfExists(kQuery);
-
-            if (kQueryRowKey != -1) {
-                r = Utils.getRowFromStreamViews(kQueryRowKey);
-
-                // If yes, then compute a Local k-out-of-k'-means clustering and return that to the user
-                if (!r.isEmpty()) {
-                    printResultDataset(new LocalKMeans(query, Utils.loadClusters(r)).cluster());
-                    return;
-                }
-            } else {
-                // If no, send a {k' , {constraints}} query to both the streaming and batch layers via insertion to HBase.
-                long newKey = Utils.putKMeansQuery(kQuery);
-                // And start polling
-                if (newKey != -1)
-                    r = Utils.pollStreamViewForResult(newKey);
-            }
-        } else { // If no, put it in the HBase table and start polling.
-            long newKey = Utils.putKMeansQuery(query);
-            if (newKey != -1)
-                r = Utils.pollStreamViewForResult(newKey);
+        // If yes, return it to the user.
+        if (!r.isEmpty()) {
+            printResultView(r);
+            return;
         }
 
-        printResultView(r);
+        /*
+            While these layers are computing, check whether there is a view for k'-means
+            (e.g., k'=10,000) for the same set of constraints
+        */
+        KMeansQuery kQuery = new KMeansQuery(Cons.K, query.getFilters());
+        // Check whether this kQuery already exists
+        long kQueryRowKey = Utils.getQueryIDIfExists(kQuery);
+
+        // If no, add it to HBase
+        if (kQueryRowKey == -1)
+            Utils.putKMeansQuery(kQuery);
+
+        // Check stream views if contain results for this kQuery.
+        r = Utils.getRowFromStreamViews(kQueryRowKey);
+
+        // If yes, then compute a Local k-out-of-k'-means clustering and return that to the user
+        if (!r.isEmpty()) {
+            printResultDataset(new LocalKMeans(query, Utils.loadClusters(r)).cluster());
+            return;
+        }
+
+
+        /*
+            While they are computing, we retrieve the k'-means view for the whole dataset (i.e., no constraints),
+            and compute and return a k-out-of-k'-means result to the user.
+        */
+
     }
 
 }

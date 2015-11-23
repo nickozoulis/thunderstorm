@@ -28,4 +28,5 @@ public class Cons {
 	public static final String dataset = "/Users/nickozoulis/IdeaProjects/master_team_project/batch_layer/src/main/resources/input.txt";
 	public static final int iterations = 10;
 	public static final int runs = 1;
+
 }
