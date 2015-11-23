@@ -55,6 +55,10 @@ public class KMeansOnline implements Serializable {
 		initilization = true;
 	}
 
+	public void setStart(Point start[]) {
+		means = start;
+	}
+
 	public void run(Point point) throws ScriptException {
 
 		if (!checkFilters(point)) {

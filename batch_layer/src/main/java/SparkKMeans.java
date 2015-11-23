@@ -3,7 +3,7 @@ import clustering.QueryType;
 import filtering.DataFilter;
 import filtering.Point;
 import hbase.Cons;
-import hbase.HWriter;
+import hbase.HWriterResults;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.mllib.clustering.KMeans;
@@ -50,7 +50,7 @@ public class SparkKMeans implements Runnable {
     private void writeToHBase(Vector[] vectors) {
         try {
             System.out.println("Writing results for query: " + kmQuery);
-            HWriter hw = new HWriter(Cons.batch_views);
+            HWriterResults hw = new HWriterResults(Cons.batch_views);
             hw.append(kmQuery.getId(), vectors);
             hw.close();
         } catch (IOException e) {e.printStackTrace();}

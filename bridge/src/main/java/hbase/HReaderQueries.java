@@ -12,13 +12,13 @@ import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
 
-public class HReader {
+public class HReaderQueries {
 
 	private long currentID = 1;
 	private HConnection connection;
 	private HTableInterface hTable;
 
-	public HReader(String tableName) throws IOException {
+	public HReaderQueries(String tableName) throws IOException {
 		Configuration config = HBaseConfiguration.create();
 		config.set("hbase.zookeeper.quorum", Cons.hbase_IP_address);
 		config.set("hbase.zookeeper.property.clientPort", Cons.hbase_port);
