@@ -443,6 +443,8 @@ public class Utils {
 
     //TODO: Use the secondary index
     public static long getQueryIDIfExists(KMeansQuery query) {
+        if (query == null) return -1;
+
         long rowKey = -1;
 
         try {
