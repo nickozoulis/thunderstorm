@@ -296,7 +296,7 @@ public class Shell {
         if (queryRowKey == -1)
             Utils.putKMeansQuery(query);
 
-        // Check stream views if contain results for this query.
+        // Check stream views if contain results for this query. Assuming stream takes batch views as input.
         r = Utils.getRowFromStreamViews(queryRowKey);
 
         // If yes, return it to the user.
