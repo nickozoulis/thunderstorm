@@ -220,17 +220,17 @@ public class Utils {
 
             if (option == 0) {
                 if (valueClusters != null)
-                    s += row + " [clusters:" + Bytes.toString(valueClusters) + "]";
+                    s += row + " [clusters:" + Bytes.toInt(valueClusters) + "]";
 
                 if (valueFilter != null)
                     s += " [filter:" + Bytes.toString(valueFilter) + "]";
             } else if (option == 1) {
 
                 if (valueClusters != null && valueFilter == null)
-                    s += row + " [clusters:" + Bytes.toString(valueClusters) + "]";
+                    s += row + " [clusters:" + Bytes.toInt(valueClusters) + "]";
             } else if (option == 2) {
                 if (valueFilter != null) {
-                    s += row + " [clusters:" + Bytes.toString(valueClusters) + "]";
+                    s += row + " [clusters:" + Bytes.toInt(valueClusters) + "]";
                     s += " [filter:" + Bytes.toString(valueFilter) + "]";
                 }
             }
