@@ -46,7 +46,10 @@ public class HBQueryScanner implements Iterator<KMeansQuery> {
 
     @Override
     public boolean hasNext() {
-        return iterator.hasNext() ? true : false;
+        if (iterator != null)
+            return iterator.hasNext() ? true : false;
+        else
+            return false;
     }
 
     @Override
