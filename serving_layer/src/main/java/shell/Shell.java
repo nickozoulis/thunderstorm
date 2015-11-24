@@ -2,6 +2,7 @@ package shell;
 
 import clustering.KMeansQuery;
 import clustering.LocalKMeans;
+import clustering.QueryType;
 import hbase.Cons;
 import hbase.Utils;
 import jline.TerminalFactory;
@@ -128,7 +129,8 @@ public class Shell {
         byte[] valueClusters;
         int k = 0;
 
-        for (; ; ) {
+        System.out.println();
+        for (;;) {
             valueClusters = result.getValue(Bytes.toBytes(Cons.cfViews), Bytes.toBytes(Cons.clusters_ + k));
 
             if (valueClusters != null)
@@ -138,6 +140,7 @@ public class Shell {
 
             k++;
         }
+        System.out.println();
     }
 
     private void printResultDataset(Dataset[] datasets) {
@@ -309,8 +312,13 @@ public class Shell {
             While these layers are computing, check whether there is a view for k'-means
             (e.g., k'=10,000) for the same set of constraints
         */
-        KMeansQuery kQuery = new KMeansQuery(Cons.K, query.getFilters());
+        KMeansQuery kQuery = null;
+        if (query.getQueryType() == QueryType.KMEANS)
+            kQuery = new KMeansQuery(Cons.K);
+        else if (query.getQueryType() == QueryType.CONSTRAINED_KMEANS)
+            kQuery = new KMeansQuery(Cons.K, query.getFilters());
         // Check whether this kQuery already exists
+
         long kQueryRowKey = Utils.getQueryIDIfExists(kQuery);
 
         // If no, add it to HBase
