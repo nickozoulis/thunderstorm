@@ -5,7 +5,7 @@ package hbase;
  */
 public class Cons {
     // HBase Configuration constants
-    public static final String hbase_IP_address = "192.168.1.201";//127.0.0.1
+    public static final String hbase_IP_address = "127.0.0.1";//127.0.0.1
     public static final String hbase_port = "2181";
 
     // HBase table constants
@@ -24,8 +24,7 @@ public class Cons {
 
     public static final int delay = 3000; // Thread sleep delay in milliseconds
     public static final int batchDelay = 30000; // Every hour 360000
-    public static final int K = 500; // The fixed number of clusterHeads
-    public static final String dataset = "/Users/nickozoulis/IdeaProjects/master_team_project/batch_layer/src/main/resources/input.txt";
+    public static final int K = 10000; // The fixed number of clusterHeads
     public static final int iterations = 10;
     public static final int runs = 1;
 }
