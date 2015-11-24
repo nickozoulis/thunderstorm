@@ -8,14 +8,14 @@ import org.apache.hadoop.hbase.util.Bytes;
 
 import java.io.IOException;
 
-public class HReaderScan {
+public class HReaderQueriesC {
 
 	private long currentID = 1;
 	private HConnection connection;
 	private HTableInterface hTable;
 	private ResultScanner rs;
 
-	public HReaderScan(String tableName) throws IOException {
+	public HReaderQueriesC(String tableName) throws IOException {
 		Configuration config = HBaseConfiguration.create();
 		config.set("hbase.zookeeper.quorum", Cons.hbase_IP_address);
 		config.set("hbase.zookeeper.property.clientPort", Cons.hbase_port);

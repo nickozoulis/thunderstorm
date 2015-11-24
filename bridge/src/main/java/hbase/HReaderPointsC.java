@@ -9,23 +9,21 @@ import org.apache.hadoop.hbase.util.Bytes;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class HReaderScanPoints {
+public class HReaderPointsC {
 
 	private long currentID = 0;
 	private HConnection connection;
 	private HTableInterface hTable;
 	private ResultScanner rs;
+	private boolean reading = false;
 
-	public HReaderScanPoints() throws IOException {
+	public HReaderPointsC() throws IOException {
 		Configuration config = HBaseConfiguration.create();
 		config.set("hbase.zookeeper.quorum", Cons.hbase_IP_address);
 		config.set("hbase.zookeeper.property.clientPort", Cons.hbase_port);
 
 		connection = HConnectionManager.createConnection(config);
 		hTable = connection.getTable(Cons.raw_data);
-		Scan scan = new Scan(Bytes.toBytes(currentID));
-		scan.setCaching(100);
-		rs = hTable.getScanner(scan);
 	}
 
 	public void restart() {
@@ -33,37 +31,46 @@ public class HReaderScanPoints {
 	}
 
 	public Point next() throws IOException {
-		Result r = rs.next();
+		if (reading) {
 
-		if (r != null) {
+			Result r = rs.next();
 
-			ArrayList<Double> ar = new ArrayList(10);
-			int k = 0;
-			for (;;) {
+			if (r != null) {
+				reading = true;
+				ArrayList<Double> ar = new ArrayList(10);
+				int k = 0;
+				for (;;) {
 
-				byte[] value = r.getValue(Bytes.toBytes(Cons.cfAttributes), Bytes.toBytes(k));
-				if (value == null)
-					break;
-				ar.add(Bytes.toDouble(value));
-				k++;
+					byte[] value = r.getValue(Bytes.toBytes(Cons.cfAttributes), Bytes.toBytes(k));
+					if (value == null)
+						break;
+					ar.add(Bytes.toDouble(value));
+					k++;
+				}
+
+				Point p = new Point(ar.toArray(new Double[ar.size()]));
+
+				currentID = Bytes.toLong(r.getRow());
+
+				return p;
+			} else {
+				rs.close();
+				reading = false;
+				return null;
 			}
-
-			Point p = new Point(ar.toArray(new Double[ar.size()]));
-
-			currentID = Bytes.toLong(r.getRow());
-
-			return p;
 		} else {
+
 			Scan scan = new Scan(Bytes.toBytes(currentID + 1));
 			scan.setCaching(100);
 			rs = hTable.getScanner(scan);
-			return null;
+			reading = true;
+			return next();
 		}
 	}
 
 	public static void main(String argv[]) throws IOException {
 
-		HReaderScanPoints r = new HReaderScanPoints();
+		HReaderPointsC r = new HReaderPointsC();
 
 		Point p;
 		int i = 0;
@@ -71,7 +78,7 @@ public class HReaderScanPoints {
 			System.out.println(p.toString());
 			i++;
 		}
-		
+
 		System.out.println(i);
 	}
 }

@@ -8,7 +8,7 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 import filtering.Point;
-import hbase.HReaderScanPoints;
+import hbase.HReaderPointsC;
 
 import java.io.IOException;
 import java.util.Map;
@@ -18,7 +18,7 @@ public class PointsReaderHBase implements IRichBolt {
 	private int id;
 	private String name;
 	private OutputCollector collector;
-	private HReaderScanPoints reader;
+	private HReaderPointsC reader;
 	private boolean run;
 
 	public PointsReaderHBase() {
@@ -33,7 +33,7 @@ public class PointsReaderHBase implements IRichBolt {
 
 		this.collector = collector;
 		try {
-			reader = new HReaderScanPoints();
+			reader = new HReaderPointsC();
 			System.out.println("HBASE CONNECTED");
 		} catch (IOException e) {
 			System.err.println("Points Reader HBase: " + e.getMessage());
@@ -52,17 +52,26 @@ public class PointsReaderHBase implements IRichBolt {
 			}
 
 			if (run) {
+				boolean check = false;
+				int i = 0;
 				Point p;
 				if ((p = reader.next()) != null) {
 					// Emit the word
 					collector.emit(new Values(p));
 					System.out.println("Reading new points");
+					i++;
+					check = true;
 				}
 
 				while ((p = reader.next()) != null) {
 					// Emit the word
 					collector.emit(new Values(p));
+					i++;
 				}
+
+				if (check)
+					System.out.println(i + " points");
+
 			}
 			/**
 			 * The nextuple it is called forever, so if we have been readed the file we will wait

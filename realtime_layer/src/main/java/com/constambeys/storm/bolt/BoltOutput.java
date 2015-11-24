@@ -12,14 +12,14 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Tuple;
 import filtering.Point;
 import hbase.Cons;
-import hbase.HWriter;
+import hbase.HWriterResults;
 
 public class BoltOutput implements IRichBolt {
 
 	private int id;
 	private String name;
 	private OutputCollector collector;
-	private HWriter writer;
+	private HWriterResults writer;
 
 	@Override
 	public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
@@ -28,7 +28,7 @@ public class BoltOutput implements IRichBolt {
 		this.id = context.getThisTaskId();
 
 		try {
-			writer = new HWriter(Cons.stream_views);
+			writer = new HWriterResults(Cons.stream_views);
 		} catch (IOException e) {
 			System.err.println("CommandsSpout: " + e.getMessage());
 		}
@@ -44,11 +44,11 @@ public class BoltOutput implements IRichBolt {
 			if (result == null) {
 				System.out.print(String.format("KMeans %d, clusters %d Not Initialized\n", k.id, k.k));
 			} else {
-				System.out.print(String.format("KMeans %d, clusters %d\n", k.id, k.k));
+				/*System.out.print(String.format("KMeans %d, clusters %d\n", k.id, k.k));
 
 				for (Point p : result) {
 					System.out.println(p.toString());
-				}
+				}*/
 
 				writer.append(k.id, result);
 			}
