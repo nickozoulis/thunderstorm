@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
  */
 public class Shell {
 
-    static final Logger logger = Logger.getLogger(Shell.class);
+    private static final Logger logger = Logger.getLogger(Shell.class);
     private static ConsoleReader console;
 
     public Shell() {

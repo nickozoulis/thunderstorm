@@ -25,7 +25,7 @@ import java.util.Set;
  */
 public class HBaseUtils {
 
-    static final Logger logger = Logger.getLogger(HBaseUtils.class);
+    private static final Logger logger = Logger.getLogger(HBaseUtils.class);
     private static Configuration config;
 
     public static long getMaxQueryID(HTableInterface hTable) throws IOException {

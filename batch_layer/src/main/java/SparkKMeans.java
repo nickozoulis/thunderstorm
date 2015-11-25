@@ -4,14 +4,14 @@ import filtering.DataFilter;
 import filtering.Point;
 import hbase.Cons;
 import hbase.HWriterResults;
+import org.apache.log4j.Logger;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.mllib.clustering.KMeans;
 import org.apache.spark.mllib.clustering.KMeansModel;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 
 
@@ -22,7 +22,7 @@ import java.io.IOException;
  */
 public class SparkKMeans implements Runnable {
 
-    static final Logger logger = LoggerFactory.getLogger(SparkKMeans.class);
+    private static final Logger logger = Logger.getLogger(SparkKMeans.class);
     private KMeansQuery kmQuery;
     private JavaRDD<Vector> points;
 

@@ -3,8 +3,8 @@ package hbase;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.client.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.log4j.Logger;
+
 import java.io.IOException;
 
 /**
@@ -12,7 +12,7 @@ import java.io.IOException;
  */
 public class Utils {
 
-    static final Logger logger = LoggerFactory.getLogger(Utils.class);
+    private static final Logger logger = Logger.getLogger(Utils.class);
 
     public static HConnection initHBaseConnection() {
         try {

@@ -27,7 +27,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
  */
 public class Main {
 	// Execute jar as: java -cp batch_layer-1.0-SNAPSHOT-allinone.jar Main
-	static final Logger logger = Logger.getLogger(Main.class);
+	private static final Logger logger = Logger.getLogger(Main.class);
 	private static long currentID = 1, start = 0, end = Long.MAX_VALUE;
 	private static String tableName = Cons.raw_data;
 	private static HConnection connection;

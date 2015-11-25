@@ -17,7 +17,7 @@ import java.util.Iterator;
 
 public class HBQueryScanner implements Iterator<KMeansQuery> {
 
-    static final Logger logger = Logger.getLogger(HBQueryScanner.class);
+    private static final Logger logger = Logger.getLogger(HBQueryScanner.class);
     private HConnection connection;
     private HTableInterface hTable;
     private long maxID = -1;
