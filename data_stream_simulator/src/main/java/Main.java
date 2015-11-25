@@ -27,7 +27,10 @@ public class Main {
     public static void main(String[] args) {
         // Initialize connection with HBase
         connection = Utils.initHBaseConnection();
-        if (connection == null) System.exit(1);
+        if (connection == null) {
+            System.err.println("No connection with HBase.");
+            System.exit(1);
+        }
 
         OptionParser parser = new OptionParser("f:d:r:");
         OptionSet options = parser.parse(args);
