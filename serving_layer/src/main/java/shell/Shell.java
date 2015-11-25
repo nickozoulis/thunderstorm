@@ -4,7 +4,6 @@ import clustering.KMeansQuery;
 import clustering.LocalKMeans;
 import clustering.QueryType;
 import hbase.Cons;
-import hbase.Utils;
 import jline.TerminalFactory;
 import jline.console.ConsoleReader;
 import net.sf.javaml.core.Dataset;
@@ -29,7 +28,7 @@ public class Shell {
     private static ConsoleReader console;
 
     public Shell() {
-        Utils.setHBaseConfig();
+        HBaseUtils.setHBaseConfig();
 
         try {
             console = new ConsoleReader();
@@ -67,16 +66,16 @@ public class Shell {
                 parseKMeans(line, splits);
                 break;
             case "test":
-                Utils.testConnectionWithHBase(Utils.getHBaseConfig());
+                HBaseUtils.testConnectionWithHBase(HBaseUtils.getHBaseConfig());
                 break;
             case "create":
-                Utils.createSchemaTables();
+                HBaseUtils.createSchemaTables();
                 break;
             case "scan":
                 scanTable(line);
                 break;
             case "put":
-                Utils.insertRawData(splits);
+                HBaseUtils.insertRawData(splits);
                 break;
             case "man":
                 displayManual();
@@ -106,14 +105,14 @@ public class Shell {
         Result r;
         switch (splits[1]) {
             case "batch":
-                r = Utils.getRowFromBatchViews(qid);
+                r = HBaseUtils.getRowFromBatchViews(qid);
                 if (r != null)
                     printResultView(r);
                 else
                     System.out.println("No batch view for qid: " + qid);
                 break;
             case "stream":
-                r = Utils.getRowFromStreamViews(qid);
+                r = HBaseUtils.getRowFromStreamViews(qid);
                 if (r != null)
                     printResultView(r);
                 else
@@ -189,13 +188,13 @@ public class Shell {
                 try {
                     switch (hTableName) {
                         case Cons.queries:
-                            Utils.listQueriesHTable(Integer.parseInt(m.group(4)));
+                            HBaseUtils.listQueriesHTable(Integer.parseInt(m.group(4)));
                             break;
                         case Cons.batch_views:
-                            Utils.listBatchHTable();
+                            HBaseUtils.listBatchHTable();
                             break;
                         case Cons.stream_views:
-                            Utils.listStreamHTable();
+                            HBaseUtils.listStreamHTable();
                             break;
                         default:
                             return;
@@ -206,13 +205,13 @@ public class Shell {
             } else {
                 switch (hTableName) {
                     case Cons.queries:
-                        Utils.listQueriesHTable();
+                        HBaseUtils.listQueriesHTable();
                         break;
                     case Cons.batch_views:
-                        Utils.listBatchHTable();
+                        HBaseUtils.listBatchHTable();
                         break;
                     case Cons.stream_views:
-                        Utils.listStreamHTable();
+                        HBaseUtils.listStreamHTable();
                         break;
                     default:
                         return;
@@ -293,14 +292,14 @@ public class Shell {
         Result r;
 
         // Check if query exists in Queries table.
-        long queryRowKey = Utils.getQueryIDIfExists(query);
+        long queryRowKey = HBaseUtils.getQueryIDIfExists(query);
 
         // If no, add it to HBase
         if (queryRowKey == -1)
-            Utils.putKMeansQuery(query);
+            HBaseUtils.putKMeansQuery(query);
 
         // Check stream views if contain results for this query. Assuming stream takes batch views as input.
-        r = Utils.getRowFromStreamViews(queryRowKey);
+        r = HBaseUtils.getRowFromStreamViews(queryRowKey);
 
         // If yes, return it to the user.
         if (!r.isEmpty()) {
@@ -319,18 +318,18 @@ public class Shell {
             kQuery = new KMeansQuery(Cons.K, query.getFilters());
         // Check whether this kQuery already exists
 
-        long kQueryRowKey = Utils.getQueryIDIfExists(kQuery);
+        long kQueryRowKey = HBaseUtils.getQueryIDIfExists(kQuery);
 
         // If no, add it to HBase
         if (kQueryRowKey == -1)
-            Utils.putKMeansQuery(kQuery);
+            HBaseUtils.putKMeansQuery(kQuery);
 
         // Check stream views if contain results for this kQuery.
-        r = Utils.getRowFromStreamViews(kQueryRowKey);
+        r = HBaseUtils.getRowFromStreamViews(kQueryRowKey);
 
         // If yes, then compute a Local k-out-of-k'-means clustering and return that to the user
         if (!r.isEmpty()) {
-            printResultDataset(new LocalKMeans(query, Utils.loadClusters(r)).cluster());
+            printResultDataset(new LocalKMeans(query, HBaseUtils.loadClusters(r)).cluster());
             return;
         }
 
