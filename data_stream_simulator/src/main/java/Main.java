@@ -33,7 +33,7 @@ public class Main {
         // Initialize connection with HBase
         connection = Utils.initHBaseConnection();
         if (connection == null) {
-            System.err.println("No connection with HBase.");
+            logger.info("No connection with HBase.");
             System.exit(1);
         }
 
@@ -52,6 +52,8 @@ public class Main {
 
         // Perform hbase cleanup before data stream initialization.
         cleanup();
+
+        logger.info("Starting data stream simulation");
 
         try {
             HTableInterface hTable = connection.getTable(Cons.raw_data);
@@ -104,27 +106,30 @@ public class Main {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        logger.info("Closing data stream simulation.");
     }
 
     private static void cleanup() {
         Configuration conf = connection.getConfiguration();
-        System.out.println("Preparing a new data stream simulation.");
+        logger.info("Preparing a new data stream simulation.");
 
         try {
             HBaseAdmin admin = new HBaseAdmin(conf);
             admin.disableTable(Cons.raw_data);
             admin.deleteTable(Cons.raw_data);
-            System.out.println("Table deleted: " + Cons.raw_data);
+            logger.info("Table deleted: " + Cons.raw_data);
 
             HTableDescriptor tableDescriptor = new HTableDescriptor(TableName.valueOf(Cons.raw_data));
             tableDescriptor.addFamily(new HColumnDescriptor(Cons.cfAttributes));
 
             admin.createTable(tableDescriptor);
-            System.out.println("Table created: " + tableDescriptor.getNameAsString());
+            logger.info("Table created: " + tableDescriptor.getNameAsString());
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println("Data stream simulation is ready to begin.");
+
+        logger.info("Data stream simulation is ready to begin.");
     }
 
 }
