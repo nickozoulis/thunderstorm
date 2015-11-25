@@ -11,8 +11,7 @@ import org.apache.hadoop.hbase.client.HConnection;
 import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -23,7 +22,7 @@ import java.io.IOException;
  */
 public class Main {
 
-    static final Logger logger = LoggerFactory.getLogger(Main.class);
+    private static final Logger logger =  Logger.getLogger(Main.class);
     private static String filePath;
     private static int delay, range;
     private static HConnection connection;
