@@ -2,6 +2,11 @@ import hbase.Cons;
 import hbase.Utils;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.HColumnDescriptor;
+import org.apache.hadoop.hbase.HTableDescriptor;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.HConnection;
 import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hbase.client.Put;
@@ -45,6 +50,9 @@ public class Main {
             range = Integer.parseInt(options.valueOf("r").toString());
         }
 
+        // Perform hbase cleanup before data stream initialization.
+        cleanup();
+
         try {
             HTableInterface hTable = connection.getTable(Cons.raw_data);
 
@@ -60,15 +68,15 @@ public class Main {
                 int numOfAttr = 0;
                 double attr;
                 boolean flag = true;
-                for (int i=11; i<=18; i++) {
+                for (int i = 11; i <= 18; i++) {
                     try {
                         attr = Double.parseDouble(splits[i]);
                         p.add(Bytes.toBytes(Cons.cfAttributes),
                                 Bytes.toBytes(numOfAttr++), Bytes.toBytes(attr));
-                    } catch(NumberFormatException e) {
+                    } catch (NumberFormatException e) {
                         e.printStackTrace();
                         flag = false;
-                    } catch(ArrayIndexOutOfBoundsException e) {
+                    } catch (ArrayIndexOutOfBoundsException e) {
                         e.printStackTrace();
                         flag = false;
                     }
@@ -97,4 +105,26 @@ public class Main {
             e.printStackTrace();
         }
     }
+
+    private static void cleanup() {
+        Configuration conf = connection.getConfiguration();
+        System.out.println("Preparing a new data stream simulation.");
+
+        try {
+            HBaseAdmin admin = new HBaseAdmin(conf);
+            admin.disableTable(Cons.raw_data);
+            admin.deleteTable(Cons.raw_data);
+            System.out.println("Table deleted: " + Cons.raw_data);
+
+            HTableDescriptor tableDescriptor = new HTableDescriptor(TableName.valueOf(Cons.raw_data));
+            tableDescriptor.addFamily(new HColumnDescriptor(Cons.cfAttributes));
+
+            admin.createTable(tableDescriptor);
+            System.out.println("Table created: " + tableDescriptor.getNameAsString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Data stream simulation is ready to begin.");
+    }
+
 }
