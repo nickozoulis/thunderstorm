@@ -16,6 +16,7 @@
         <module>serving_layer</module>
         <module>fusion</module>
         <module>bridge</module>
+        <module>data_stream_simulator</module>
     </modules>
 
     <dependencies>

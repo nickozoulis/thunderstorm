@@ -45,6 +45,19 @@ public class Utils {
         config.set("hbase.zookeeper.property.clientPort", Cons.hbase_port);
     }
 
+    public static HConnection initHBaseConnection() {
+        try {
+            Configuration config = HBaseConfiguration.create();
+            config.set("hbase.zookeeper.quorum", Cons.hbase_IP_address);
+            config.set("hbase.zookeeper.property.clientPort", Cons.hbase_port);
+
+            return HConnectionManager.createConnection(config);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public static Configuration getHBaseConfig() {
         return config;
     }
