@@ -5,8 +5,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -18,7 +17,7 @@ import java.util.Iterator;
 
 public class HBQueryScanner implements Iterator<KMeansQuery> {
 
-    static final Logger logger = LoggerFactory.getLogger(HBQueryScanner.class);
+    static final Logger logger = Logger.getLogger(HBQueryScanner.class);
     private HConnection connection;
     private HTableInterface hTable;
     private long maxID = -1;

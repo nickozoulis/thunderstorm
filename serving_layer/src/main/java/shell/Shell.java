@@ -9,8 +9,7 @@ import jline.console.ConsoleReader;
 import net.sf.javaml.core.Dataset;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -24,7 +23,7 @@ import java.util.regex.Pattern;
  */
 public class Shell {
 
-    static final Logger logger = LoggerFactory.getLogger(Shell.class);
+    static final Logger logger = Logger.getLogger(Shell.class);
     private static ConsoleReader console;
 
     public Shell() {

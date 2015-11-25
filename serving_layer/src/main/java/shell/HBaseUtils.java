@@ -12,8 +12,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -26,7 +25,7 @@ import java.util.Set;
  */
 public class HBaseUtils {
 
-    static final Logger logger = LoggerFactory.getLogger(HBaseUtils.class);
+    static final Logger logger = Logger.getLogger(HBaseUtils.class);
     private static Configuration config;
 
     public static long getMaxQueryID(HTableInterface hTable) throws IOException {
@@ -57,11 +56,12 @@ public class HBaseUtils {
      */
     public static void testConnectionWithHBase(Configuration config) {
         try {
-            System.out.println("HBase connection trial...");
+            logger.info("HBase connection trial...");
             HBaseAdmin.checkHBaseAvailable(config);
-            System.out.println("HBase is running!");
+            logger.info("HBase is running!");
         } catch (MasterNotRunningException e) {
             System.out.println("HBase is not running.");
+            logger.info("HBase is not running.");
             e.printStackTrace();
             System.exit(1);
         } catch (IOException e) {
@@ -88,7 +88,7 @@ public class HBaseUtils {
             // Create the table through admin
             if (!admin.tableExists(Cons.queries)) {
                 admin.createTable(tableDescriptor);
-                System.out.println("Table created: " + tableDescriptor.getNameAsString());
+                logger.info("Table created: " + tableDescriptor.getNameAsString());
 
                 /*
                     Especially for Queries table, add a first specific-case-row with no actual data,
@@ -100,7 +100,7 @@ public class HBaseUtils {
                         Bytes.toBytes(Cons.max_qid), Bytes.toBytes(0l)); // Zero as Long
                 hTable.put(p);
             } else {
-                System.out.println("Table already exists: " + tableDescriptor.getNameAsString());
+                logger.info("Table already exists: " + tableDescriptor.getNameAsString());
             }
 
 
@@ -110,9 +110,9 @@ public class HBaseUtils {
 
             if (!admin.tableExists(Cons.batch_views)) {
                 admin.createTable(tableDescriptor);
-                System.out.println("Table created: " + tableDescriptor.getNameAsString());
+                logger.info("Table created: " + tableDescriptor.getNameAsString());
             } else {
-                System.out.println("Table already exists: " + tableDescriptor.getNameAsString());
+                logger.info("Table already exists: " + tableDescriptor.getNameAsString());
             }
 
 
@@ -122,9 +122,9 @@ public class HBaseUtils {
 
             if (!admin.tableExists(Cons.stream_views)) {
                 admin.createTable(tableDescriptor);
-                System.out.println("Table created: " + tableDescriptor.getNameAsString());
+                logger.info("Table created: " + tableDescriptor.getNameAsString());
             } else {
-                System.out.println("Table already exists: " + tableDescriptor.getNameAsString());
+                logger.info("Table already exists: " + tableDescriptor.getNameAsString());
             }
 
 
@@ -134,9 +134,9 @@ public class HBaseUtils {
 
             if (!admin.tableExists(Cons.raw_data)) {
                 admin.createTable(tableDescriptor);
-                System.out.println("Table created: " + tableDescriptor.getNameAsString());
+                logger.info("Table created: " + tableDescriptor.getNameAsString());
             } else {
-                System.out.println("Table already exists: " + tableDescriptor.getNameAsString());
+                logger.info("Table already exists: " + tableDescriptor.getNameAsString());
             }
 
 
@@ -145,10 +145,10 @@ public class HBaseUtils {
 
             // Printing all the table names.
             for (int i = 0; i < tableDescriptors.length; i++) {
-                System.out.println(tableDescriptors[i].getNameAsString());
+                logger.info(tableDescriptors[i].getNameAsString());
             }
 
-//            admin.shutdown();
+            admin.shutdown();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -296,11 +296,11 @@ public class HBaseUtils {
                     Bytes.toBytes(Cons.clusters),
                     Bytes.toBytes(view));
             hTable.put(p);
-            System.out.println("Inserting view with query id: " + qid);
+            logger.info("Inserting view with query id: " + qid);
 
             hTable.close();
             connection.close();
-            System.out.println("Table closed");
+            logger.info("Table closed");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -428,8 +428,8 @@ public class HBaseUtils {
             }
 
             hTable.put(p1);
-            System.out.println("Inserting query with id: " + max_quid);
-            System.out.println("Query: " + query.toString());
+            logger.info("Inserting query with id: " + max_quid);
+            logger.info("Query: " + query.toString());
 
             //TODO: Build a secondary index: each row the numOfClusters, each column the rowkey of the actual queries table
 

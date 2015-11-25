@@ -8,11 +8,10 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,7 +27,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
  */
 public class Main {
 	// Execute jar as: java -cp batch_layer-1.0-SNAPSHOT-allinone.jar Main
-	static final Logger logger = LoggerFactory.getLogger(Main.class);
+	static final Logger logger = Logger.getLogger(Main.class);
 	private static long currentID = 1, start = 0, end = Long.MAX_VALUE;
 	private static String tableName = Cons.raw_data;
 	private static HConnection connection;
@@ -76,7 +75,7 @@ public class Main {
 			while (iterator.hasNext()) {
 				KMeansQuery kmQuery = iterator.next();
 
-				System.out.println("Starting spark kmeans for query: " + kmQuery);
+				logger.info("Starting spark kmeans for query: " + kmQuery);
 
 				futures.add(ex.submit(new SparkKMeans(dataSet, kmQuery)));
 
