@@ -48,7 +48,7 @@ public class SparkKMeans implements Runnable {
             }
         }
 
-        logger.info(">> Query " + kmQuery.getId() + " duration was " + Math.abs(endTime-startTime) + " <<");
+        logger.info(">> qid: " + kmQuery.getId() + ", duration: " + Math.abs(endTime-startTime) + " ms <<");
 
         if (model != null)
             writeToHBase(model.clusterCenters());
