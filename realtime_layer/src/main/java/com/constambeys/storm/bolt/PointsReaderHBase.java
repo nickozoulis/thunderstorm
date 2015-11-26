@@ -92,7 +92,7 @@ public class PointsReaderHBase implements IRichBolt {
 
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		declarer.declare(new Fields("line"));
+		declarer.declare(new Fields("point"));
 	}
 
 	@Override
