@@ -43,7 +43,7 @@ public abstract class Query {
 
     @Override
     public String toString() {
-        String s = "";
+        String s = ", ";
 
         for (String str : filters)
             s += " ; " + str;
