@@ -3,16 +3,23 @@ package shell;
 import clustering.KMeansQuery;
 import clustering.LocalKMeans;
 import clustering.QueryType;
+import experiment.ExperimentDriver;
 import hbase.Cons;
 import jline.TerminalFactory;
 import jline.console.ConsoleReader;
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
 import net.sf.javaml.core.Dataset;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -48,6 +55,21 @@ public class Shell {
                 e.printStackTrace();
             }
         }
+    }
+
+    public Shell(String file) {
+        List<String> queryList = new ArrayList<>();
+
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String line;
+
+            while ((line = br.readLine()) != null) {
+                queryList.add(line);
+            }
+        } catch (IOException e) {e.printStackTrace();}
+
+        new ExperimentDriver(queryList);
     }
 
     /**
@@ -279,7 +301,14 @@ public class Shell {
     }
 
     public static void main(String[] args) {
-        new Shell();
+        OptionParser parser = new OptionParser("f:");
+        OptionSet options = parser.parse(args);
+
+        if (options.hasArgument("f")) { // Experiment mode
+            new Shell(options.valueOf("f").toString());
+        } else { // Normal mode
+            new Shell();
+        }
     }
 
     /**
