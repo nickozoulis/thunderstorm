@@ -33,15 +33,22 @@ public class SparkKMeans implements Runnable {
 
     private void cluster() {
         KMeansModel model = null;
+        long startTime = 0, endTime = 0;
 
         if (kmQuery.getQueryType() == QueryType.KMEANS) {
+            startTime = System.currentTimeMillis();
             model = KMeans.train(points.rdd(), kmQuery.getK(), Cons.iterations, Cons.runs, KMeans.K_MEANS_PARALLEL());
+            endTime = System.currentTimeMillis();
         } else if (kmQuery.getQueryType() == QueryType.CONSTRAINED_KMEANS) {
             // For the time being only one filter is supported, so one loop will be executed.
             for (String f : kmQuery.getFilters()) {
+                startTime = System.currentTimeMillis();
                 model = KMeans.train(getFilter(f).rdd(), kmQuery.getK(), Cons.iterations, Cons.runs, KMeans.K_MEANS_PARALLEL());
+                endTime = System.currentTimeMillis();
             }
         }
+
+        logger.info(">> Query " + kmQuery.getId() + " duration was " + Math.abs(endTime-startTime) + " <<");
 
         if (model != null)
             writeToHBase(model.clusterCenters());
