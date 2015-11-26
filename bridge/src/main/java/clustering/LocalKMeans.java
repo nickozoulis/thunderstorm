@@ -3,12 +3,14 @@ package clustering;
 import net.sf.javaml.clustering.Clusterer;
 import net.sf.javaml.clustering.KMeans;
 import net.sf.javaml.core.Dataset;
+import org.apache.log4j.Logger;
 
 /**
  * Created by nickozoulis on 15/11/2015.
  */
 public class LocalKMeans extends KMeansBase {
 
+    private static final Logger logger = Logger.getLogger(LocalKMeans.class);
     private Clusterer km;
 
     public LocalKMeans(KMeansQuery query, Dataset dataset) {
@@ -21,7 +23,15 @@ public class LocalKMeans extends KMeansBase {
      */
     @Override
     public Dataset[] cluster() {
-        return km.cluster(getDataset());
+        long startTime = 0, endTime = 0;
+
+        startTime = System.currentTimeMillis();
+        Dataset[] d = km.cluster(getDataset());
+        endTime = System.currentTimeMillis();
+
+        logger.info(">> local kmeans [" + getQuery() + "] [duration: " + Math.abs(endTime-startTime) + " ms] <<");
+
+        return d;
     }
 
 }

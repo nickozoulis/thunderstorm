@@ -50,7 +50,7 @@ public class Main {
         }
 
         if (filePath == null) System.exit(1);
-        
+
         // Perform hbase cleanup before data stream initialization.
         cleanup();
 
