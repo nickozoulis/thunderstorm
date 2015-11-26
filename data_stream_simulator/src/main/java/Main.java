@@ -24,7 +24,7 @@ public class Main {
 
     private static final Logger logger =  Logger.getLogger(Main.class);
     private static String filePath;
-    private static int delay, range;
+    private static int delay = Cons.batchDelay, range = Cons.range;
     private static HConnection connection;
 
 
@@ -49,6 +49,8 @@ public class Main {
             range = Integer.parseInt(options.valueOf("r").toString());
         }
 
+        if (filePath == null) System.exit(1);
+        
         // Perform hbase cleanup before data stream initialization.
         cleanup();
 

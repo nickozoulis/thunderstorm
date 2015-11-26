@@ -27,4 +27,5 @@ public class Cons {
     public static final int K = 10000; // The fixed number of clusterHeads
     public static final int iterations = 10;
     public static final int runs = 1;
+    public static final int range = 10000;
 }
