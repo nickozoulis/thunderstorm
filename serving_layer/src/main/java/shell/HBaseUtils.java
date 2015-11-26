@@ -139,6 +139,16 @@ public class HBaseUtils {
                 logger.info("Table already exists: " + tableDescriptor.getNameAsString());
             }
 
+            // Messages table
+            tableDescriptor = new HTableDescriptor(TableName.valueOf(Cons.messages));
+            tableDescriptor.addFamily(new HColumnDescriptor(Cons.cfAttributes));
+
+            if (!admin.tableExists(Cons.messages)) {
+                admin.createTable(tableDescriptor);
+                logger.info("Table created: " + tableDescriptor.getNameAsString());
+            } else {
+                logger.info("Table already exists: " + tableDescriptor.getNameAsString());
+            }
 
             // List all tables.
             HTableDescriptor[] tableDescriptors = admin.listTables();

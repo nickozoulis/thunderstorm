@@ -13,6 +13,7 @@ public class Cons {
     public static final String batch_views = "batch_views";
     public static final String stream_views = "stream_views";
     public static final String raw_data = "raw_data";
+    public static final String messages = "messages";
     public static final String cfAttributes = "a";
     public static final String cfQueries = "q"; // column family for Queries table
     public static final String cfViews = "v"; // column family for batch and stream Views
