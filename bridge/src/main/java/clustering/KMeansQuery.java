@@ -55,7 +55,7 @@ public class KMeansQuery extends Query {
     @Override
     public String toString() {
         String s = "";
-        
+
         s += "qid: " + getId() + ", ";
         s += "K: " + getK();
         s += super.toString();
