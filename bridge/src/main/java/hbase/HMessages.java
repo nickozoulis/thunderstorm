@@ -46,7 +46,12 @@ public class HMessages {
 		r = hTable.get(g);
 
 		byte[] value = r.getValue(Bytes.toBytes(Cons.cfAttributes), Bytes.toBytes(Cons.cfAttributes));
-		return Bytes.toLong(value);
+		if (value != null) {
+			return Bytes.toLong(value);
+		} else {
+			return 0;
+		}
+
 	}
 
 	public void close() throws IOException {
