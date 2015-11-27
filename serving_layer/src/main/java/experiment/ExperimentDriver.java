@@ -42,7 +42,6 @@ public class ExperimentDriver {
         }
     }
 
-
     /**
      * Cleans up the queries table, making it ready for experiment.
      */
