@@ -1,5 +1,6 @@
 package com.constambeys.storm.spouts;
 
+import java.io.IOException;
 import java.util.Map;
 
 import backtype.storm.spout.SpoutOutputCollector;
@@ -8,25 +9,39 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichSpout;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
+import hbase.Cons;
+import hbase.HMessages;
 
 public class SignalsSpout extends BaseRichSpout {
 
+	private long iter = 0;
+	private HMessages messages;
 	private SpoutOutputCollector collector;
-
-	private void refreshCache() {
-		collector.emit("signals", new Values("clear"));
-	}
 
 	public void nextTuple() {
 		try {
 			Thread.sleep(10000);
 			collector.emit("signals", new Values("print"));
-		} catch (InterruptedException e) {
+
+			long _iter = messages.read_long(0);
+			if (_iter != iter) {
+				_iter = iter;
+				System.out.println("Resynchonizing kmeans");
+				collector.emit("signals", new Values("clear"));
+			}
+
+		} catch (Exception e) {
+			System.err.println("Signals Spout: " + e.getMessage());
 		}
 	}
 
 	public void open(Map conf, TopologyContext context, SpoutOutputCollector collector) {
 		this.collector = collector;
+		try {
+			messages = new HMessages(Cons.messages);
+		} catch (IOException e) {
+			System.err.println("Signals Spout: " + e.getMessage());
+		}
 	}
 
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {

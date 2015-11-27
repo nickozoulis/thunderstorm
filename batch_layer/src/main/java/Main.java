@@ -1,7 +1,7 @@
 import clustering.KMeansQuery;
 import hbase.Cons;
 import hbase.HBQueryScanner;
-
+import hbase.HMessages;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import org.apache.hadoop.conf.Configuration;
@@ -12,6 +12,8 @@ import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+
+import com.jcraft.jsch.jce.HMACMD5;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -86,6 +88,9 @@ public class Main {
 				future.get();
 			}
 			futures.clear();
+			HMessages m = new HMessages(Cons.messages);
+			m.write(0, m.read_long(0) + 1);
+			m.close();
 			Thread.sleep(Cons.batchDelay);
 		}
 
