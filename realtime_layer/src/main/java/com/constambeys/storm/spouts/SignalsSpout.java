@@ -39,6 +39,7 @@ public class SignalsSpout extends BaseRichSpout {
 		this.collector = collector;
 		try {
 			messages = new HMessages(Cons.messages);
+			iter = messages.read_long(0);
 		} catch (IOException e) {
 			System.err.println("Signals Spout: " + e.getMessage());
 		}
