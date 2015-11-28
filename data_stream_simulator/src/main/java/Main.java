@@ -25,6 +25,7 @@ public class Main {
     private static final Logger logger =  Logger.getLogger(Main.class);
     private static String filePath;
     private static int delay = Cons.batchDelay, range = Cons.range;
+    private static boolean auto = true;
     private static HConnection connection;
 
 
@@ -48,14 +49,20 @@ public class Main {
         if (options.hasArgument("r")) {
             range = Integer.parseInt(options.valueOf("r").toString());
         }
+        if (options.hasArgument("a")) {
+            auto = false;
+        }
 
         if (filePath == null) System.exit(1);
 
         // Perform hbase cleanup before data stream initialization.
         cleanup();
 
-        logger.info("Starting data stream simulation");
+        dataStreamSimulation();
+    }
 
+    private static void dataStreamSimulation() {
+        logger.info("Starting data stream simulation");
         try {
             HTableInterface hTable = connection.getTable(Cons.raw_data);
 
@@ -94,7 +101,11 @@ public class Main {
 
                 // Delay
                 if (counter % range == 0) {
+                    // If auto mode is disabled, break and terminate.
+                    if (!auto) break;
+
                     try {
+                        logger.info("Thread sleeping for " + delay + " seconds.");
                         Thread.sleep(delay);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
