@@ -37,7 +37,7 @@ public class Main {
             System.exit(1);
         }
 
-        OptionParser parser = new OptionParser("f:d:r:");
+        OptionParser parser = new OptionParser("f:d:r:a:");
         OptionSet options = parser.parse(args);
 
         if (options.hasArgument("f")) {
@@ -50,10 +50,14 @@ public class Main {
             range = Integer.parseInt(options.valueOf("r").toString());
         }
         if (options.hasArgument("a")) {
+            logger.info("Auto mode disabled.");
             auto = false;
         }
 
-        if (filePath == null) System.exit(1);
+        if (filePath == null) {
+            logger.info("No data file specified. Terminating.");
+            System.exit(1);
+        }
 
         // Perform hbase cleanup before data stream initialization.
         cleanup();
@@ -70,6 +74,9 @@ public class Main {
             String line;
 
             long counter = 0;
+            // Deliberately skip first line because of labels.
+            br.readLine();
+
             while ((line = br.readLine()) != null) {
                 String[] splits = line.split("\\s+");
 
@@ -83,10 +90,7 @@ public class Main {
                         attr = Double.parseDouble(splits[i]);
                         p.add(Bytes.toBytes(Cons.cfAttributes),
                                 Bytes.toBytes(numOfAttr++), Bytes.toBytes(attr));
-                    } catch (NumberFormatException e) {
-                        e.printStackTrace();
-                        flag = false;
-                    } catch (ArrayIndexOutOfBoundsException e) {
+                    } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
                         e.printStackTrace();
                         flag = false;
                     }
@@ -113,6 +117,7 @@ public class Main {
                 }
             }
 
+            logger.info(counter + "rows were inserted.");
             hTable.close();
             connection.close();
         } catch (IOException e) {
