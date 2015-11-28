@@ -10,10 +10,11 @@ import java.io.IOException;
 
 public class HReaderQueriesC {
 
-	private long currentID = 1;
+	private long currentID = 0;
 	private HConnection connection;
 	private HTableInterface hTable;
 	private ResultScanner rs;
+	private boolean reading = false;
 
 	public HReaderQueriesC(String tableName) throws IOException {
 		Configuration config = HBaseConfiguration.create();
@@ -22,12 +23,10 @@ public class HReaderQueriesC {
 
 		connection = HConnectionManager.createConnection(config);
 		hTable = connection.getTable(tableName);
-
-		rs = hTable.getScanner(new Scan(Bytes.toBytes(currentID), Bytes.toBytes(getMaxID())));
 	}
 
 	public void restart() {
-		currentID = 1;
+		currentID = 0;
 	}
 
 	private long getMaxID() throws IOException {
@@ -43,32 +42,35 @@ public class HReaderQueriesC {
 	}
 
 	public KMeansQuery next() throws IOException {
-		Result r = rs.next();
+		if (reading) {
+			Result r = rs.next();
 
-		if (r != null) {
+			if (r != null) {
 
-			byte[] valueClusters = r.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.clusters));
-			byte[] valueFilter = r.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.filter));
+				byte[] valueClusters = r.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.clusters));
+				byte[] valueFilter = r.getValue(Bytes.toBytes(Cons.cfQueries), Bytes.toBytes(Cons.filter));
 
-			KMeansQuery km = new KMeansQuery(currentID, Bytes.toInt(valueClusters));
+				KMeansQuery km = new KMeansQuery(currentID, Bytes.toInt(valueClusters));
 
-			if (valueFilter != null) {
-				String filter = Bytes.toString(valueFilter);
-				km.getFilters().add(filter);
-			}
+				if (valueFilter != null) {
+					String filter = Bytes.toString(valueFilter);
+					km.getFilters().add(filter);
+				}
 
-			currentID++;
+				currentID++;
 
-			return km;
-		} else {
-			long maxID = getMaxID();
-
-			if (currentID <= maxID) {
-				rs = hTable.getScanner(new Scan(Bytes.toBytes(currentID), Bytes.toBytes(maxID)));
-				return next();
+				return km;
 			} else {
+				rs.close();
+				reading = false;
 				return null;
 			}
+		} else {
+			Scan scan = new Scan(Bytes.toBytes(currentID + 1));
+			scan.setCaching(100);
+			rs = hTable.getScanner(scan);
+			reading = true;
+			return next();
 		}
 	}
 }
