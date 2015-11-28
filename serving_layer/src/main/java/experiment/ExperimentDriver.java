@@ -47,16 +47,21 @@ public class ExperimentDriver {
      */
     private static void cleanup() {
         Configuration conf = connection.getConfiguration();
-        logger.info("Preparing a new data stream simulation.");
+        logger.info("Preparing queries table..");
 
         try {
             HBaseAdmin admin = new HBaseAdmin(conf);
-            admin.disableTable(Cons.queries);
-            admin.deleteTable(Cons.queries);
-            logger.info("Table deleted: " + Cons.queries);
+            if (admin.tableExists(Cons.queries)) {
+                admin.disableTable(Cons.queries);
+                admin.deleteTable(Cons.queries);
+                logger.info("Table deleted: " + Cons.queries);
+            }
 
             HTableDescriptor tableDescriptor = new HTableDescriptor(TableName.valueOf(Cons.queries));
             tableDescriptor.addFamily(new HColumnDescriptor(Cons.cfQueries));
+
+            admin.createTable(tableDescriptor);
+            logger.info("Table created: " + tableDescriptor.getNameAsString());
 
             HTable hTable = new HTable(conf, Cons.queries);
             Put p = new Put(Bytes.toBytes(0l));
@@ -64,12 +69,10 @@ public class ExperimentDriver {
                     Bytes.toBytes(Cons.max_qid), Bytes.toBytes(0l)); // Zero as Long
             hTable.put(p);
 
-            admin.createTable(tableDescriptor);
-            logger.info("Table created: " + tableDescriptor.getNameAsString());
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        logger.info("Data stream simulation is ready to begin.");
+        logger.info("Query table is ready.");
     }
 }
