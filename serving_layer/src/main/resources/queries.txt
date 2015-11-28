@@ -1,0 +1,6 @@
+kmeans 5
+kmeans 10
+kmeans 50
+kmeans 100
+kmeans 500
+kmeans 1000
