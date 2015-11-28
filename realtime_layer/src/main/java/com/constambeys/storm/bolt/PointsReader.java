@@ -76,23 +76,6 @@ public class PointsReader implements IRichBolt {
 			}
 		}
 
-		/**
-		 * The nextuple it is called forever, so if we have been readed the file we will wait and
-		 * then return
-		 */
-
-		try
-
-		{
-			Thread.sleep(10000);
-		} catch (
-
-		InterruptedException e)
-
-		{
-			// Do nothing
-		}
-
 	}
 
 	@Override

@@ -19,10 +19,8 @@ public class PointsReaderHBase implements IRichBolt {
 	private String name;
 	private OutputCollector collector;
 	private HReaderPointsC reader;
-	private boolean run;
 
 	public PointsReaderHBase() {
-		run = false;
 	}
 
 	@Override
@@ -47,37 +45,28 @@ public class PointsReaderHBase implements IRichBolt {
 		try {
 			if (input.getSourceStreamId().equals("commands")) {
 				if ("run".equals(input.getStringByField("action"))) {
-					run = true;
+					boolean check = false;
+					int i = 0;
+					Point p;
+					if ((p = reader.next()) != null) {
+						// Emit the word
+						collector.emit(new Values(p));
+						System.out.println("Reading new points");
+						i++;
+						check = true;
+					}
+
+					while ((p = reader.next()) != null) {
+						// Emit the word
+						collector.emit(new Values(p));
+						i++;
+					}
+
+					if (check)
+						System.out.println(i + " points");
 				}
 			}
 
-			if (run) {
-				boolean check = false;
-				int i = 0;
-				Point p;
-				if ((p = reader.next()) != null) {
-					// Emit the word
-					collector.emit(new Values(p));
-					System.out.println("Reading new points");
-					i++;
-					check = true;
-				}
-
-				while ((p = reader.next()) != null) {
-					// Emit the word
-					collector.emit(new Values(p));
-					i++;
-				}
-
-				if (check)
-					System.out.println(i + " points");
-
-			}
-			/**
-			 * The nextuple it is called forever, so if we have been readed the file we will wait
-			 * and then return
-			 */
-			Thread.sleep(10000);
 		} catch (Exception e) {
 			System.err.println("PointsReaderHBase: " + e.getMessage());
 		}
