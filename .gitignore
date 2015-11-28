@@ -31,3 +31,5 @@ log/
 *.log
 *.aux
 *.pdf
+*.bbl
+*.blg
