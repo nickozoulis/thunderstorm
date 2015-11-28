@@ -117,9 +117,11 @@ public class Main {
 
         try {
             HBaseAdmin admin = new HBaseAdmin(conf);
-            admin.disableTable(Cons.raw_data);
-            admin.deleteTable(Cons.raw_data);
-            logger.info("Table deleted: " + Cons.raw_data);
+            if (admin.tableExists(Cons.raw_data)) {
+                admin.disableTable(Cons.raw_data);
+                admin.deleteTable(Cons.raw_data);
+                logger.info("Table deleted: " + Cons.raw_data);
+            }
 
             HTableDescriptor tableDescriptor = new HTableDescriptor(TableName.valueOf(Cons.raw_data));
             tableDescriptor.addFamily(new HColumnDescriptor(Cons.cfAttributes));
