@@ -62,8 +62,8 @@ public class Main {
 		sc = new JavaSparkContext(sparkConf);
 
 		// Initialize a thread pool for SparkKMeans threads
-		ScheduledExecutorService ex = new ScheduledThreadPoolExecutor(5);
-		Collection<Future<?>> futures = new LinkedList<Future<?>>();
+		ScheduledExecutorService ex = new ScheduledThreadPoolExecutor(10);
+		Collection<Future<?>> futures = new LinkedList<>();
 
 		HBQueryScanner iterator;
 		JavaRDD<String> dataSet;
@@ -80,17 +80,20 @@ public class Main {
 				logger.info("Starting spark kmeans for query: " + kmQuery);
 
 				futures.add(ex.submit(new SparkKMeans(dataSet, kmQuery)));
-
-			}
+            }
 
 			iterator.closeHBConnection();
+
 			for (Future<?> future : futures) {
 				future.get();
 			}
 			futures.clear();
+
 			HMessages m = new HMessages(Cons.messages);
 			m.write(0, m.read_long(0) + 1);
 			m.close();
+
+			logger.info("Batch layer going to sleep for + " + Cons.batchDelay + " ms");
 			Thread.sleep(Cons.batchDelay);
 		}
 

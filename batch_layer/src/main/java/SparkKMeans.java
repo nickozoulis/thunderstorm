@@ -59,6 +59,7 @@ public class SparkKMeans implements Runnable {
             System.out.println("Writing results for query: " + kmQuery);
             HWriterResults hw = new HWriterResults(Cons.batch_views);
             hw.append(kmQuery.getId(), vectors);
+            System.out.println("Finished writing results for query: " + kmQuery);
             hw.close();
         } catch (IOException e) {e.printStackTrace();}
     }
