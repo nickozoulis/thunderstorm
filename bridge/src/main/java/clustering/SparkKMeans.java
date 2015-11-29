@@ -1,9 +1,10 @@
-import clustering.KMeansQuery;
-import clustering.QueryType;
+package clustering;
+
 import filtering.DataFilter;
 import filtering.Point;
 import hbase.Cons;
 import hbase.HWriterResults;
+import hbase.Utils;
 import org.apache.log4j.Logger;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.Function;
@@ -25,13 +26,15 @@ public class SparkKMeans implements Runnable {
     private static final Logger logger = Logger.getLogger(SparkKMeans.class);
     private KMeansQuery kmQuery;
     private JavaRDD<Vector> points;
+    private boolean local;
 
-    public SparkKMeans(JavaRDD<String> dataset, KMeansQuery kmQuery) {
+    public SparkKMeans(JavaRDD<String> dataset, KMeansQuery kmQuery, boolean local) {
         points = dataset.map(new ParsePoint());
         this.kmQuery = kmQuery;
+        this.local = local;
     }
 
-    private void cluster() {
+    public void cluster() {
         KMeansModel model = null;
         long startTime = 0, endTime = 0;
 
@@ -48,10 +51,15 @@ public class SparkKMeans implements Runnable {
             }
         }
 
-        logger.info(">> batch [" + kmQuery + "] [duration: " + Math.abs(endTime-startTime) + " ms] <<");
-
         if (model != null)
-            writeToHBase(model.clusterCenters());
+            if (!local) {
+                logger.info(">> batch [" + kmQuery + "] [duration: " + Math.abs(endTime-startTime) + " ms] <<");
+                writeToHBase(model.clusterCenters());
+            }
+            else {
+                logger.info(">> local [" + kmQuery + "] [duration: " + Math.abs(endTime-startTime) + " ms] <<");
+                Utils.printResultDataset(model.clusterCenters());
+            }
     }
 
     private void writeToHBase(Vector[] vectors) {

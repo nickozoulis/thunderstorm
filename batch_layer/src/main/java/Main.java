@@ -1,4 +1,5 @@
 import clustering.KMeansQuery;
+import clustering.SparkKMeans;
 import hbase.Cons;
 import hbase.HBQueryScanner;
 import hbase.HMessages;
@@ -12,9 +13,6 @@ import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-
-import com.jcraft.jsch.jce.HMACMD5;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -79,7 +77,7 @@ public class Main {
 
 				logger.info("Starting spark kmeans for query: " + kmQuery);
 
-				futures.add(ex.submit(new SparkKMeans(dataSet, kmQuery)));
+				futures.add(ex.submit(new SparkKMeans(dataSet, kmQuery, false)));
             }
 
 			iterator.closeHBConnection();

@@ -2,6 +2,7 @@ package shell;
 
 import experiment.ExperimentDriver;
 import hbase.Cons;
+import hbase.Utils;
 import jline.TerminalFactory;
 import jline.console.ConsoleReader;
 import joptsimple.OptionParser;
@@ -27,6 +28,7 @@ public class Shell {
 
     public Shell() {
         HBaseUtils.setHBaseConfig();
+        Utils.initSparkContext();
 
         try {
             console = new ConsoleReader();
@@ -50,6 +52,7 @@ public class Shell {
     }
 
     public Shell(String file) {
+        Utils.initSparkContext();
         List<String> queryList = new ArrayList<>();
 
         try {
