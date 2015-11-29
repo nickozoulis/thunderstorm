@@ -28,7 +28,11 @@ public class Main {
     private static boolean auto = true;
     private static HConnection connection;
 
-
+    /* Example run:
+        java -jar data_stream_simulator-1.0-SNAPSHOT-jar-with-dependencies.jar
+        -f /Users/nickozoulis/Downloads/data/ethylene_methane.txt
+        -a ""
+     */
     public static void main(String[] args) {
         // Initialize connection with HBase
         connection = Utils.initHBaseConnection();

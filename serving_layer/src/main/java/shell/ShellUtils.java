@@ -1,10 +1,8 @@
 package shell;
 
-import clustering.KMeansQuery;
-import clustering.LocalKMeans;
-import clustering.QueryType;
+import clustering.*;
 import hbase.Cons;
-import net.sf.javaml.core.Dataset;
+import hbase.Utils;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
 import java.util.HashSet;
@@ -28,7 +26,6 @@ public class ShellUtils {
 
         return query;
     }
-
 
     public static KMeansQuery parseConstraints(String line) {
         String constraintExpr = "", clustersExpr = "", operator = "", numOfClusters = "";
@@ -83,11 +80,6 @@ public class ShellUtils {
         System.out.println();
     }
 
-    public static void printResultDataset(Dataset[] datasets) {
-        for (Dataset d : datasets)
-            System.out.println(d.instance(0));
-    }
-
     /**
      * Performs the whole Lambda-KMeans procedure.
      *
@@ -134,7 +126,7 @@ public class ShellUtils {
 
         // If yes, then compute a Local k-out-of-k'-means clustering and return that to the user
         if (!r.isEmpty()) {
-            printResultDataset(new LocalKMeans(query, HBaseUtils.loadClusters(r)).cluster());
+            new SparkKMeans(Utils.loadClusters(r), query, true).cluster();
             return;
         }
 
@@ -145,4 +137,5 @@ public class ShellUtils {
         */
 
     }
+
 }

@@ -437,6 +437,8 @@ public class HBaseUtils {
                 }
             }
 
+            query.setId(max_quid);
+
             hTable.put(p1);
             logger.info("Inserting query with id: " + max_quid);
             logger.info("Query: " + query.toString());
