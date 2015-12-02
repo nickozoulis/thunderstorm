@@ -35,7 +35,7 @@ public class KMeansOnline implements Serializable {
 	public int id;
 
 	// List of filters
-	ArrayList<DataFilter> filters = new ArrayList<DataFilter>(0);
+	public ArrayList<DataFilter> filters = new ArrayList<DataFilter>(0);
 
 	public KMeansOnline(int id, int k) {
 		this.k = k;
@@ -57,6 +57,31 @@ public class KMeansOnline implements Serializable {
 
 	public void setStart(Point start[]) {
 		means = start;
+		initilization = true;
+	}
+
+	public void update(Point[] points) {
+		if (initilization) {
+			setStart(points);
+		} else {
+			for (Point p1 : means) {
+
+				double distance = Double.MAX_VALUE;
+				Point closest = new Point(p1.getDimension());
+
+				for (Point p2 : points) {
+					double _distance = Point.distance(p1, p2);
+
+					if (distance > _distance) {
+						distance = _distance;
+						closest = p2;
+					}
+				}
+
+				p1.add(closest);
+				p1.divide(2);
+			}
+		}
 	}
 
 	public void run(Point point) throws ScriptException {
@@ -104,9 +129,16 @@ public class KMeansOnline implements Serializable {
 			// meansX[index]);
 			// meansY[index] = meansY[index] + 1.0 / counters[index] * (y -
 			// meansY[index]);
-			means[index].multiply(counters[index] - 1);
+
+			// means[index].multiply(counters[index] - 1);
+			// means[index].add(point);
+			// means[index].divide(counters[index]);
+
+			// meansX[index] + 0.01 * (x - meansX[index]);
+			point.substract(means[index]);
+			point.multiply(0.01d);
 			means[index].add(point);
-			means[index].divide(counters[index]);
+
 		}
 	}
 

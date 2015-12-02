@@ -42,7 +42,7 @@ public class HMessages {
 		Get g;
 		Result r;
 
-		g = new Get(Bytes.toBytes(0l));
+		g = new Get(Bytes.toBytes(id));
 		r = hTable.get(g);
 
 		byte[] value = r.getValue(Bytes.toBytes(Cons.cfAttributes), Bytes.toBytes(Cons.cfAttributes));

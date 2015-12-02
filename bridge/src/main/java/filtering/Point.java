@@ -38,9 +38,35 @@ public class Point implements Serializable {
 
 	}
 
-	public void multiply(int x) {
+	public void substract(Point x) {
+		for (int i = 0; i < x.components.length; i++) {
+			components[i] = components[i] - x.components[i];
+		}
+
+	}
+
+	public void square() {
+		for (int i = 0; i < components.length; i++) {
+			components[i] = components[i] * components[i];
+		}
+	}
+
+	public void square_root() {
+		for (int i = 0; i < components.length; i++) {
+			components[i] = Math.sqrt(components[i]);
+		}
+
+	}
+
+	public void multiply(double x) {
 		for (int i = 0; i < components.length; i++) {
 			components[i] = components[i] * x;
+		}
+	}
+
+	public void divide(Point x) {
+		for (int i = 0; i < components.length; i++) {
+			components[i] = components[i] / x.components[i];
 		}
 	}
 
@@ -52,6 +78,10 @@ public class Point implements Serializable {
 
 	public int getDimension() {
 		return components.length;
+	}
+
+	public double get(int i) {
+		return components[i];
 	}
 
 	public static double distance(Point a, Point b) {
