@@ -1,7 +1,9 @@
 package experiment;
 
 import filtering.Point;
+
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -10,22 +12,23 @@ import java.util.Iterator;
 /**
  * Created by nickozoulis on 02/12/2015.
  */
-public class FileClusterReader implements Iterator<Point> {
+public class ClusterReader implements Iterator<Point> {
 
-    private Point[] ps;
+    private Point[] clusterHeads;
     private int iter = 0;
 
-    public FileClusterReader(String fileName) {
-        String[] splits = fileName.split("_");
+    public ClusterReader(File file) {
+        clusterHeads = loadClusterHeads(file);
+    }
 
-        //FIXME: Change how filenames are printed in shellutils
-//        ps = new Point[Integer.parseInt(splits[1])];
-        ps = new Point[5];
+    private Point[] loadClusterHeads(File file) {
+        String[] splits = file.getName().split("_");
+        Point[] clusterHeads = new Point[Integer.parseInt(splits[1])];
 
         try {
-            BufferedReader br = new BufferedReader(new FileReader(fileName));
+            BufferedReader br = new BufferedReader(new FileReader(file));
 
-            String line = "";
+            String line;
             ArrayList<Double> ar;
             int i = 0;
             while ((line = br.readLine()) != null) {
@@ -35,21 +38,25 @@ public class FileClusterReader implements Iterator<Point> {
                 for (String s : splits)
                     ar.add(Double.parseDouble(s));
 
-                ps[i++] = new Point(ar.toArray(new Double[ar.size()]));
+                clusterHeads[i++] = new Point(ar.toArray(new Double[ar.size()]));
             }
 
             br.close();
-        } catch (IOException e) {e.printStackTrace();}
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return clusterHeads;
     }
 
     @Override
     public boolean hasNext() {
-        return (iter < ps.length) ? true : false;
+        return (iter < clusterHeads.length) ? true : false;
     }
 
     @Override
     public Point next() {
-        return ps[iter++];
+        return clusterHeads[iter++];
     }
 
     public int getCluster(Point p) {
@@ -57,8 +64,8 @@ public class FileClusterReader implements Iterator<Point> {
         double minDist = Double.MAX_VALUE;
         double dist;
 
-        for (int i=0; i<ps.length; i++) {
-            dist = Point.distance(ps[i], p);
+        for (int i = 0; i < clusterHeads.length; i++) {
+            dist = Point.distance(clusterHeads[i], p);
             if (dist < minDist) {
                 cluster = i;
                 minDist = dist;
@@ -67,4 +74,5 @@ public class FileClusterReader implements Iterator<Point> {
 
         return cluster;
     }
+
 }

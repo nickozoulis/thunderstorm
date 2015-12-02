@@ -111,14 +111,14 @@ public class ShellUtils {
 
         // If yes, return it to the user.
         if (!r.isEmpty()) {
-            writeViewToFile(query.getId(), getPointsFromResult(r, query.getK()), true, timeStamp); // -- SILHOUETTE
+            writeViewToFile(query.getK(), getPointsFromResult(r, query.getK()), true, timeStamp); // -- SILHOUETTE
         }
 
 
         // Get Batch View
         r = HBaseUtils.getRowFromBatchViews(query.getId());
         if (!r.isEmpty())
-            writeViewToFile(query.getId(), getPointsFromResult(r, query.getK()), false, timeStamp); // -- SILHOUETTE
+            writeViewToFile(query.getK(), getPointsFromResult(r, query.getK()), false, timeStamp); // -- SILHOUETTE
 
         /*
             While these layers are computing, check whether there is a view for k'-means
@@ -167,7 +167,7 @@ public class ShellUtils {
         return ps;
     }
 
-    public static void writeViewToFile(long id, Point[] ps, boolean stream, long timeStamp) {
+    public static void writeViewToFile(long k, Point[] ps, boolean stream, long timeStamp) {
         BufferedWriter bw;
 
         String mode = "";
@@ -175,7 +175,7 @@ public class ShellUtils {
         else mode = "batch";
 
         try {
-            bw = new BufferedWriter(new FileWriter(Cons.viewsPath + timeStamp + "_" + id + "_" + mode));
+            bw = new BufferedWriter(new FileWriter(Cons.viewsPath + timeStamp + "_" + k + "_" + mode));
 
             for (Point p : ps) {
                 bw.write(p.toString());

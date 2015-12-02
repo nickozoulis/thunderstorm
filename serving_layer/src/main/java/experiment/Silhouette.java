@@ -2,17 +2,23 @@ package experiment;
 
 import filtering.Point;
 
-public class Silhouette {
-    FileClusterReader r1;
-    FileClusterReader r2;
-    int kk = 5;
+import java.io.File;
 
-    public Silhouette(String fileName) {
-        String[] splits = fileName.split("_");
+public class Silhouette {
+    private DataSetReader dataSetReader;
+    private ClusterReader clusterReader;
+    private int kk = 5;
+    private File fileDataset, fileClusters;
+
+    public Silhouette(String dataSetFileName, String clusterFileName) {
+        fileClusters = new File(clusterFileName);
+        fileDataset = new File(dataSetFileName);
+        
+        String[] splits = fileClusters.getName().split("_");
         kk = Integer.parseInt(splits[1]);
 
-        r1 = new FileClusterReader(fileName);
-        r2 = new FileClusterReader(fileName);
+        dataSetReader = new DataSetReader(fileDataset);
+        clusterReader = new ClusterReader(fileClusters);
     }
 
     private double cal(Point p1, int k1) {
@@ -20,12 +26,12 @@ public class Silhouette {
         double distances[] = new double[kk];
         int d_counters[] = new int[kk];
 
-        r2 = new FileClusterReader("");
+        clusterReader = new ClusterReader(fileClusters);
         Point p2;
-        while (r2.hasNext()) {
-            p2 = r2.next();
+        while (clusterReader.hasNext()) {
+            p2 = clusterReader.next();
 
-            int k = r2.getCluster(p2);
+            int k = clusterReader.getCluster(p2);
             distances[k] = distances[k] + Point.distance(p1, p2);
             d_counters[k]++;
         }
@@ -49,7 +55,7 @@ public class Silhouette {
     }
 
     public static void main(String[] args) {
-        new Silhouette(args[0]).run();
+        new Silhouette(args[0], args[1]).run();
     }
 
     public void run() {
@@ -59,9 +65,9 @@ public class Silhouette {
         Point p1;
 
         double s;
-        while (r1.hasNext()) {
-            p1 = r1.next();
-            s = cal(p1, r1.getCluster(p1));
+        while (dataSetReader.hasNext()) {
+            p1 = dataSetReader.next();
+            s = cal(p1, clusterReader.getCluster(p1));
             siluettes = siluettes + s;
             s_counters++;
 

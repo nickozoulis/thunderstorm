@@ -63,15 +63,15 @@ public class SparkKMeans implements Runnable {
             else {
                 logger.info(">> local [" + kmQuery + "] [duration: " + Math.abs(endTime-startTime) + " ms] <<");
                 Utils.printResultDataset(model.clusterCenters());
-                writeViewToFile(kmQuery.getId(), model.clusterCenters()); // -- SILHOUETTE
+                writeViewToFile(kmQuery.getK(), model.clusterCenters()); // -- SILHOUETTE
             }
     }
 
-    private void writeViewToFile(long id, Vector[] vs) {
+    private void writeViewToFile(long k, Vector[] vs) {
         BufferedWriter bw;
 
         try {
-            bw = new BufferedWriter(new FileWriter(Cons.viewsPath + timeStamp + "_" + id + "_local"));
+            bw = new BufferedWriter(new FileWriter(Cons.viewsPath + timeStamp + "_" + k + "_local"));
 
             for (Vector v : vs) {
                 double[] point = v.toArray();
