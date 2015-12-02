@@ -45,22 +45,25 @@ public class KMeansOnline implements Serializable {
 		initilization = true;
 	}
 
-	public void add(DataFilter f) {
+	public synchronized void add(DataFilter f) {
 		filters.add(f);
 	}
 
-	public void clear() {
+	public synchronized void clear() {
 		counters = new int[k * CONSTANT];
 		means = new Point[k * CONSTANT];
 		initilization = true;
 	}
 
-	public void setStart(Point start[]) {
+	public synchronized void setStart(Point start[]) {
 		means = start;
-		initilization = true;
+		for (int i = 0; i < start.length; i++) {
+			counters[i] = 1;
+		}
+		initilization = false;
 	}
 
-	public void update(Point[] points) {
+	public synchronized void update(Point[] points) {
 		if (initilization) {
 			setStart(points);
 		} else {
@@ -84,34 +87,25 @@ public class KMeansOnline implements Serializable {
 		}
 	}
 
-	public void run(Point point) throws ScriptException {
+	public synchronized void run(Point point) throws ScriptException {
 
 		if (!checkFilters(point)) {
 			return;
 		}
 
 		if (initilization) {
-			boolean found = false;
-			for (int i = 0; i < counters.length - 1; i++) {
+			for (int i = 0; i < counters.length; i++) {
 				if (counters[i] == 0) {
 					means[i] = new Point(point.getDimension());
 					means[i].add(point); // Initialisation do not use means[i] = point
 					counters[i] = 1;
-					found = true;
+					if (i == counters.length - 1) {
+						initilization = false;
+					}
 					break;
 				}
 			}
-			if (found == false) {
-				// Check last point
-				int i = counters.length - 1;
-				if (counters[i] == 0) {
-					means[i] = new Point(point.getDimension());
-					means[i].add(point); // Initialisation do not use means[i] = point
-					counters[i] = 1;
-					found = true;
-				}
-				initilization = false;
-			}
+
 		} else {
 			int index = 0;
 			double min = Point.distance(means[0], point);
@@ -142,7 +136,7 @@ public class KMeansOnline implements Serializable {
 		}
 	}
 
-	public Point[] result() {
+	public synchronized Point[] result() {
 
 		if (initilization) {
 			return null;
