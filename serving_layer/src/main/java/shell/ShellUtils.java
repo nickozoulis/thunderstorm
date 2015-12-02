@@ -1,10 +1,17 @@
 package shell;
 
 import clustering.*;
+import filtering.Point;
 import hbase.Cons;
 import hbase.Utils;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.spark.mllib.linalg.Vector;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -67,7 +74,7 @@ public class ShellUtils {
         int k = 0;
 
         System.out.println();
-        for (;;) {
+        for (; ; ) {
             valueClusters = result.getValue(Bytes.toBytes(Cons.cfViews), Bytes.toBytes(Cons.clusters_ + k));
 
             if (valueClusters != null)
@@ -88,21 +95,30 @@ public class ShellUtils {
     public static void KMeans(KMeansQuery query) {
         Result r;
 
+        long timeStamp = System.currentTimeMillis();
+
         // Check if query exists in Queries table.
         long queryRowKey = HBaseUtils.getQueryIDIfExists(query);
 
         // If no, add it to HBase
         if (queryRowKey == -1)
             HBaseUtils.putKMeansQuery(query);
+        else
+            query.setId(queryRowKey); // Set query's id
 
         // Check stream views if contain results for this query. Assuming stream takes batch views as input.
         r = HBaseUtils.getRowFromStreamViews(queryRowKey);
 
         // If yes, return it to the user.
         if (!r.isEmpty()) {
-            printResultView(r);
-            return;
+            writeViewToFile(query.getId(), getPointsFromResult(r, query.getK()), true, timeStamp); // -- SILHOUETTE
         }
+
+
+        // Get Batch View
+        r = HBaseUtils.getRowFromBatchViews(query.getId());
+        if (!r.isEmpty())
+            writeViewToFile(query.getId(), getPointsFromResult(r, query.getK()), false, timeStamp); // -- SILHOUETTE
 
         /*
             While these layers are computing, check whether there is a view for k'-means
@@ -126,16 +142,50 @@ public class ShellUtils {
 
         // If yes, then compute a Local k-out-of-k'-means clustering and return that to the user
         if (!r.isEmpty()) {
-            new SparkKMeans(Utils.loadClusters(r), query, true).cluster();
-            return;
+            new SparkKMeans(Utils.loadClusters(r), query, true, timeStamp).cluster(); // -- SILHOUETTE
         }
 
+    }
 
-        /*
-            While they are computing, we retrieve the k'-means view for the whole dataset (i.e., no constraints),
-            and compute and return a k-out-of-k'-means result to the user.
-        */
+    private static Point[] getPointsFromResult(Result r, int k) {
+        Point[] ps = new Point[k];
 
+        for (int i = 0; i < k; i++) {
+            ArrayList<Double> ar = new ArrayList();
+
+            byte[] value = r.getValue(Bytes.toBytes(Cons.cfViews), Bytes.toBytes("c_" + i));
+            if (value == null) break;
+
+            String clusterHead = Bytes.toString(value);
+            String[] splits = clusterHead.split(",");
+            for (String s : splits)
+                ar.add(Double.parseDouble(s));
+
+            ps[i] = new Point(ar.toArray(new Double[ar.size()]));
+        }
+
+        return ps;
+    }
+
+    public static void writeViewToFile(long id, Point[] ps, boolean stream, long timeStamp) {
+        BufferedWriter bw;
+
+        String mode = "";
+        if (stream) mode = "stream";
+        else mode = "batch";
+
+        try {
+            bw = new BufferedWriter(new FileWriter(Cons.viewsPath + timeStamp + "_" + id + "_" + mode));
+
+            for (Point p : ps) {
+                bw.write(p.toString());
+                bw.newLine();
+            }
+
+            bw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }

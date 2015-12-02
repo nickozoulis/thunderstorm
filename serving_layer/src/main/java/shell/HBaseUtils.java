@@ -4,10 +4,6 @@ import clustering.KMeansQuery;
 import clustering.QueryType;
 import com.google.protobuf.ServiceException;
 import hbase.Cons;
-import net.sf.javaml.core.Dataset;
-import net.sf.javaml.core.DefaultDataset;
-import net.sf.javaml.core.DenseInstance;
-import net.sf.javaml.core.Instance;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.client.*;
@@ -158,7 +154,45 @@ public class HBaseUtils {
                 logger.info(tableDescriptors[i].getNameAsString());
             }
 
-            admin.shutdown();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void deleteAllSchemaTables() {
+        try {
+            // Instantiating HbaseAdmin class
+            HBaseAdmin admin = new HBaseAdmin(config);
+
+            if (admin.tableExists(Cons.queries)) {
+                admin.disableTable(Cons.queries);
+                admin.deleteTable(Cons.queries);
+                logger.info("Table deleted: " + Cons.queries);
+            }
+
+            if (admin.tableExists(Cons.batch_views)) {
+                admin.disableTable(Cons.batch_views);
+                admin.deleteTable(Cons.batch_views);
+                logger.info("Table deleted: " + Cons.batch_views);
+            }
+
+            if (admin.tableExists(Cons.stream_views)) {
+                admin.disableTable(Cons.stream_views);
+                admin.deleteTable(Cons.stream_views);
+                logger.info("Table deleted: " + Cons.stream_views);
+            }
+
+            if (admin.tableExists(Cons.raw_data)) {
+                admin.disableTable(Cons.raw_data);
+                admin.deleteTable(Cons.raw_data);
+                logger.info("Table deleted: " + Cons.raw_data);
+            }
+
+            if (admin.tableExists(Cons.messages)) {
+                admin.disableTable(Cons.messages);
+                admin.deleteTable(Cons.messages);
+                logger.info("Table deleted: " + Cons.messages);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -166,8 +200,9 @@ public class HBaseUtils {
 
     /**
      * Scans an HTable and lists its results. Using options will return filtered records.
+     *
      * @param hTableName The name of the table to be scanned.
-     * @param option 0 return all records, 1 returns plain KMeans, 2 returns filtered KMeans
+     * @param option     0 return all records, 1 returns plain KMeans, 2 returns filtered KMeans
      */
     private static void listHTable(String hTableName, int option) {
         try {
@@ -188,6 +223,7 @@ public class HBaseUtils {
 
     /**
      * Scans an Queries HTable. Using options will return filtered records.
+     *
      * @param option 0 return all records, 1 returns plain KMeans, 2 returns filtered KMeans
      */
     public static void listQueriesHTable(int option) {
@@ -335,76 +371,9 @@ public class HBaseUtils {
         return result;
     }
 
-    public static Dataset loadClusters(Result result) {
-        byte[] valueClusters;
-        int k = 0;
-        Dataset ds = new DefaultDataset();
-
-        for (;;) {
-            valueClusters = result.getValue(Bytes.toBytes(Cons.cfViews), Bytes.toBytes(Cons.clusters_ + k));
-
-            if (valueClusters != null)
-                ds.add(createInstance(Bytes.toString(valueClusters)));
-            else
-                break;
-
-            k++;
-        }
-
-        return ds;
-    }
-
-    public static Dataset loadClusters(String tableName, long qid) {
-        return loadClusters(getRowFromHTable(tableName, qid));
-    }
-
-    private static Instance createInstance(String str) {
-        String[] splits = str.split(",");
-
-        double[] values = new double[splits.length];
-
-        for (int i=0; i<splits.length; i++)
-            values[i] = Double.parseDouble(splits[i]);
-
-        return new DenseInstance(values);
-    }
-
-
-    /**
-     * Adapts the results of the HBase to the ML library output.
-     * @param result
-     * @return The results are returned in an array of Datasets, where each Dataset represents a cluster.
-     */
-    public static Dataset[] resultToDataset(Result result) {
-        byte[] valueClusters;
-        int k = 0;
-        Dataset ds = new DefaultDataset();
-
-        for (;;) {
-            valueClusters = result.getValue(Bytes.toBytes(Cons.cfViews), Bytes.toBytes(Cons.clusters_ + k));
-
-            if (valueClusters != null)
-                ds.add(createInstance(Bytes.toString(valueClusters)));
-            else
-                break;
-
-            k++;
-        }
-
-        //FIXME: Write numOfClusters in views so as to avoid this second loop.
-        Dataset[] datasets = new Dataset[ds.size()];
-        Dataset temp;
-        for (int i=0; i<ds.size(); i++) {
-            temp = new DefaultDataset();
-            temp.add(ds.get(i));
-            datasets[i] = temp;
-        }
-
-        return datasets;
-    }
-
     /**
      * Enqueues this KMeans query in an HBase table, where all queries are being stored with unique ID.
+     *
      * @param query
      * @return The row key of this query.
      */
@@ -525,15 +494,15 @@ public class HBaseUtils {
                 int numOfAttr = 0;
                 double attr;
                 boolean flag = true;
-                for (int i=11; i<=18; i++) {
+                for (int i = 11; i <= 18; i++) {
                     try {
                         attr = Double.parseDouble(splits[i]);
                         p.add(Bytes.toBytes(Cons.cfAttributes),
                                 Bytes.toBytes(numOfAttr++), Bytes.toBytes(attr));
-                    } catch(NumberFormatException e) {
+                    } catch (NumberFormatException e) {
                         e.printStackTrace();
                         flag = false;
-                    } catch(ArrayIndexOutOfBoundsException e) {
+                    } catch (ArrayIndexOutOfBoundsException e) {
                         e.printStackTrace();
                         flag = false;
                     }

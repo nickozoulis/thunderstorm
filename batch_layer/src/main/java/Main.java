@@ -75,9 +75,12 @@ public class Main {
 			while (iterator.hasNext()) {
 				KMeansQuery kmQuery = iterator.next();
 
+				// FOR EXPERIMENTS SKIP K=10000
+				if(kmQuery.getK() == Cons.K) continue;
+
 				logger.info("Starting spark kmeans for query: " + kmQuery);
 
-				futures.add(ex.submit(new SparkKMeans(dataSet, kmQuery, false)));
+				futures.add(ex.submit(new SparkKMeans(dataSet, kmQuery, false, System.currentTimeMillis())));
             }
 
 			iterator.closeHBConnection();
@@ -91,7 +94,7 @@ public class Main {
 			m.write(0, m.read_long(0) + 1);
 			m.close();
 
-			logger.info("Batch layer going to sleep for + " + Cons.batchDelay + " ms");
+			logger.info("Batch layer going to sleep for + " + Cons.batchDelay + " ms.");
 			Thread.sleep(Cons.batchDelay);
 		}
 

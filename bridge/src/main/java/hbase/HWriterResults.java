@@ -1,6 +1,9 @@
 package hbase;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.Arrays;
 
 import org.apache.spark.mllib.linalg.Vector;

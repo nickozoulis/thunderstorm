@@ -51,6 +51,7 @@ public class BoltOutput implements IRichBolt {
 				}*/
 
 				writer.append(k.id, result);
+//				writer.writeViewToFile(k.id, result);
 			}
 		} catch (Exception e) {
 			System.err.println("BoltOutput: " + e.getMessage());

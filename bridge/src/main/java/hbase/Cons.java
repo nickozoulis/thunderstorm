@@ -23,10 +23,12 @@ public class Cons {
     public static final String filter = "filter";
     public static final String numOfAttr = "numOfAttr";
 
-    public static final int delay = 3000; // Thread sleep delay in milliseconds
-    public static final int batchDelay = 3600000; // Every hour
+    public static final int delay = 60000;
+    public static final int batchDelay = 60000; // Every hour 3600000
     public static final int K = 10000; // The fixed number of clusterHeads
     public static final int iterations = 10;
     public static final int runs = 1;
-    public static final int range = 100000;
+    public static final int range = 10000;
+    public static final int dataStreamDelay = 30000;
+    public static final String viewsPath = "/var/tmp/views/";
 }

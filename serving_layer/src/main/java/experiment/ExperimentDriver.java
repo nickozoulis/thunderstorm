@@ -36,9 +36,19 @@ public class ExperimentDriver {
     }
 
     private void experiment(List<String> queryList) {
-        for (String line : queryList) {
-            String[] splits = line.split(" ");
-            ShellUtils.KMeans(ShellUtils.parseKMeans(line, splits));
+        while (true) {
+            for (String line : queryList) {
+                String[] splits = line.split(" ");
+                logger.info("Executing experiment for query " + line);
+                ShellUtils.KMeans(ShellUtils.parseKMeans(line, splits));
+            }
+
+            try {
+                logger.info("Thread sleeping for " + Cons.delay + " seconds.");
+                Thread.sleep(Cons.delay);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -47,32 +57,9 @@ public class ExperimentDriver {
      */
     private static void cleanup() {
         Configuration conf = connection.getConfiguration();
-        logger.info("Preparing queries table..");
+        logger.info("Preparing HBase tables..");
 
-        try {
-            HBaseAdmin admin = new HBaseAdmin(conf);
-            if (admin.tableExists(Cons.queries)) {
-                admin.disableTable(Cons.queries);
-                admin.deleteTable(Cons.queries);
-                logger.info("Table deleted: " + Cons.queries);
-            }
-
-            HTableDescriptor tableDescriptor = new HTableDescriptor(TableName.valueOf(Cons.queries));
-            tableDescriptor.addFamily(new HColumnDescriptor(Cons.cfQueries));
-
-            admin.createTable(tableDescriptor);
-            logger.info("Table created: " + tableDescriptor.getNameAsString());
-
-            HTable hTable = new HTable(conf, Cons.queries);
-            Put p = new Put(Bytes.toBytes(0l));
-            p.add(Bytes.toBytes(Cons.cfQueries),
-                    Bytes.toBytes(Cons.max_qid), Bytes.toBytes(0l)); // Zero as Long
-            hTable.put(p);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        logger.info("Query table is ready.");
+        HBaseUtils.deleteAllSchemaTables();
+        HBaseUtils.createSchemaTables();
     }
 }

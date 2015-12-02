@@ -24,7 +24,7 @@ public class Main {
 
     private static final Logger logger =  Logger.getLogger(Main.class);
     private static String filePath;
-    private static int delay = Cons.batchDelay, range = Cons.range;
+    private static int delay = Cons.dataStreamDelay, range = Cons.range;
     private static boolean auto = true;
     private static HConnection connection;
 
@@ -64,7 +64,7 @@ public class Main {
         }
 
         // Perform hbase cleanup before data stream initialization.
-        cleanup();
+//        cleanup();
 
         dataStreamSimulation();
     }
@@ -113,6 +113,7 @@ public class Main {
                     if (!auto) break;
 
                     try {
+                        logger.info(counter + " rows are inserted up to this point.");
                         logger.info("Thread sleeping for " + delay + " seconds.");
                         Thread.sleep(delay);
                     } catch (InterruptedException e) {
@@ -121,7 +122,7 @@ public class Main {
                 }
             }
 
-            logger.info(counter + "rows were inserted.");
+            logger.info(counter + " total rows were inserted.");
             hTable.close();
             connection.close();
         } catch (IOException e) {

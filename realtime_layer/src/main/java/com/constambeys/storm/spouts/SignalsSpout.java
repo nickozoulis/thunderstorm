@@ -26,7 +26,7 @@ public class SignalsSpout extends BaseRichSpout {
 			long _iter = messages.read_long(0);
 			if (_iter != iter) {
 				_iter = iter;
-				System.out.println("Resynchonizing kmeans");
+				System.out.println("Resynchronizing kmeans");
 				collector.emit("signals", new Values("clear"));
 			}
 

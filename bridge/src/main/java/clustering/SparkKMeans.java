@@ -13,6 +13,8 @@ import org.apache.spark.mllib.clustering.KMeansModel;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 
 
@@ -27,11 +29,13 @@ public class SparkKMeans implements Runnable {
     private KMeansQuery kmQuery;
     private JavaRDD<Vector> points;
     private boolean local;
+    private long timeStamp;
 
-    public SparkKMeans(JavaRDD<String> dataset, KMeansQuery kmQuery, boolean local) {
+    public SparkKMeans(JavaRDD<String> dataset, KMeansQuery kmQuery, boolean local, long timeStamp) {
         points = dataset.map(new ParsePoint());
         this.kmQuery = kmQuery;
         this.local = local;
+        this.timeStamp = timeStamp;
     }
 
     public void cluster() {
@@ -59,7 +63,25 @@ public class SparkKMeans implements Runnable {
             else {
                 logger.info(">> local [" + kmQuery + "] [duration: " + Math.abs(endTime-startTime) + " ms] <<");
                 Utils.printResultDataset(model.clusterCenters());
+                writeViewToFile(kmQuery.getId(), model.clusterCenters()); // -- SILHOUETTE
             }
+    }
+
+    private void writeViewToFile(long id, Vector[] vs) {
+        BufferedWriter bw;
+
+        try {
+            bw = new BufferedWriter(new FileWriter(Cons.viewsPath + timeStamp + "_" + id + "_local"));
+
+            for (Vector v : vs) {
+                double[] point = v.toArray();
+                Point p = new Point(point);
+                bw.write(p.toString());
+                bw.newLine();
+            }
+
+            bw.close();
+        } catch(IOException e) {e.printStackTrace();}
     }
 
     private void writeToHBase(Vector[] vectors) {
@@ -67,6 +89,10 @@ public class SparkKMeans implements Runnable {
             System.out.println("Writing results for query: " + kmQuery);
             HWriterResults hw = new HWriterResults(Cons.batch_views);
             hw.append(kmQuery.getId(), vectors);
+//            if (local)
+//                hw.writeViewToFile(kmQuery.getId(), vectors, true);
+//            else
+//                hw.writeViewToFile(kmQuery.getId(), vectors, false);
             System.out.println("Finished writing results for query: " + kmQuery);
             hw.close();
         } catch (IOException e) {e.printStackTrace();}
