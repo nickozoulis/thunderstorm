@@ -81,4 +81,6 @@ public class DataSetReader implements Iterator<Point> {
         }
         return lines;
     }
+
+    public void reset() {iter = 0;}
 }

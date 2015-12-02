@@ -1,24 +1,16 @@
 package experiment;
 
 import filtering.Point;
-
 import java.io.File;
 
 public class Silhouette {
+
     private DataSetReader dataSetReader;
     private ClusterReader clusterReader;
     private int kk = 5;
-    private File fileDataset, fileClusters;
 
-    public Silhouette(String dataSetFileName, String clusterFileName) {
-        fileClusters = new File(clusterFileName);
-        fileDataset = new File(dataSetFileName);
-        
-        String[] splits = fileClusters.getName().split("_");
-        kk = Integer.parseInt(splits[1]);
-
-        dataSetReader = new DataSetReader(fileDataset);
-        clusterReader = new ClusterReader(fileClusters);
+    public Silhouette(String fileName) {
+        dataSetReader = new DataSetReader(new File(fileName));
     }
 
     private double cal(Point p1, int k1) {
@@ -26,12 +18,12 @@ public class Silhouette {
         double distances[] = new double[kk];
         int d_counters[] = new int[kk];
 
-        clusterReader = new ClusterReader(fileClusters);
+        ClusterReader cr = new ClusterReader(clusterReader.getFile());
         Point p2;
-        while (clusterReader.hasNext()) {
-            p2 = clusterReader.next();
+        while (cr.hasNext()) {
+            p2 = cr.next();
 
-            int k = clusterReader.getCluster(p2);
+            int k = cr.getCluster(p2);
             distances[k] = distances[k] + Point.distance(p1, p2);
             d_counters[k]++;
         }
@@ -55,7 +47,24 @@ public class Silhouette {
     }
 
     public static void main(String[] args) {
-        new Silhouette(args[0], args[1]).run();
+        Silhouette silhouette = new Silhouette(args[0]);
+
+        File folder = new File(args[1]);
+
+        for (final File file : folder.listFiles()) {
+            if (file.getName().endsWith("batch") || file.getName().endsWith("local") || file.getName().endsWith("stream")) {
+                silhouette.setClusters(file);
+                silhouette.run();
+                silhouette.dataSetReader.reset();
+            }
+        }
+    }
+
+    private void setClusters(File file) {
+        String[] splits = file.getName().split("_");
+        kk = Integer.parseInt(splits[1]);
+
+        clusterReader = new ClusterReader(file);
     }
 
     public void run() {
@@ -73,7 +82,7 @@ public class Silhouette {
 
         }
 
-        System.out.println(siluettes / s_counters);
+        System.out.println(String.format("%s : %.3f", clusterReader.getFile().getName(), siluettes / s_counters));
     }
 
 }

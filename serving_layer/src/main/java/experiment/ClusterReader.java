@@ -16,8 +16,10 @@ public class ClusterReader implements Iterator<Point> {
 
     private Point[] clusterHeads;
     private int iter = 0;
+    private File file;
 
     public ClusterReader(File file) {
+        this.file = file;
         clusterHeads = loadClusterHeads(file);
     }
 
@@ -74,5 +76,7 @@ public class ClusterReader implements Iterator<Point> {
 
         return cluster;
     }
+
+    public File getFile() {return this.file;}
 
 }
