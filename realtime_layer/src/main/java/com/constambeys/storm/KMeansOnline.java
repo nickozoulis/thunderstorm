@@ -49,13 +49,24 @@ public class KMeansOnline implements Serializable {
 		filters.add(f);
 	}
 
-	public void clear() {
+	public synchronized void clear() {
+		initilization = true;
 		counters = new int[k * CONSTANT];
 		means = new Point[k * CONSTANT];
-		initilization = true;
 	}
 
 	public void setStart(Point start[]) {
+
+		if(start.length!=means.length){
+System.err.println("Errrrooooooooorr11111111");
+			return;
+		}
+		for(Point p: start){
+			if(p.getDimension()!=8){
+				System.err.println("Errrrooooooooorr222222");
+				return;
+			}
+		}
 		means = start;
 	}
 
@@ -110,7 +121,7 @@ public class KMeansOnline implements Serializable {
 		}
 	}
 
-	public Point[] result() {
+	public synchronized Point[] result() {
 
 		if (initilization) {
 			return null;
@@ -132,8 +143,12 @@ public class KMeansOnline implements Serializable {
 							insertDistance(means[u1], means[u2], ds, u2);
 						}
 					}
-
-					Point s = new Point(means[u1].getDimension());
+					Point s = null;
+					try {
+						 s = new Point(means[u1].getDimension());
+					}catch(Exception e){
+						e.printStackTrace();
+					}
 					s.add(means[u1]);
 					for (int i = 0; i < ds.d.length; i++) {
 						s.add(means[ds.d[i].index]);

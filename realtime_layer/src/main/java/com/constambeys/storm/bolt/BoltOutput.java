@@ -55,6 +55,7 @@ public class BoltOutput implements IRichBolt {
 			}
 		} catch (Exception e) {
 			System.err.println("BoltOutput: " + e.getMessage());
+			e.printStackTrace();
 		}
 
 	}
