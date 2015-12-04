@@ -32,7 +32,7 @@ public class DataSetReader implements Iterator<Point> {
 
                 boolean flag = true;
                 ar = new ArrayList();
-                for (int i = 11; i <= 18; i++) {
+                for (int i = 0; i < 8; i++) {
                     try {
                         ar.add(Double.parseDouble(splits[i]));
                     } catch (NumberFormatException e) {

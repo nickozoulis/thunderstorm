@@ -63,9 +63,6 @@ public class Main {
             System.exit(1);
         }
 
-        // Perform hbase cleanup before data stream initialization.
-//        cleanup();
-
         dataStreamSimulation();
     }
 
@@ -78,8 +75,6 @@ public class Main {
             String line;
 
             long counter = 0;
-            // Deliberately skip first line because of labels.
-            br.readLine();
 
             while ((line = br.readLine()) != null) {
                 String[] splits = line.split("\\s+");
@@ -89,7 +84,7 @@ public class Main {
                 int numOfAttr = 0;
                 double attr;
                 boolean flag = true;
-                for (int i = 11; i <= 18; i++) {
+                for (int i = 0; i < 8; i++) {
                     try {
                         attr = Double.parseDouble(splits[i]);
                         p.add(Bytes.toBytes(Cons.cfAttributes),
@@ -130,30 +125,6 @@ public class Main {
         }
 
         logger.info("Closing data stream simulation.");
-    }
-
-    private static void cleanup() {
-        Configuration conf = connection.getConfiguration();
-        logger.info("Preparing a new data stream simulation.");
-
-        try {
-            HBaseAdmin admin = new HBaseAdmin(conf);
-            if (admin.tableExists(Cons.raw_data)) {
-                admin.disableTable(Cons.raw_data);
-                admin.deleteTable(Cons.raw_data);
-                logger.info("Table deleted: " + Cons.raw_data);
-            }
-
-            HTableDescriptor tableDescriptor = new HTableDescriptor(TableName.valueOf(Cons.raw_data));
-            tableDescriptor.addFamily(new HColumnDescriptor(Cons.cfAttributes));
-
-            admin.createTable(tableDescriptor);
-            logger.info("Table created: " + tableDescriptor.getNameAsString());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        logger.info("Data stream simulation is ready to begin.");
     }
 
 }
