@@ -26,7 +26,8 @@ public class Cons {
     public static final int delay = 60000;
     public static final int batchDelay = 60000; // Every hour 3600000
     public static final int K = 10000; // The fixed number of clusterHeads
-    public static final int iterations = 10;
+    public static final int iterations = 50000;
+    public static final double epsilon = 0.01;
     public static final int runs = 1;
     public static final int range = 10000;
     public static final int dataStreamDelay = 30000;
