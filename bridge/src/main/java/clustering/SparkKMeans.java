@@ -30,12 +30,23 @@ public class SparkKMeans implements Runnable {
     private JavaRDD<Vector> points;
     private boolean local;
     private long timeStamp;
+    private KMeans kMeans;
 
     public SparkKMeans(JavaRDD<String> dataset, KMeansQuery kmQuery, boolean local, long timeStamp) {
         points = dataset.map(new ParsePoint());
         this.kmQuery = kmQuery;
+
+        // Variables used for experiments
         this.local = local;
         this.timeStamp = timeStamp;
+
+        // Spark KMeans configuration
+        kMeans = new KMeans();
+        kMeans.setK(kmQuery.getK());
+        kMeans.setEpsilon(Cons.epsilon);
+        kMeans.setMaxIterations(Cons.iterations);
+        kMeans.setRuns(Cons.runs);
+        kMeans.setInitializationMode(KMeans.K_MEANS_PARALLEL());
     }
 
     public void cluster() {
@@ -44,13 +55,13 @@ public class SparkKMeans implements Runnable {
 
         if (kmQuery.getQueryType() == QueryType.KMEANS) {
             startTime = System.currentTimeMillis();
-            model = KMeans.train(points.rdd(), kmQuery.getK(), Cons.iterations, Cons.runs, KMeans.K_MEANS_PARALLEL());
+            model = kMeans.run(points.rdd());
             endTime = System.currentTimeMillis();
         } else if (kmQuery.getQueryType() == QueryType.CONSTRAINED_KMEANS) {
             // For the time being only one filter is supported, so one loop will be executed.
             for (String f : kmQuery.getFilters()) {
                 startTime = System.currentTimeMillis();
-                model = KMeans.train(getFilter(f).rdd(), kmQuery.getK(), Cons.iterations, Cons.runs, KMeans.K_MEANS_PARALLEL());
+                model = kMeans.run(getFilter(f).rdd());
                 endTime = System.currentTimeMillis();
             }
         }
@@ -89,10 +100,6 @@ public class SparkKMeans implements Runnable {
             System.out.println("Writing results for query: " + kmQuery);
             HWriterResults hw = new HWriterResults(Cons.batch_views);
             hw.append(kmQuery.getId(), vectors);
-//            if (local)
-//                hw.writeViewToFile(kmQuery.getId(), vectors, true);
-//            else
-//                hw.writeViewToFile(kmQuery.getId(), vectors, false);
             System.out.println("Finished writing results for query: " + kmQuery);
             hw.close();
         } catch (IOException e) {e.printStackTrace();}
