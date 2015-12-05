@@ -18,6 +18,10 @@ public class DataSetReader implements Iterator<Point> {
         dataSet = loadDataset(file);
     }
 
+    public DataSetReader(List<Point> dataSet) {
+        this.dataSet = dataSet;
+    }
+
     private List<Point> loadDataset(File file) {
         List<Point> dataSet = new ArrayList<>((int)countLineNumber(file));
 
@@ -83,4 +87,6 @@ public class DataSetReader implements Iterator<Point> {
     }
 
     public void reset() {iter = 0;}
+
+    public List<Point> getDataSet() {return this.dataSet;}
 }

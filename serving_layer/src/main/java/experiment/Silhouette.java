@@ -1,49 +1,59 @@
 package experiment;
 
 import filtering.Point;
+import org.apache.commons.math3.ml.distance.EuclideanDistance;
+
 import java.io.File;
 
 public class Silhouette {
 
     private DataSetReader dataSetReader;
     private ClusterReader clusterReader;
-    private int kk = 5;
+    private int K;
+    private String fileName;
 
     public Silhouette(String fileName) {
+        this.fileName = fileName;
         dataSetReader = new DataSetReader(new File(fileName));
     }
 
-    private double cal(Point p1, int k1) {
+    private double cal(Point p, int c) {
         // Distance to all other points
-        double distances[] = new double[kk];
-        int d_counters[] = new int[kk];
+        double distanceA = 0, distanceB = 0;
+        int counterA = 0, counterB = 0;
 
-        ClusterReader cr = new ClusterReader(clusterReader.getFile());
-        Point p2;
-        while (cr.hasNext()) {
-            p2 = cr.next();
+        // Shallow copy in order to save memory
+        DataSetReader dr = new DataSetReader(dataSetReader.getDataSet());
+        Point pp;
+        // For each point p, first find the average distance between p and all other points in the same cluster
+        // (this is a measure of cohesion, call it A
+        while (dr.hasNext()) {
+            pp = dr.next();
 
-            int k = cr.getCluster(p2);
-            distances[k] = distances[k] + Point.distance(p1, p2);
-            d_counters[k]++;
-        }
+            int cc, nearestCluster;
+            // For all points other than p
+            if (!pp.equals(p)) {
+                // Get its cluster
+                cc = clusterReader.getCluster(pp);
+                // Get the cluster nearest to cluster c
+                nearestCluster = clusterReader.getNearestCluster(c);
 
-        // Average distance to all other points in its cluster
-        double a = distances[k1] / d_counters[k1];
-
-        // Find minimum
-        double b = Double.MAX_VALUE;
-        for (int i = 0; i < kk; i++) {
-            if (i == k1)
-                continue;
-
-            if (b > (distances[i] / d_counters[i])) {
-                b = (distances[i] / d_counters[i]);
+                if (cc == c) {
+                    // If Point pp is in the same cluster as Point p
+                    distanceA += Point.distance(p, pp);
+                    counterA++;
+                } else if (cc == nearestCluster) {
+                    // If Point pp is in the nearest cluster of Point p
+                    distanceB += Point.distance(p, pp);
+                    counterB++;
+                }
             }
         }
 
-        double s = (b - a) / Math.max(a, b);
-        return s;
+        double A = distanceA / counterA;
+        double B = distanceB / counterB;
+
+        return (B - A) / Math.max(A, B);
     }
 
     public static void main(String[] args) {
@@ -62,27 +72,27 @@ public class Silhouette {
 
     private void setClusters(File file) {
         String[] splits = file.getName().split("_");
-        kk = Integer.parseInt(splits[1]);
+        K = Integer.parseInt(splits[1]);
 
         clusterReader = new ClusterReader(file);
     }
 
     public void run() {
-        double siluettes = 0;
+        double silhouettes = 0;
         int s_counters = 0;
 
         Point p1;
 
         double s;
+        // Forach point in the dataset
         while (dataSetReader.hasNext()) {
             p1 = dataSetReader.next();
             s = cal(p1, clusterReader.getCluster(p1));
-            siluettes = siluettes + s;
+            silhouettes = silhouettes + s;
             s_counters++;
-
         }
 
-        System.out.println(String.format("%s : %.3f", clusterReader.getFile().getName(), siluettes / s_counters));
+        System.out.println(String.format("%s,%.3f", clusterReader.getFile().getName(), silhouettes / s_counters));
     }
 
 }
