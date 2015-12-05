@@ -1,8 +1,6 @@
 package experiment;
 
 import filtering.Point;
-import org.apache.commons.math3.ml.distance.EuclideanDistance;
-
 import java.io.File;
 
 public class Silhouette {
@@ -10,10 +8,8 @@ public class Silhouette {
     private DataSetReader dataSetReader;
     private ClusterReader clusterReader;
     private int K;
-    private String fileName;
 
     public Silhouette(String fileName) {
-        this.fileName = fileName;
         dataSetReader = new DataSetReader(new File(fileName));
     }
 
@@ -25,8 +21,12 @@ public class Silhouette {
         // Shallow copy in order to save memory
         DataSetReader dr = new DataSetReader(dataSetReader.getDataSet());
         Point pp;
+
+        // Silhouette coefficient calculation:
         // For each point p, first find the average distance between p and all other points in the same cluster
-        // (this is a measure of cohesion, call it A
+        // (this is a measure of cohesion, call it A.
+        // Then find the average distance between p and all points in the nearest cluster
+        // (this is a measure of separation from the closest other cluster, call it B)
         while (dr.hasNext()) {
             pp = dr.next();
 
@@ -84,7 +84,7 @@ public class Silhouette {
         Point p1;
 
         double s;
-        // Forach point in the dataset
+        // Foreach point in the dataset
         while (dataSetReader.hasNext()) {
             p1 = dataSetReader.next();
             s = cal(p1, clusterReader.getCluster(p1));

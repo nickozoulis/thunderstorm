@@ -1,7 +1,5 @@
 package filtering;
 
-import org.apache.commons.math3.ml.distance.EuclideanDistance;
-
 import java.io.Serializable;
 
 public class Point implements Serializable {
