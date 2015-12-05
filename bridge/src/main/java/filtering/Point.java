@@ -1,5 +1,7 @@
 package filtering;
 
+import org.apache.commons.math3.ml.distance.EuclideanDistance;
+
 import java.io.Serializable;
 
 public class Point implements Serializable {
@@ -55,18 +57,15 @@ public class Point implements Serializable {
 	}
 
 	public static double distance(Point a, Point b) {
-
 		if (a.getDimension() != b.getDimension()) {
-			System.out.println("Invalid points compare");
+			throw new ArithmeticException("Point dimension mismatch.");
 		}
 
-		double distance = 0;
-
-		for (int i = 0; i < a.components.length; i++) {
-			distance = distance + (a.components[i] - b.components[i]) * (a.components[i] - b.components[i]);
+		double sum = 0.0;
+		for(int i=0; i<a.components.length; i++) {
+			sum = sum + Math.pow((a.components[i] - b.components[i]),2.0);
 		}
-
-		return Math.pow(distance, 1.0 / a.components.length);
+		return Math.sqrt(sum);
 	}
 
 	@Override
@@ -82,4 +81,27 @@ public class Point implements Serializable {
 		return sb.toString();
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof Point) {
+			Point p = (Point)obj;
+
+			for (int i=0; i<p.getDimension(); i++)
+				if (p.components[i] != this.components[i])
+					return false;
+
+			return true;
+		}
+		return false;
+	}
+
+	public static void main(String[] args) {
+		String[] s = new String[3];
+		s[0] = "0";s[1] = "1";s[2] = "2";
+		String[] s2 = new String[3];
+		s2[0] = "1";s2[1] = "2";s2[2] = "3";
+		Point p = new Point(s);
+		Point pp = new Point(s2);
+		System.out.println(distance(p,pp));
+	}
 }
