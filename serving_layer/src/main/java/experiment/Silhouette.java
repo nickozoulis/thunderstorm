@@ -13,10 +13,13 @@ public class Silhouette {
         dataSetReader = new DataSetReader(new File(fileName));
     }
 
-    private double cal(Point p, int c) {
+    private double silhouetteCoefficient(Point p) {
         // Distance to all other points
         double distanceA = 0, distanceB = 0;
         int counterA = 0, counterB = 0;
+
+        // Get Point p's cluster
+        int c = clusterReader.getCluster(p);
 
         // Shallow copy in order to save memory
         DataSetReader dr = new DataSetReader(dataSetReader.getDataSet());
@@ -81,14 +84,12 @@ public class Silhouette {
         double silhouettes = 0;
         int s_counters = 0;
 
-        Point p1;
-
+        Point p;
         double s;
         // Foreach point in the dataset
         while (dataSetReader.hasNext()) {
-            p1 = dataSetReader.next();
-            s = cal(p1, clusterReader.getCluster(p1));
-            silhouettes = silhouettes + s;
+            p = dataSetReader.next();
+            silhouettes += silhouetteCoefficient(p);
             s_counters++;
         }
 
