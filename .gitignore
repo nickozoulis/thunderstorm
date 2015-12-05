@@ -34,3 +34,4 @@ log/
 *.bbl
 *.blg
 *.gz
+*.synctex.gz
