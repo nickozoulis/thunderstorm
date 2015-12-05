@@ -55,18 +55,15 @@ public class Point implements Serializable {
 	}
 
 	public static double distance(Point a, Point b) {
-
 		if (a.getDimension() != b.getDimension()) {
-			System.out.println("Invalid points compare");
+			throw new ArithmeticException("Point dimension mismatch.");
 		}
 
-		double distance = 0;
-
-		for (int i = 0; i < a.components.length; i++) {
-			distance = distance + (a.components[i] - b.components[i]) * (a.components[i] - b.components[i]);
+		double sum = 0.0;
+		for(int i=0; i<a.components.length; i++) {
+			sum = sum + Math.pow((a.components[i] - b.components[i]),2.0);
 		}
-
-		return Math.pow(distance, 1.0 / a.components.length);
+		return Math.sqrt(sum);
 	}
 
 	@Override
