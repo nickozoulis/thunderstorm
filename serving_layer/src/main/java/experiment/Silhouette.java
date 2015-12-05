@@ -2,6 +2,7 @@ package experiment;
 
 import filtering.Point;
 import java.io.File;
+import java.util.List;
 
 /**
  * @author nickozoulis
@@ -9,12 +10,13 @@ import java.io.File;
  */
 public class Silhouette {
 
-    private DataSetReader dataSetReader;
-    private ClusterReader clusterReader;
+    private DataSetReader dr;
+    private ClusterReader cr;
     private int K;
 
-    public Silhouette(String fileName) {
-        dataSetReader = new DataSetReader(new File(fileName));
+    public Silhouette(DataSetReader dr, ClusterReader cr) {
+        this.dr = dr;
+        this.cr = cr;
     }
 
     private double silhouetteCoefficient(Point p) {
@@ -23,38 +25,28 @@ public class Silhouette {
         int counterA = 0, counterB = 0;
 
         // Get Point p's cluster
-        int c = clusterReader.getCluster(p);
+        int c = cr.getCluster(p);
+        List<Point> clusterPoints = dr.getClusterDataPoints(c);
 
-        // Shallow copy in order to save memory
-        DataSetReader dr = new DataSetReader(dataSetReader.getDataSet());
-        Point pp;
-
-        // Silhouette coefficient calculation:
         // For each point p, first find the average distance between p and all other points in the same cluster
         // (this is a measure of cohesion, call it A)
-        // Then find the average distance between p and all points in the nearest cluster
-        // (this is a measure of separation from the closest other cluster, call it B)
-        while (dr.hasNext()) {
-            pp = dr.next();
-
-            int cc, nearestCluster;
+        for (Point pp : clusterPoints) {
             // Foreach point other than p
             if (!pp.equals(p)) {
-                // Get its cluster
-                cc = clusterReader.getCluster(pp);
-                // Get the cluster nearest to cluster c
-                nearestCluster = clusterReader.getNearestCluster(c);
-
-                if (cc == c) {
-                    // If Point pp is in the same cluster as Point p
-                    distanceA += Point.distance(p, pp);
-                    counterA++;
-                } else if (cc == nearestCluster) {
-                    // If Point pp is in the nearest cluster of Point p
-                    distanceB += Point.distance(p, pp);
-                    counterB++;
-                }
+                distanceA += Point.distance(p, pp);
+                counterA++;
             }
+        }
+
+        // Get Point p's neighbour cluster
+        int cc = cr.getNearestCluster(p, c);
+        List<Point> neighbourClusterPoints = dr.getClusterDataPoints(cc);
+
+        // Then find the average distance between p and all points in the nearest cluster
+        // (this is a measure of separation from the closest other cluster, call it B)
+        for (Point pp : neighbourClusterPoints) {
+            distanceB += Point.distance(p, pp);
+            counterB++;
         }
 
         double A = distanceA / counterA;
@@ -63,25 +55,9 @@ public class Silhouette {
         return (B - A) / Math.max(A, B);
     }
 
-    public static void main(String[] args) {
-        Silhouette silhouette = new Silhouette(args[0]);
-
-        File folder = new File(args[1]);
-
-        for (final File file : folder.listFiles()) {
-            if (file.getName().endsWith("batch") || file.getName().endsWith("local") || file.getName().endsWith("stream")) {
-                silhouette.setClusters(file);
-                silhouette.run();
-                silhouette.dataSetReader.reset();
-            }
-        }
-    }
-
-    private void setClusters(File file) {
+    private void setNumOfClusters(File file) {
         String[] splits = file.getName().split("_");
-        K = Integer.parseInt(splits[1]);
-
-        clusterReader = new ClusterReader(file);
+        this.K = Integer.parseInt(splits[1]);
     }
 
     public void run() {
@@ -90,13 +66,32 @@ public class Silhouette {
         Point p;
 
         // Foreach point in the dataSet calculate its silhouette coefficient and find their average
-        while (dataSetReader.hasNext()) {
-            p = dataSetReader.next();
+        while (dr.hasNext()) {
+            p = dr.next();
             silhouettes += silhouetteCoefficient(p);
             s_counters++;
         }
 
-        System.out.println(String.format("%s,%.3f", clusterReader.getFile().getName(), silhouettes / s_counters));
+        System.out.println(String.format("%s,%.3f", cr.getFile().getName(), silhouettes / s_counters));
+    }
+
+    public static void main(String[] args) {
+        File dFile = new File(args[0]);
+        File folder = new File(args[1]);
+
+        ClusterReader cr;
+        DataSetReader dr;
+        Silhouette silhouette;
+
+        for (final File cFile : folder.listFiles()) {
+            if (cFile.getName().endsWith("batch") || cFile.getName().endsWith("local") || cFile.getName().endsWith("stream")) {
+                cr = new ClusterReader(cFile);
+                dr = new DataSetReader(dFile, cr);
+                silhouette = new Silhouette(dr, cr);
+                silhouette.setNumOfClusters(cFile);
+                silhouette.run();
+            }
+        }
     }
 
 }

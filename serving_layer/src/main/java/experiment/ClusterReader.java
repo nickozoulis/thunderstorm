@@ -77,14 +77,14 @@ public class ClusterReader implements Iterator<Point> {
         return cluster;
     }
 
-    public int getNearestCluster(int c) {
-        Point p = clusterHeads[c];
-        int nearestCluster = c;
+    public int getNearestCluster(Point p, int c) {
+        Point clusterHead = clusterHeads[c];
         double minDist = Double.MAX_VALUE;
+        int nearestCluster = c;
         double dist;
 
         for (int i=0; i<clusterHeads.length; i++) {
-            if (!p.equals(clusterHeads[i])) {
+            if (!clusterHead.equals(clusterHeads[i])) {
                 dist = Point.distance(p, clusterHeads[i]);
                 if (dist < minDist) {
                     nearestCluster = i;
@@ -97,5 +97,6 @@ public class ClusterReader implements Iterator<Point> {
     }
 
     public File getFile() {return this.file;}
+    public int getNumOfClusters() {return clusterHeads.length;}
 
 }

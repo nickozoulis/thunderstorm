@@ -13,13 +13,17 @@ public class DataSetReader implements Iterator<Point> {
 
     private int iter = 0;
     private List<Point> dataSet;
+    private List<List<Point>> listOfClusters;
+    private ClusterReader cr;
 
-    public DataSetReader(File file) {
+    public DataSetReader(File file, ClusterReader cr) {
+        this.cr = cr;
+
+        listOfClusters = new ArrayList<>(cr.getNumOfClusters());
+        for (int i=0; i<cr.getNumOfClusters(); i++)
+            listOfClusters.add(new ArrayList<Point>());
+
         dataSet = loadDataset(file);
-    }
-
-    public DataSetReader(List<Point> dataSet) {
-        this.dataSet = dataSet;
     }
 
     private List<Point> loadDataset(File file) {
@@ -46,8 +50,13 @@ public class DataSetReader implements Iterator<Point> {
                     }
                 }
 
-                if (flag)
-                    dataSet.add(new Point(ar.toArray(new Double[ar.size()])));
+                Point p;
+                if (flag) {
+                    p = new Point(ar.toArray(new Double[ar.size()]));
+
+                    dataSet.add(p);
+                    listOfClusters.get(cr.getCluster(p)).add(p);
+                }
             }
 
             br.close();
@@ -86,7 +95,6 @@ public class DataSetReader implements Iterator<Point> {
         return lines;
     }
 
-    public void reset() {iter = 0;}
+    public List<Point> getClusterDataPoints(int c) {return listOfClusters.get(c);}
 
-    public List<Point> getDataSet() {return this.dataSet;}
 }
