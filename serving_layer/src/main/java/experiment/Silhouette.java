@@ -86,7 +86,7 @@ public class Silhouette {
 
         Point p;
         double s;
-        // Foreach point in the dataset
+        // Foreach point in the dataSet
         while (dataSetReader.hasNext()) {
             p = dataSetReader.next();
             silhouettes += silhouetteCoefficient(p);
