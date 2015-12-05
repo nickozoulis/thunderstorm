@@ -29,8 +29,22 @@ The abstract goes here
 \section{Motivation}
 \label{intro}
 
+Over the last decade the area of data storage, manipulation and analysis has rapidly evolved as the previous techniques and infrastructures struggled to cope with the continuous data growth and demand rate. Algorithms and systems that used to perform well, could not handle the data explosion. Companies such as Yahoo and Google realized Moore's Law is not coming to their rescue anymore and started investing on research of developing systems that could scale linearly, instead of vertically, as data volume was increasing. 
+
+The dawn of Big Data era was marked by the development of software infrastructures that could run on commodity hardware and exploit redundancy in order to provide availability and fault tolerance. Their workflow was targeting to partition the job to numerous physical nodes in order to decrease the total computation time. These systems can be characterized as (offline) batch processing, because they compute over batches of data and do not have the requirement to respond in realtime. Many such systems may require multiple chaining passes over the data in order to provide a result.
+
+With the advancement to Web 2.0 and the rise of social networks as well as the notion of the Internet of Things (machines equipped with sensors, transferring data at an arbitrary rate) altered the existing game rules. The need was for quick response to incoming data, without having to keep track of them or perform any asynchronous analysis over them. That said, many systems started to appear that could handle the input streaming and perform online, instead of offline learning techniques. 
+
 \section{Problem Definition}
 \label{intro}
+
+A lot of research on both offline and online systems has been made over the last years, resulting to the recording of successful commercial usage in numerous use cases. Individually speaking, batch systems can provide offline query computation, whereas streaming systems can provide online query computation. The first ones may take a lot of time to respond, but they take into account the whole picture and can recover in case of corrupted or noisy data without losing any information, as they could simply restart computations. The latter ones, while can provide low latency answers in realtime, follow the trend of input data, which is desirable if this is the use case, if any errors occur, they cannot just simply restart without losing information from their latest safepoint to the time the error spotted.
+
+So what if we wanted a robust system that could provide answers as soon as possible and an always-on experience, without compromising quality? A need for a hybrid emerges, and it was Nathan Marz who first came up with the term Lambda Architecture, which describes an architecture resilient to faults, while still remaining highly available from the perspective of a client. Lambda Architecture is comprised of three basic components, the Batch, the Speed and the Serving layers. Batch layer is responsible for computing query views asynchronously over batch of data. Stream is responsible for handling the most recent data input to the system and provide answers on-the-fly by maintaining an online learning model. Last but not least, the Serving layer is responsible for indexing the views of both the other layers so they can be queried in a low latency, ad-hoc way.
+
+The problem that arises is how the views of Batch and Stream can be merged and in what way. Who should be trusted more, what kind of methods should be used for the aggregation and how applicable would one method be in a different use case scenario are only some of the research questions that naturally arise. 
+
+In this project we mainly attempt to investigate the trade-offs of low latency responses over quality when applying machine learning algorithms over Lambda Architecture. We implemented a proof-of-concept system that follows this design and experimented with a well-known unsupervised learning clustering algorithm, K-Means.
 
 \section{Contributions}
 \label{intro}
