@@ -31,7 +31,7 @@ public class Silhouette {
             pp = dr.next();
 
             int cc, nearestCluster;
-            // For all points other than p
+            // Foreach point other than p
             if (!pp.equals(p)) {
                 // Get its cluster
                 cc = clusterReader.getCluster(pp);
