@@ -31,7 +31,7 @@ public class Silhouette {
 
         // Silhouette coefficient calculation:
         // For each point p, first find the average distance between p and all other points in the same cluster
-        // (this is a measure of cohesion, call it A.
+        // (this is a measure of cohesion, call it A)
         // Then find the average distance between p and all points in the nearest cluster
         // (this is a measure of separation from the closest other cluster, call it B)
         while (dr.hasNext()) {
