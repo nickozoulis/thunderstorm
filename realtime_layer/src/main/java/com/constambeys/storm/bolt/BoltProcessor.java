@@ -3,6 +3,7 @@ package com.constambeys.storm.bolt;
 import java.util.ArrayList;
 import java.util.Map;
 
+import com.constambeys.storm.KMeansGroup;
 import com.constambeys.storm.KMeansOnline;
 
 import backtype.storm.task.OutputCollector;
@@ -20,7 +21,7 @@ public class BoltProcessor implements IRichBolt {
 
 	Integer id;
 	String name;
-	ArrayList<KMeansOnline> ks = new ArrayList<>(0);
+	ArrayList<KMeansGroup> ks = new ArrayList<>(0);
 
 	private OutputCollector collector;
 
@@ -44,12 +45,15 @@ public class BoltProcessor implements IRichBolt {
 
 			if (input.getSourceStreamId().equals("signals")) {
 				if ("clear".equals(input.getStringByField("action"))) {
+
+					// Read batch results
 					if (ks.size() != 0) {
+
 						HReaderResultsC readerBatch = new HReaderResultsC(Cons.batch_views);
 
-						for (KMeansOnline k : ks) {
-							// Print
-							// this.collector.emit(new Values(k));
+						for (KMeansGroup kg : ks) {
+							KMeansOnline k = kg.getPrint();
+							// Print // this.collector.emit(new Values(k));
 							k.clear();
 
 							// Initialise state from batch
@@ -64,17 +68,41 @@ public class BoltProcessor implements IRichBolt {
 
 						readerBatch.close();
 					}
+				} else if ("update".equals(input.getStringByField("action"))) {
+
+					// Update stream results
+					if (ks.size() != 0) {
+						HReaderResultsC readerBatch = new HReaderResultsC(Cons.batch_views);
+
+						for (KMeansGroup k : ks) {
+
+							// Initialise state from batch
+							Point[] point = readerBatch.get(k.getID());
+
+							if (point.length == k.getK()) {
+								k.update(point);
+							} else {
+								if (point.length > 0)
+									System.out.println("KMeans Error Cannot initialize from batch" + k.getID());
+							}
+						}
+
+						readerBatch.close();
+					}
+
 				} else if ("print".equals(input.getStringByField("action"))) {
-					for (KMeansOnline k : ks) {
-						this.collector.emit(new Values(k));
+					for (KMeansGroup kg : ks) {
+						this.collector.emit(new Values(kg.getPrint()));
 					}
 				}
 				return;
 			}
 
-			if (input.getSourceStreamId().equals("commands")) {
+			if (input.getSourceStreamId().equals("commands"))
+
+			{
 				if ("kmeans".equals(input.getStringByField("action"))) {
-					ks.add((KMeansOnline) input.getValue(1));
+					ks.add(new KMeansGroup((KMeansOnline) input.getValue(1)));
 					return;
 				}
 				return;
@@ -82,12 +110,16 @@ public class BoltProcessor implements IRichBolt {
 
 			Point p = (Point) input.getValue(0);
 
-			for (KMeansOnline k : ks) {
+			for (KMeansGroup k : ks) {
 				k.run(p);
 			}
 			// Set the tuple as Acknowledge
 			collector.ack(input);
-		} catch (Exception e) {
+		} catch (
+
+		Exception e)
+
+		{
 			// Set the tuple as error
 			System.err.println("Bolt Processor" + e.getMessage());
 			collector.fail(input);

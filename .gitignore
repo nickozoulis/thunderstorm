@@ -33,3 +33,5 @@ log/
 *.pdf
 *.bbl
 *.blg
+*.gz
+*.synctex.gz

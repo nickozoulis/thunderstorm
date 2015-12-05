@@ -38,9 +38,35 @@ public class Point implements Serializable {
 
 	}
 
-	public void multiply(int x) {
+	public void substract(Point x) {
+		for (int i = 0; i < x.components.length; i++) {
+			components[i] = components[i] - x.components[i];
+		}
+
+	}
+
+	public void square() {
+		for (int i = 0; i < components.length; i++) {
+			components[i] = components[i] * components[i];
+		}
+	}
+
+	public void square_root() {
+		for (int i = 0; i < components.length; i++) {
+			components[i] = Math.sqrt(components[i]);
+		}
+
+	}
+
+	public void multiply(double x) {
 		for (int i = 0; i < components.length; i++) {
 			components[i] = components[i] * x;
+		}
+	}
+
+	public void divide(Point x) {
+		for (int i = 0; i < components.length; i++) {
+			components[i] = components[i] / x.components[i];
 		}
 	}
 
@@ -52,6 +78,10 @@ public class Point implements Serializable {
 
 	public int getDimension() {
 		return components.length;
+	}
+
+	public double get(int i) {
+		return components[i];
 	}
 
 	public static double distance(Point a, Point b) {
@@ -79,27 +109,4 @@ public class Point implements Serializable {
 		return sb.toString();
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (obj instanceof Point) {
-			Point p = (Point)obj;
-
-			for (int i=0; i<p.getDimension(); i++)
-				if (p.components[i] != this.components[i])
-					return false;
-
-			return true;
-		}
-		return false;
-	}
-
-	public static void main(String[] args) {
-		String[] s = new String[3];
-		s[0] = "0";s[1] = "1";s[2] = "2";
-		String[] s2 = new String[3];
-		s2[0] = "1";s2[1] = "2";s2[2] = "3";
-		Point p = new Point(s);
-		Point pp = new Point(s2);
-		System.out.println(distance(p,pp));
-	}
 }

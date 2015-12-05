@@ -35,7 +35,7 @@ public class KMeansOnline implements Serializable {
 	public int id;
 
 	// List of filters
-	ArrayList<DataFilter> filters = new ArrayList<DataFilter>(0);
+	public ArrayList<DataFilter> filters = new ArrayList<DataFilter>(0);
 
 	public KMeansOnline(int id, int k) {
 		this.k = k;
@@ -45,59 +45,67 @@ public class KMeansOnline implements Serializable {
 		initilization = true;
 	}
 
-	public void add(DataFilter f) {
+	public synchronized void add(DataFilter f) {
 		filters.add(f);
 	}
 
 	public synchronized void clear() {
-		initilization = true;
 		counters = new int[k * CONSTANT];
 		means = new Point[k * CONSTANT];
+		initilization = true;
 	}
 
-	public void setStart(Point start[]) {
-
-		if(start.length!=means.length){
-System.err.println("Errrrooooooooorr11111111");
-			return;
+	public synchronized void setStart(Point start[]) {
+		means = start;
+		for (int i = 0; i < start.length; i++) {
+			counters[i] = 1;
 		}
-		for(Point p: start){
-			if(p.getDimension()!=8){
-				System.err.println("Errrrooooooooorr222222");
-				return;
+		initilization = false;
+	}
+
+	public synchronized void update(Point[] points) {
+		if (initilization) {
+			setStart(points);
+		} else {
+			for (Point p1 : means) {
+
+				double distance = Double.MAX_VALUE;
+				Point closest = new Point(p1.getDimension());
+
+				for (Point p2 : points) {
+					double _distance = Point.distance(p1, p2);
+
+					if (distance > _distance) {
+						distance = _distance;
+						closest = p2;
+					}
+				}
+
+				p1.add(closest);
+				p1.divide(2);
 			}
 		}
-		means = start;
 	}
 
-	public void run(Point point) throws ScriptException {
+	public synchronized void run(Point point) throws ScriptException {
 
 		if (!checkFilters(point)) {
 			return;
 		}
 
 		if (initilization) {
-			boolean found = false;
-			for (int i = 0; i < counters.length - 1; i++) {
+			for (int i = 0; i < counters.length; i++) {
 				if (counters[i] == 0) {
 					means[i] = new Point(point.getDimension());
 					means[i].add(point); // Initialisation do not use means[i] = point
 					counters[i] = 1;
-					found = true;
+					if (i == counters.length - 1) {
+						initilization = false;
+					}
 					break;
 				}
 			}
-			if (found == false) {
-				// Check last point
-				int i = counters.length - 1;
-				if (counters[i] == 0) {
-					means[i] = new Point(point.getDimension());
-					means[i].add(point); // Initialisation do not use means[i] = point
-					counters[i] = 1;
-					found = true;
-				}
-				initilization = false;
-			}
+
 		} else {
 			int index = 0;
 			double min = Point.distance(means[0], point);
@@ -115,9 +123,16 @@ System.err.println("Errrrooooooooorr11111111");
 			// meansX[index]);
 			// meansY[index] = meansY[index] + 1.0 / counters[index] * (y -
 			// meansY[index]);
-			means[index].multiply(counters[index] - 1);
+
+			// means[index].multiply(counters[index] - 1);
+			// means[index].add(point);
+			// means[index].divide(counters[index]);
+
+			// meansX[index] + 0.01 * (x - meansX[index]);
+			point.substract(means[index]);
+			point.multiply(0.01d);
 			means[index].add(point);
-			means[index].divide(counters[index]);
+
 		}
 	}
 
@@ -143,12 +158,8 @@ System.err.println("Errrrooooooooorr11111111");
 							insertDistance(means[u1], means[u2], ds, u2);
 						}
 					}
-					Point s = null;
-					try {
-						 s = new Point(means[u1].getDimension());
-					}catch(Exception e){
-						e.printStackTrace();
-					}
+
+					Point s = new Point(means[u1].getDimension());
 					s.add(means[u1]);
 					for (int i = 0; i < ds.d.length; i++) {
 						s.add(means[ds.d[i].index]);
