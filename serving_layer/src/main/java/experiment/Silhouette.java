@@ -3,6 +3,10 @@ package experiment;
 import filtering.Point;
 import java.io.File;
 
+/**
+ * @author nickozoulis
+ * @author constambeys
+ */
 public class Silhouette {
 
     private DataSetReader dataSetReader;
@@ -83,10 +87,9 @@ public class Silhouette {
     public void run() {
         double silhouettes = 0;
         int s_counters = 0;
-
         Point p;
-        double s;
-        // Foreach point in the dataSet
+
+        // Foreach point in the dataSet calculate its silhouette coefficient and find their average
         while (dataSetReader.hasNext()) {
             p = dataSetReader.next();
             silhouettes += silhouetteCoefficient(p);

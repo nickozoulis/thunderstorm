@@ -95,7 +95,7 @@ public class ClusterReader implements Iterator<Point> {
 
         return nearestCluster;
     }
-    
+
     public File getFile() {return this.file;}
 
 }
