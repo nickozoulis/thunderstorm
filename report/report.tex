@@ -7,6 +7,12 @@
 % Modified 
 
 \documentclass{lmproj}
+\usepackage{graphicx}
+\graphicspath{ {images/} }
+
+
+
+
 \begin{document}
 \title{Bridging the gap between offline and online learning}
 \author{Avgerinos Fotios \\
@@ -68,11 +74,25 @@ Out contribution is to investigate the trade-offs of low latency responses over 
 
 
 %==============================================================================
-\chapter{Our work - Sexy System Name}
+\chapter{Our system - Thunderstorm}
 \label{systemdescr}
 
 \section{Overall Design}
 \label{systemdescr}
+
+For our project's purposes we have chosen to use the below systems for each component of Lambda Architecture:
+
+\begin{itemize}
+	\item Serving layer with Apache HBase
+	\item Batch layer with Apache Spark
+	\item Stream layer with Apache Storm
+\end{itemize}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=10cm, height=8cm]{system}
+\caption{An abstract picture of how our system is formulated}
+\end{figure}
 
 
 \section{Serving Layer}
