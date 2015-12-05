@@ -1,1 +1,1 @@
-kmeans 5
+kmeans 100

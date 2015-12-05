@@ -36,12 +36,15 @@ public class ExperimentDriver {
     }
 
     private void experiment(List<String> queryList) {
+        int i = 0;
         while (true) {
             for (String line : queryList) {
                 String[] splits = line.split(" ");
                 logger.info("Executing experiment for query " + line);
                 ShellUtils.KMeans(ShellUtils.parseKMeans(line, splits));
             }
+
+            if (++i == 10) System.exit(0); // # runs of the query cycles
 
             try {
                 logger.info("Thread sleeping for " + Cons.delay + " seconds.");
