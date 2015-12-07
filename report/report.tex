@@ -130,17 +130,22 @@ The basic reason we have inclined to HBase is its CAP theorem principles. CAP th
 
 \subsection{Implementation of Serving layer}
 
-Our HBase design is comprised of 5 HTables:
+
+\subsubsection{HBase design}
+Our HBase design consists of 5 HTables:
 
 \begin{enumerate}
 	\item Raw data: Stores the whole dataset, each row consisting a data point under a single column family, using a column foreach dimension. Rowkey is a float monotonically incrementing counter.
-	\item Queries: Stores the users' queries. Rowkey is a float monotonically incrementing counter. The first row of this table is specially used to hold the maximum counter of the rows, which is used from both layers to locate the new incoming queries. The user's query is stored as a String array of bytes in a single column, and for ease of manipulation we store as well in an other column the number of K clusters this query asks for (both columns under the same column faimily).
-	\item Batch views
-	\item Stream views
-	\item Messages
+	\item Queries: Stores the users' queries. Rowkey is a float monotonically incrementing counter. The first row of this table is specially used to hold the maximum counter of the rows, which is used from both layers to locate the new incoming queries. The user's K-Means query is stored in two columns, a column for an Integer array of bytes containing the K cluster number and a String array of bytes in an other column (both columns under the same column faimily).
+	\item Batch views: Stores the results of the queries processed by the batch layer as views. Rowkey is a float number indicating the query in Queries table that corresponds to this view. There is one column family that contains as many columns as the query requires. As a column identifier is use a string prefix along with an Integer monotonically increasing counter.
+	\item Stream views: Stores the results of the queries processed by the stream layer as views. The same design applies as in Batch views table.
+	\item Messages: Stores an Integer counter. This counter is updated by Batch layer at the end of each round of query computation and is used by Stream layer in order to detect when a computation round has finished and should synchronize its views with Batch layer as feeding source.
 \end{enumerate}
 
+\subsubsection{Event messaging simulation}
+The serving layer is responsible for the coordination of both Batch and Stream layer. There is a need for simulating the queue of events happening in our system, and whereas there are a variety of messaging systems out there appropriate for this task such as Kafka and RabbitMQ, we have made the design decision to follow the simplest approach possible to minimize complexity, and simulate the queue via HBase. Serving layer puts queries in HBase and then starts polling for result views, and both Batch and Stream layers periodically poll HBase in order to detect any incoming query and start computation.
 
+\subsubsection{User interface}
 
 
 
@@ -307,7 +312,7 @@ The synchronization of the online and offline k-means algorithm enables the onli
 	\caption{Synchronization between the online and offline layers.}
 \end{figure}
 
-\section{Interface between the layers}
+\section{Data stream simulation}
 \label{systemdescr}
 
 
