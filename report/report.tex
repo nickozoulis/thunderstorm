@@ -98,6 +98,13 @@ For our project's purposes we have chosen to use the below systems for each comp
 \section{Serving Layer}
 \label{systemdescr}
 
+Serving layer is the front-end of our system, responsible for a wide range of tasks. The interface with the external users is based on a shell-like environment. The complete command manual of the serving layer's shell is described in the Appendix section. Our system supports both plain K-Means and constrained queries (in current version maximum of 1 constraint expression). Behind the front stage, serving is responsible for storing and indexing the queries as well as the answers (views) that both batch and stream layer provide. For this task we use Apache HBase.
+
+HBase is the open-source clone of Google's Bigtable, a highly scalable fault-tolerant database that can scale horizontally, maximizing random read and write throughput. Its design classifies it to the column-family NoSQL databases and can be conceived as a multidimensional sorted map. The basic structure is the HTable, where each row can contain multiple columns and column families, with the restriction that the latter have to be declared at the time the table is instantiated. 
+
+
+
+
 \section{Batch Layer}
 \label{systemdescr}
 
