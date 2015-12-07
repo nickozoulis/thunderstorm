@@ -123,6 +123,8 @@ HBase is the open-source clone of Google's Bigtable, a highly scalable fault-tol
 
 The basic structure is the HTable, where each row can contain multiple columns and column families, with the restriction that the latter have to be declared at the time the table is instantiated. A column family is used to group together columns with similar access patterns to optimize read and write throughput. Each row is uniquely identified by the triple $row key-column key-timestamp$ and each value in the row is an uninterpreted array of bytes (only table's and column families' names have to be appropriate for a system's filepath names). Automatic sorting is performed based on the rowkey, so clients can control their data locality via selecting custom rowkey format. More than one version of data is maintained using different timestamp label and by default the system returns the most recent one.
 
+When an HTable reaches a threshold of rows stored in it, it partitions itself and each partition is assigned to an HRegionServer. An HRegionServer is responsible for one or more rowkey ranges. There is always on HMaster that is responsible for region assignment and create/delete table operations. HMaster uses Zookeeper to maintain which servers are live and available, which uses consensus to do so.
+
 \subsection{Why HBase}
 
 The basic reason we have inclined to HBase is its CAP theorem principles. CAP theorem states that distributed systems have to compromise on each of the following (Consistency, Availability, Partitioning). For our use case we wanted a distributed database that should be able to support consistent writes and reads, as well as low latency scans and sequential reads. Two big players that align with the above features, and also are well tested and documented, seem to be HBase and Cassandra. The first one opts for Consistency and Partitioning, where as the latter one opts for Availability and Partitioning. For the case of Cassandra, it is possible to tune the level of consistency by using different modes (all, one, quorum). HBase is well integrated with Hadoop, so has the advantage of playing well with MapReduce, and for a future time this could be ideal for us while having to deal with raw dataset and machine learning algorithms applied to them. Both provide easy to use Java API which was in line with our system's language support. Weighting the above factors, and since HBase offered more straightforward handling of consistency than Cassandra, we have made the design decision to use HBase as our Serving layer's major component. 
@@ -139,13 +141,11 @@ Our HBase design consists of 5 HTables:
 	\item Queries: Stores the users' queries. Rowkey is a float monotonically incrementing counter. The first row of this table is specially used to hold the maximum counter of the rows, which is used from both layers to locate the new incoming queries. The user's K-Means query is stored in two columns, a column for an Integer array of bytes containing the K cluster number and a String array of bytes in an other column (both columns under the same column faimily).
 	\item Batch views: Stores the results of the queries processed by the batch layer as views. Rowkey is a float number indicating the query in Queries table that corresponds to this view. There is one column family that contains as many columns as the query requires. As a column identifier is use a string prefix along with an Integer monotonically increasing counter.
 	\item Stream views: Stores the results of the queries processed by the stream layer as views. The same design applies as in Batch views table.
-	\item Messages: Stores an Integer counter. This counter is updated by Batch layer at the end of each round of query computation and is used by Stream layer in order to detect when a computation round has finished and should synchronize its views with Batch layer as feeding source.
+	\item Messages: Stores an Integer counter under a single column family and column. This counter is updated by Batch layer at the end of each round of query computation and is used by Stream layer in order to detect when a computation round has finished and should synchronize its views with Batch layer's views as a feeding source. 
 \end{enumerate}
 
 \subsubsection{Event messaging simulation}
 The serving layer is responsible for the coordination of both Batch and Stream layer. There is a need for simulating the queue of events happening in our system, and whereas there are a variety of messaging systems out there appropriate for this task such as Kafka and RabbitMQ, we have made the design decision to follow the simplest approach possible to minimize complexity, and simulate the queue via HBase. Serving layer puts queries in HBase and then starts polling for result views, and both Batch and Stream layers periodically poll HBase in order to detect any incoming query and start computation.
-
-\subsubsection{User interface}
 
 
 
@@ -294,9 +294,9 @@ The k-means algorithms can have multiple filters and n dimensional input data. I
  \end{itemize}
 
 
-\subsection{Interfacing between the layers}
+\section{Interfacing between the layers}
 
-All the layers of the system use the HBase database to synchronize their communication. This guarantees that the communicating channels are fault tolerant. The bridge project provides the classes for reading and writing data to HBase. The communication between the HBase and the real-time layer is listed below:
+All the layers of the system use the HBase database to synchronize their communication. This guarantees that the communicating channels are fault tolerant. The bridge module provides the classes for reading and writing data to HBase. The communication between the HBase and the real-time layer is listed below:
 
 \begin{itemize}
 	\item Commands Spout. The commands spout monitors the queries table in HBase database for new queries.  New queries can start from scratch or use a seed from the batch layer. 
@@ -314,7 +314,7 @@ The synchronization of the online and offline k-means algorithm enables the onli
 
 \section{Data stream simulation}
 \label{systemdescr}
-
+We use a separate module to simulate the data stream in our system. It can be configured to periodically read ranges of data from a raw file and extract specific columns (dimensions) and put it in HBase. 
 
 
 
