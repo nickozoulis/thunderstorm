@@ -343,6 +343,42 @@ We use a separate module to simulate the data stream in our system. It can be co
 \section{Setup}
 \label{evaluation}
 
+\subsection{Hardware Specifications}
+Our experiments were conducted in a Virtual Machine with the below specifications:
+\begin{itemize}
+	\item 1.6 GHz dual core Intel Core i5
+	\item 2GB RAM
+\end{itemize}
+
+\subsection{Software Specifications}
+Our experiments were conducted using the below software:
+\begin{itemize}
+	\item hadoop-2.6.2
+	\item hbase-0.98.15-hadoop2
+	\item spark-mllib-2.10
+	\item storm-core-0.9.5
+	\item unix operating system
+	\item java 1.7
+\end{itemize}
+
+where:
+\begin{itemize}
+\item $\mu$ is the mean of the population;
+\item $\sigma$ is the standard deviation of the population.
+\end{itemize}
+
+\subsection{Software setup instructions}
+
+\subsection{Dataset Normalization}
+Our dataset consists of 100.000 rows of 8-dimensional data (gas leak concentrations). We have preprocessed the dataset by normalizing it using Standard Score normalization. The standard score of a raw score is $x$ :
+
+\begin{figure}[h]
+	\centering
+	\includegraphics{standard_score}
+	\caption{From Wikipedia}
+\end{figure}
+
+
 \section{Results}
 \label{evaluation}
 
