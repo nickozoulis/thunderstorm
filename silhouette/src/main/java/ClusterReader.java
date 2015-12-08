@@ -5,6 +5,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Created by nickozoulis on 02/12/2015.
@@ -74,7 +75,7 @@ public class ClusterReader implements Iterator<Point> {
         return cluster;
     }
 
-    public int getNearestCluster(Point p, int c) {
+    public int getNearestCluster(Point p, int c, List<Integer> sizeOfClusters) {
         Point clusterHead = clusterHeads[c];
         double minDist = Double.MAX_VALUE;
         int nearestCluster = c;
@@ -82,6 +83,9 @@ public class ClusterReader implements Iterator<Point> {
 
         for (int i=0; i<clusterHeads.length; i++) {
             if (!clusterHead.equals(clusterHeads[i])) {
+
+                if (sizeOfClusters.get(i) == 0) continue;
+
                 dist = Point.distance(p, clusterHeads[i]);
                 if (dist < minDist) {
                     nearestCluster = i;

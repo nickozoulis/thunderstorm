@@ -95,4 +95,13 @@ public class DataSetReader implements Iterator<Point> {
 
     public List<Point> getClusterDataPoints(int c) {return listOfClusters.get(c);}
 
+    public List<Integer> getSizeOfClusters() {
+        List<Integer> list = new ArrayList<>(listOfClusters.size());
+
+        for (List l : listOfClusters)
+            list.add(l.size());
+
+        return list;
+    }
+
 }

@@ -37,7 +37,7 @@ public class Silhouette {
         }
 
         // Get Point p's neighbour cluster
-        int cc = cr.getNearestCluster(p, c);
+        int cc = cr.getNearestCluster(p, c, dr.getSizeOfClusters());
         List<Point> neighbourClusterPoints = dr.getClusterDataPoints(cc);
 
         // Then find the average distance between p and all points in the nearest cluster
@@ -47,9 +47,15 @@ public class Silhouette {
             counterB++;
         }
 
-        double A = distanceA / counterA;
+        // Take care of division by zero (zero or one point assigned to a cluster)
+        double A = 0;
+        if  (counterA > 0)
+            A = distanceA / counterA;
         double B = distanceB / counterB;
 
+        double nan = (B - A) / Math.max(A, B);
+        if (Double.isNaN(nan))
+            System.out.println();
         return (B - A) / Math.max(A, B);
     }
 
