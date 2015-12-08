@@ -17,6 +17,7 @@
         <module>fusion</module>
         <module>bridge</module>
         <module>data_stream_simulator</module>
+        <module>silhouette</module>
     </modules>
 
     <dependencies>
