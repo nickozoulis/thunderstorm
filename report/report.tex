@@ -458,7 +458,7 @@ In order to obtain a quality measurement of our solution we have chosen to use a
 	\caption{Silhouette Score}
 	\begin{algorithmic}[1]
 		\label{silhouette_coefficient}
-		\Function{Silhouette Coefficient}{$Point$ $p$, $Clusterhead$ $c$}
+		\Function{Silhouette Coefficient}{$Point$ $p$, $Cluster$ $c$}
 		
 			\State Find the average distance between p and all other points in the same cluster (call it A)
 			\State Find the average distance between p and all other points in the nearest cluster (call it B)
@@ -469,13 +469,11 @@ In order to obtain a quality measurement of our solution we have chosen to use a
 	
 	\begin{algorithmic}[1]
 		\label{silhouette_score}
-		\Function{Silhouette Score}{$Dataset$ $d$, $Clusterheads$ $c$}
+		\Function{Silhouette Score}{$Dataset$ $d$, $Clusters$ $c$}
 		
 		\ForEach {Point p in Dataset d}
-			\ForEach {Clusterhead file c}
-				\State $silhouettes$ $\pluseq \Call {Silhouette Coefficient}{p,c}$
-				\State $counter$ $\pluseq 1$
-			\EndFor
+			\State $silhouettes$ $\pluseq \Call {Silhouette Coefficient}{p,c}$
+			\State $counter$ $\pluseq 1$
 		\EndFor
 		
 		\Return $silhouettes/counter$
