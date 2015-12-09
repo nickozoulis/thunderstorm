@@ -427,36 +427,6 @@ Our experiments were conducted using the below software:
 	\item maven
 \end{itemize}
 
-\subsection{Experiment setup instructions}
-
-Our system should be able to be deployed in any Unix operating system, we have tested it under a Debian distribution. Should someone is willing to reproduce our experiments, oughts to have at least Java 7 installed along with Maven 2. 
-
-There is a single file in our project containing all of our configuration variables as static final Java variables ($bridge/src/main/java/hbase/Cons.java$). The project is setup this way so only one variable has to be changed in order to have the system ready for deployment, and this is $hbaseIPaddress$. We have configured Hadoop and HBase in pseudo-distributed mode, where as Spark and Storm run on stand-alone mode. A user is able to change the above configuration at will. 
-
-After having the above requirements configured, our project can be built as follows:
-
-\begin{itemize}
-	\item Clone from github:   \url{https://github.com/nickozoulis/master_team_project} 
-	\item From command line move to root directory
-	\item Execute $mvn$ $clean$ $package$ 
-	\item Each module will produce a jar under $/module/target/$ folder
-\end{itemize}
-
-Following example commands to run the modules, all executed from the root project folder:
-
-\begin{enumerate}
-	\item data stream simulator
-	\item serving layer
-	\item batch layer
-	\item stream layer
-\end{enumerate}
-
-\noindent See the following command :
-\begin{lstlisting}[language=bash]
-$ [1] java -jar data_stream_simulator/target/data_stream_simulator{..}jar-with-dependencies.jar -f /filepath_to_normalized_dataset/normalized_dataset
-\end{lstlisting}
-	
-
 \subsection{Dataset Normalization}
 Our dataset consists of 100.000 rows of 8-dimensional data (gas leak concentrations). We have preprocessed the dataset by normalizing it using Standard Score normalization. The standard score of a raw score is $x$ :
 
@@ -473,6 +443,47 @@ where:
 \end{itemize}
 
 \subsection{Silhouette Score}
+
+\subsection{Experiment setup instructions}
+
+Our system should be able to be deployed in any Unix operating system. We have tested it under a Debian distribution. Should someone is willing to reproduce our experiments, oughts to have at least Java 7 installed along with Maven 2. 
+
+There is a single file in our project containing all of our configuration variables as static final Java variables ($bridge/src/main/java/hbase/Cons.java$). The project is setup this way so only one variable has to be changed in order to have the system ready for deployment, and this is $hbaseIPaddress$. We have configured Hadoop and HBase in pseudo-distributed mode, where as Spark and Storm run on stand-alone mode. A user is able to change the above configuration at will. 
+
+After having the above requirements configured, our project can be built as follows:
+
+\begin{itemize}
+	\item Clone from github:   \url{https://github.com/nickozoulis/master_team_project} 
+	\item From command line move to root directory
+	\item Execute $mvn$ $clean$ $package$ 
+	\item Each module will produce a jar under $/module/target/$ folder
+\end{itemize}
+
+Following example commands describe how to run the modules, all executed from the root project folder:
+
+\begin{enumerate}
+	\item data stream simulator
+	\item serving layer
+	\item batch layer
+	\item stream layer
+\end{enumerate}
+
+\noindent Bash commands :
+\begin{lstlisting}[language=bash]
+$ [1] java -jar data_stream_simulator/target/data_stream_simulator-{..}-jar-with-dependencies.jar -f {filepath to normalized dataset}
+\end{lstlisting}
+
+\begin{lstlisting}[language=bash]
+$ [2] java -cp serving_layer/target/serving_layer-1.0-SNAPSHOT-allinone.jar {option -f with a given queries file}
+\end{lstlisting}
+
+\begin{lstlisting}[language=bash]
+$ [3] java -cp batch_layer/target/batch_layer-{..}-allinone.jar Main
+\end{lstlisting}
+
+\begin{lstlisting}[language=bash]
+$ [4] java -jar realtime_layer/target/realtime_layer-{..}-jar-with-dependencies.jar
+\end{lstlisting}
 
 \section{Results}
 \label{evaluation}
