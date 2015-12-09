@@ -10,7 +10,29 @@
 \usepackage{graphicx}
 \usepackage{float}
 \graphicspath{ {images/} }
+\usepackage{hyperref}
+\usepackage{listings}
 
+\lstset{frame=tb,
+	language=bash,
+	aboveskip=3mm,
+	belowskip=3mm,
+	columns=flexible,
+	basicstyle={\small\ttfamily},
+	breaklines=true,
+	breakatwhitespace=true,
+	numbersep=5pt,
+	xleftmargin=\parindent,
+	numbers = left,
+	framexleftmargin=10mm,
+	frame=none,
+	keywordstyle=\bfseries\color{blue},
+	identifierstyle=\bfseries,
+	numberstyle=\color[RGB]{0,192,192},
+	commentstyle=\it\color[RGB]{0,96,96},
+	stringstyle=\rmfamily\slshape\color[RGB]{128,0,0},
+	showstringspaces=false
+}
 
 
 
@@ -133,8 +155,8 @@ The basic reason we have inclined to HBase is its CAP theorem principles. CAP th
 \subsection{Implementation of Serving layer}
 
 
-\subsubsection{HBase design}
-Our HBase design consists of 5 HTables:
+\subsubsection{HBase schema}
+Our HBase schema consists of 5 HTables:
 
 \begin{enumerate}
 	\item Raw data: Stores the whole dataset, each row consisting a data point under a single column family, using a column foreach dimension. Rowkey is a float monotonically incrementing counter.
@@ -146,8 +168,6 @@ Our HBase design consists of 5 HTables:
 
 \subsubsection{Event messaging simulation}
 The serving layer is responsible for the coordination of both Batch and Stream layer. There is a need for simulating the queue of events happening in our system, and whereas there are a variety of messaging systems out there appropriate for this task such as Kafka and RabbitMQ, we have made the design decision to follow the simplest approach possible to minimize complexity, and simulate the queue via HBase. Serving layer puts queries in HBase and then starts polling for result views, and both Batch and Stream layers periodically poll HBase in order to detect any incoming query and start computation.
-
-
 
 \section{Batch Layer}
 \label{systemdescr}
@@ -328,11 +348,31 @@ We use a separate module to simulate the data stream in our system. It can be co
 \section{Baseline Solution}
 \label{kmeans}
 
+In order to be able to answer queries as soon as possible we came up with the an algorithm that is composed of a sequence of checks and respective actions. We will describe this algorithm with both use case pseudocode and a flowchart.
+
+\begin{enumerate}
+	\item Suppose incoming query K=5.
+	\item If its new, put it in HBase so both layers start computing.
+	\item If it isn't new,
+	\begin{enumerate}
+		\item Check if Stream has answer (Stream is fed views from Batch)
+		\item If Stream hasn't,
+			\begin{enumerate}
+				\item Do a K-out-of-K' local K-Means, where K$<<$K' (eg. K'=10000)
+			\end{enumerate}
+	\end{enumerate}
+\end{enumerate}
+
+\begin{figure}[H]
+	\centering	
+	\includegraphics[scale=0.5]{usecase}
+	\caption{Solution flowchart}
+\end{figure}
+
+
 \section{Fusion Scheme}
 \label{kmeans}
 
-\section{Hybrids}
-\label{kmeans}
 
 
 
@@ -359,9 +399,38 @@ Our experiments were conducted using the below software:
 	\item storm-core-0.9.5
 	\item unix operating system
 	\item java 1.7
+	\item maven
 \end{itemize}
 
-\subsection{Software setup instructions}
+\subsection{Experiment setup instructions}
+
+Our system should be able to be deployed in any Unix operating system, we have tested it under a Debian distribution. Should someone is willing to reproduce our experiments, oughts to have at least Java 7 installed along with Maven 2. 
+
+There is a single file in our project containing all of our configuration variables as static final Java variables ($bridge/src/main/java/hbase/Cons.java$). The project is setup this way so only one variable has to be changed in order to have the system ready for deployment, and this is $hbaseIPaddress$. We have configured Hadoop and HBase in pseudo-distributed mode, where as Spark and Storm run on stand-alone mode. A user is able to change the above configuration at will. 
+
+After having the above requirements configured, our project can be built as follows:
+
+\begin{itemize}
+	\item Clone from github:   \url{https://github.com/nickozoulis/master_team_project} 
+	\item From command line move to root directory
+	\item Execute $mvn$ $clean$ $package$ 
+	\item Each module will produce a jar under $/module/target/$ folder
+\end{itemize}
+
+Following example commands to run the modules, all executed from the root project folder:
+
+\begin{enumerate}
+	\item data stream simulator
+	\item serving layer
+	\item batch layer
+	\item stream layer
+\end{enumerate}
+
+\noindent See the following command :
+\begin{lstlisting}[language=bash]
+$ [1] java -jar data_stream_simulator/target/data_stream_simulator{..}jar-with-dependencies.jar -f /filepath_to_normalized_dataset/normalized_dataset
+\end{lstlisting}
+	
 
 \subsection{Dataset Normalization}
 Our dataset consists of 100.000 rows of 8-dimensional data (gas leak concentrations). We have preprocessed the dataset by normalizing it using Standard Score normalization. The standard score of a raw score is $x$ :
@@ -374,10 +443,11 @@ Our dataset consists of 100.000 rows of 8-dimensional data (gas leak concentrati
 
 where:
 \begin{itemize}
-	\item $\mu$ is the mean of the population;
+	\item $\mu$ is the mean of the population
 	\item $\sigma$ is the standard deviation of the population.
 \end{itemize}
 
+\subsection{Silhouette Score}
 
 \section{Results}
 \label{evaluation}
