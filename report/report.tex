@@ -100,6 +100,8 @@ Out contribution is to investigate the trade-offs of low latency responses over 
 \section{Theoritical Background on K-Means}
 \label{relatedwork}
 
+
+
 \section{Batch Processing}
 \label{relatedwork}
 
@@ -362,7 +364,7 @@ We use a separate module to simulate the data stream in our system. It can be co
 \section{Baseline Solution}
 \label{kmeans}
 
-In order to be able to answer queries as soon as possible we came up with the an algorithm that is composed of a sequence of checks and respective actions. We will describe this algorithm with both use case pseudocode and a flowchart.
+In order to be able to answer queries as soon as possible we came up with the an algorithm that is composed of a sequence of checks and respective actions. We will describe this algorithm with both a pseudocode and a flowchart.
 
 
 \bigskip
@@ -398,6 +400,13 @@ In order to be able to answer queries as soon as possible we came up with the an
 	\includegraphics[scale=0.5]{usecase}
 	\caption{Solution flowchart}
 \end{figure}
+
+Notes:
+\begin{itemize}
+	\item A query is defined new if a lookup on $Queries$ table returns no result.
+	\item We assume $K<<K'$ \&\& $K'<<|D|$, where $|D|$ is the cardinality of points in dataset.
+	\item We assume that Stream is fed views from Batch within gradual time intervals.
+\end{itemize}
 
 
 \section{Fusion Scheme}
@@ -449,7 +458,7 @@ where:
 
 \subsection{Silhouette Score}
 
-In order to obtain a quality measurement of our solution we have chosen to use a method that interprets how well each object lies within its cluster, called $Silhouette$ score. We have implemented it ourselves, making small adjustments to fit our setup. The basic algorithm is described next:
+In order to obtain a quality measurement of our solution we have chosen to use a method that interprets how well each object lies within its cluster, called $Silhouette$ score. We have implemented it ourselves, making small adjustments to fit our setup. The basic algorithm is described below:
 
 \bigskip
 
@@ -466,7 +475,7 @@ In order to obtain a quality measurement of our solution we have chosen to use a
 		
 		\EndFunction
 	\end{algorithmic}
-	
+	\bigskip
 	\begin{algorithmic}[1]
 		\label{silhouette_score}
 		\Function{Silhouette Score}{$Dataset$ $d$, $Clusters$ $c$}
