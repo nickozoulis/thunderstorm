@@ -13,6 +13,15 @@
 \usepackage{hyperref}
 \usepackage{listings}
 
+
+
+%\usepackage[linesnumbered,ruled,vlined]{algorithm2e}
+%\usepackage{algorithmicx}
+\usepackage{algpseudocode}
+%\usepackage{algorithmic}
+\usepackage{float}
+\newfloat{algorithm}{tp}{toa}
+
 \lstset{frame=tb,
 	language=bash,
 	aboveskip=3mm,
@@ -350,18 +359,32 @@ We use a separate module to simulate the data stream in our system. It can be co
 
 In order to be able to answer queries as soon as possible we came up with the an algorithm that is composed of a sequence of checks and respective actions. We will describe this algorithm with both use case pseudocode and a flowchart.
 
-\begin{enumerate}
-	\item Suppose incoming query K=5.
-	\item If its new, put it in HBase so both layers start computing.
-	\item If it isn't new,
-	\begin{enumerate}
-		\item Check if Stream has answer (Stream is fed views from Batch)
-		\item If Stream hasn't,
-			\begin{enumerate}
-				\item Do a K-out-of-K' local K-Means, where K$<<$K' (eg. K'=10000)
-			\end{enumerate}
-	\end{enumerate}
-\end{enumerate}
+
+\bigskip
+
+
+	\begin{algorithm}[H]
+		\caption{KMeans Solution}\label{kmeanssolution}
+		\begin{algorithmic}[1]
+			\Procedure{KMeans}{$Query$ $K$}
+			
+			\If {Query K is new}
+				\State Put it in HBase
+				\State Batch and Stream start computing views
+			\Else 
+				\If {Stream has a view}
+					\State \Return view
+				\Else 
+					\State Do a K-out-of-K' local KMeans
+					\State \Return view
+				\EndIf
+			\EndIf			
+			
+			\EndProcedure
+		\end{algorithmic}
+	\end{algorithm}
+
+
 
 \begin{figure}[H]
 	\centering	
