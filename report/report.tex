@@ -367,6 +367,8 @@ In order to be able to answer queries as soon as possible we came up with the an
 		\caption{KMeans Solution}\label{kmeanssolution}
 		\begin{algorithmic}[1]
 			\Procedure{KMeans}{$Query$ $K$}
+			\Require Stream is fed views from Batch
+			\Require $K<<K'$
 			
 			\If {Query K is new}
 				\State Put it in HBase
@@ -375,7 +377,7 @@ In order to be able to answer queries as soon as possible we came up with the an
 				\If {Stream has a view}
 					\State \Return view
 				\Else 
-					\State Do a K-out-of-K' local KMeans
+					\State Do a $K-out-of-K'$ local KMeans
 					\State \Return view
 				\EndIf
 			\EndIf			
