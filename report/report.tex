@@ -100,7 +100,7 @@ Out contribution is to investigate the trade-offs of low latency responses over 
 \section{Theoritical Background on K-Means}
 \label{relatedwork}
 
-
+K-Means is an unsupervised machine learning algorithm widely used for clustering. It aims to partition $n$ data points of $d$ dimensions to $k$ clusters, by iteratively assigning data points to the cluster with the nearest mean (expectation step) and then shifting the means by recalculating them based on the updated data points lying within each cluster (maximization step). The distance measure used to define the proximity of two data points is Euclidean Distance: $\sum_{i=1}^{n} ({\chi_i - \mu_i})^2$ . At first random $k$ means are chosen and then the iteration of expectation-maximization steps is performed until the movement of the means is below a certain threshold. At this point the algorithm has converged to a (local) optimum. There is no guarantee that the global optimum is found using this algorithm. Re-running the algorithm with different starting $k$ means could lead to a better optimum.
 
 \section{Batch Processing}
 \label{relatedwork}
