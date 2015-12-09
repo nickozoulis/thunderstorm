@@ -1,26 +1,31 @@
-% This example is a LaTeX document showing how to use the lmproj class to
-% write your report. The chapter headings are by no means prescriptive. Instead
-% use an appropriate report structure for your project as you see fit.
-% Use pdflatex and bibtex to process the file, creating a PDF file as output 
-% (there is no need to use dvips when using pdflatex).
-
-% Modified 
 
 \documentclass{lmproj}
+
+% Images
 \usepackage{graphicx}
 \usepackage{float}
 \graphicspath{ {images/} }
+
+% Url links
 \usepackage{hyperref}
+
+% Code snippets
 \usepackage{listings}
 
+% Fractions
+\usepackage{amsmath}
 
+% Plus equals redefinition
+\newcommand{\pluseq}{\mathrel{+}=}
 
-%\usepackage[linesnumbered,ruled,vlined]{algorithm2e}
-%\usepackage{algorithmicx}
+% Algorithms
 \usepackage{algpseudocode}
-%\usepackage{algorithmic}
 \usepackage{float}
 \newfloat{algorithm}{tp}{toa}
+
+% Redefine foreach loop that mimics forall loop
+\algnewcommand\algorithmicforeach{\textbf{for each}}
+\algdef{S}[FOR]{ForEach}[1]{\algorithmicforeach\ #1\ \algorithmicdo}
 
 \lstset{frame=tb,
 	language=bash,
@@ -443,6 +448,41 @@ where:
 \end{itemize}
 
 \subsection{Silhouette Score}
+
+In order to obtain a quality measurement of our solution we have chosen to use a method that interprets how well each object lies within its cluster, called $Silhouette$ score. We have implemented it ourselves, making small adjustments to fit our setup. The basic algorithm is described next:
+
+\bigskip
+
+
+\begin{algorithm}[H]
+	\caption{Silhouette Score}
+	\begin{algorithmic}[1]
+		\label{silhouette_coefficient}
+		\Function{Silhouette Coefficient}{$Point$ $p$, $Clusterhead$ $c$}
+		
+			\State Find the average distance between p and all other points in the same cluster (call it A)
+			\State Find the average distance between p and all other points in the nearest cluster (call it B)
+			\Return (B - A) / max(A, B)
+		
+		\EndFunction
+	\end{algorithmic}
+	
+	\begin{algorithmic}[1]
+		\label{silhouette_score}
+		\Function{Silhouette Score}{$Dataset$ $d$, $Clusterheads$ $c$}
+		
+		\ForEach {Point p in Dataset d}
+			\ForEach {Clusterhead file c}
+				\State $silhouettes$ $\pluseq \Call {Silhouette Coefficient}{d,c}$
+				\State $counter$ $\pluseq 1$
+			\EndFor
+		\EndFor
+		
+		\Return $silhouettes/counter$
+		\EndFunction
+	\end{algorithmic}
+\end{algorithm}
+
 
 \subsection{Build instructions}
 
