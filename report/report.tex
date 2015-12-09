@@ -473,7 +473,7 @@ In order to obtain a quality measurement of our solution we have chosen to use a
 		
 		\ForEach {Point p in Dataset d}
 			\ForEach {Clusterhead file c}
-				\State $silhouettes$ $\pluseq \Call {Silhouette Coefficient}{d,c}$
+				\State $silhouettes$ $\pluseq \Call {Silhouette Coefficient}{p,c}$
 				\State $counter$ $\pluseq 1$
 			\EndFor
 		\EndFor
