@@ -100,7 +100,7 @@ Out contribution is to investigate the trade-offs of low latency responses over 
 \section{Theoritical Background on K-Means}
 \label{relatedwork}
 
-K-Means is an unsupervised machine learning algorithm widely used for clustering. It aims to partition $n$ data points of $d$ dimensions to $k$ clusters, by iteratively assigning data points to the cluster with the nearest mean (expectation step) and then shifting the means by recalculating them based on the updated data points lying within each cluster (maximization step). The distance measure used to define the proximity of two data points is Euclidean Distance: $\sum_{i=1}^{n} ({\chi_i - \mu_i})^2$ . At first random $k$ means are chosen and then the iteration of expectation-maximization steps is performed until the movement of the means is below a certain threshold. At this point the algorithm has converged to a (local) optimum. There is no guarantee that the global optimum is found using this algorithm. Re-running the algorithm with different starting $k$ means could lead to a better optimum.
+K-Means is an unsupervised machine learning algorithm widely used for clustering. It aims to partition $n$ data points of $d$ dimensions to $k$ clusters, by iteratively assigning data points to the cluster with the nearest mean (expectation step) and then shifting the means by recalculating them based on the updated data points lying within each cluster (maximization step). The distance measure used to define the proximity of two data points is Euclidean Distance: $\sqrt{\sum_{i=1}^{d} ({\chi_i - \mu_i})^2}$, where $\chi$ is the data point and  $\mu$ is the mean of a cluster. At first random $k$ means are chosen and then the iteration of expectation-maximization steps is performed until the movement of the means is below a certain threshold. At this point the algorithm has converged to a (local) optimum. There is no guarantee that the global optimum is found using this algorithm. Re-running the algorithm with different starting $k$ means could lead to a better optimum.
 
 \section{Batch Processing}
 \label{relatedwork}
@@ -154,18 +154,18 @@ For our project's purposes we have chosen to use the below systems for each comp
 \label{systemdescr}
 
 
-Serving layer is the front-end of our system, responsible for a wide range of tasks. The interface with the external users is based on a shell-like environment. The complete command manual of the serving layer's shell is described in the Appendix section. Our system supports both plain K-Means and constrained queries (in current version maximum of 1 constraint expression). Behind the front stage, serving is responsible for storing and indexing the queries as well as the answers (views) that both batch and stream layer provide. For this task we use Apache HBase.
+Serving layer is the front-end of our system, responsible for a wide range of tasks. The interface with the external users is based on a shell-like environment. The complete command manual of the serving layer's shell is described in the Appendix section. Our system supports both plain K-Means and constrained queries (in current version maximum of 1 constraint expression). Behind the scenes, serving is responsible for storing and indexing the queries as well as the answers (views) that both batch and stream layer provide. For this task we use Apache HBase.
 
 \subsection{Overview of HBase}
 HBase is the open-source clone of Google's Bigtable, a highly scalable fault-tolerant database that can scale horizontally, maximizing random read and write throughput. Its design classifies it to the column-family NoSQL databases and can be conceived as a multidimensional sorted map. The relying data storage system is HDFS.
 
-The basic structure is the HTable, where each row can contain multiple columns and column families, with the restriction that the latter have to be declared at the time the table is instantiated. A column family is used to group together columns with similar access patterns to optimize read and write throughput. Each row is uniquely identified by the triple $row key-column key-timestamp$ and each value in the row is an uninterpreted array of bytes (only table's and column families' names have to be appropriate for a system's filepath names). Automatic sorting is performed based on the rowkey, so clients can control their data locality via selecting custom rowkey format. More than one version of data is maintained using different timestamp label and by default the system returns the most recent one.
+The basic structure is the HTable, where each row can contain multiple columns and column families, with the restriction that the latter have to be declared at the time the table is instantiated. A column family is used to group together columns with similar access patterns to optimize read and write throughput. Each row is uniquely identified by the triple $row key-column key-timestamp$ and each value in the row is an uninterpreted array of bytes (only table's and column families' names have to be appropriate strings for a system's filepath names). More than one version of data is maintained using different timestamp label and by default the system returns the most recent one.
 
-When an HTable reaches a threshold of rows stored in it, it partitions itself and each partition is assigned to an HRegionServer. An HRegionServer is responsible for one or more rowkey ranges. There is always on HMaster that is responsible for region assignment and create/delete table operations. HMaster uses Zookeeper to maintain which servers are live and available, which uses consensus to do so.
+When an HTable reaches a threshold of rows stored in it, it partitions itself and each partition is assigned to an HRegionServer. An HRegionServer is responsible for one or more rowkey ranges. Automatic sorting is performed based on the rowkey, so clients can control their data locality via selecting custom rowkey format (rowkeys with common prefixes will be placed to close HRegionServers). There is always on HMaster that is responsible for region assignment and create/delete table operations. HMaster uses Zookeeper to maintain which servers are live and available, which uses consensus to do so.
 
 \subsection{Why HBase}
 
-The basic reason we have inclined to HBase is its CAP theorem principles. CAP theorem states that distributed systems have to compromise on each of the following (Consistency, Availability, Partitioning). For our use case we wanted a distributed database that should be able to support consistent writes and reads, as well as low latency scans and sequential reads. Two big players that align with the above features, and also are well tested and documented, seem to be HBase and Cassandra. The first one opts for Consistency and Partitioning, where as the latter one opts for Availability and Partitioning. For the case of Cassandra, it is possible to tune the level of consistency by using different modes (all, one, quorum). HBase is well integrated with Hadoop, so has the advantage of playing well with MapReduce, and for a future time this could be ideal for us while having to deal with raw dataset and machine learning algorithms applied to them. Both provide easy to use Java API which was in line with our system's language support. Weighting the above factors, and since HBase offered more straightforward handling of consistency than Cassandra, we have made the design decision to use HBase as our Serving layer's major component. 
+The basic reasons we have inclined to HBase are its flexible column-based schema described above and its CAP theorem principles. CAP theorem states that distributed systems have to compromise on each of the following (Consistency, Availability, Partitioning). For our use case we wanted a distributed database that should be able to support consistent writes and reads, as well as low latency scans and sequential reads. Two big players that align with the above features, and also are well tested and documented, are HBase and Cassandra. The first one opts for Consistency and Partitioning, where as the latter one opts for Availability and Partitioning. For the case of Cassandra, it is possible to tune the level of consistency by using different modes (all, one, quorum). HBase is well integrated with Hadoop, so has the advantage of playing well with MapReduce, and for a future time this could be ideal for us while having to deal with raw dataset and machine learning algorithms applied to them. Both provide easy to use Java API which was in line with our system's language support. Weighting the above factors, and since HBase offered more straightforward handling of consistency than Cassandra, we have made the design decision to use HBase as our Serving layer's major component. 
 
 
 \subsection{Implementation of Serving layer}
@@ -425,8 +425,9 @@ Notes:
 \subsection{Hardware Specifications}
 Our experiments were conducted in a Virtual Machine with the below specifications:
 \begin{itemize}
-	\item 1.6 GHz dual core Intel Core i5
-	\item 2GB RAM
+	\item Intel Xeon E312 2.3 GHz 
+	\item 16 virtual cores 
+	\item 16GB RAM
 \end{itemize}
 
 \subsection{Software Specifications}
@@ -442,13 +443,7 @@ Our experiments were conducted using the below software:
 \end{itemize}
 
 \subsection{Dataset Normalization}
-Our dataset consists of 100.000 rows of 8-dimensional data (gas leak concentrations). We have preprocessed the dataset by normalizing it using Standard Score normalization. The standard score of a raw score is $x$ :
-
-\begin{figure}[H]
-	\centering
-	\includegraphics{standard_score}
-	\caption{From Wikipedia}
-\end{figure}
+Our dataset consists of 100.000 rows of 8-dimensional data (gas leak concentrations). We have preprocessed the dataset by normalizing it using Standard Score normalization. The standard score of a raw score $\chi$ is $z=\frac{\chi - \mu}{\sigma}$ :
 
 where:
 \begin{itemize}
@@ -458,7 +453,7 @@ where:
 
 \subsection{Silhouette Score}
 
-In order to obtain a quality measurement of our solution we have chosen to use a method that interprets how well each object lies within its cluster, called $Silhouette$ score. We have implemented it ourselves, making small adjustments to fit our setup. The basic algorithm is described below:
+In order to obtain a quality measurement of our solution we have chosen to use a method that interprets how well each object lies within its cluster, called $Silhouette$ score. We have implemented it ourselves, making small adjustments to fit our setup. The value range of $Silhouette$ score is $[-1,1]$, where closer to the upper bound means better clustering. The basic algorithm is described below:
 
 \bigskip
 
