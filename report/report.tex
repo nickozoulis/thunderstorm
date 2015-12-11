@@ -358,23 +358,49 @@ We use a separate module to simulate the data stream in our system. It can be co
 \chapter{Offline/Online K-Means}
 \label{kmeans}
 
-\section{Theoritical Solution outline}
-\label{kmeans}
-
 \section{Baseline Solution}
 \label{kmeans}
 
-In order to be able to answer queries as soon as possible we came up with the an algorithm that is composed of a sequence of checks and respective actions. We will describe this algorithm with both a pseudocode and a flowchart.
+The most basic approach that we consider as baseline is that foreach incoming query, an answer can be provided directly from Stream or Batch layer, only if it has been seen before. However this answer, according to which layer provide it, will lack in some aspects.
+
+\bigskip
+\begin{algorithm}[H]
+	\caption{KMeans Baseline}\label{kmeansbaseline}
+	\begin{algorithmic}[1]
+		\Procedure{KMeans}{$Query$ $K$}
+		
+		\If {Query K is new}
+		\State Put it in HBase
+		\State Batch and Stream start computing views
+		\Else 
+		\If {Batch has a view}
+		\State \Return batch view
+		\ElsIf  {Stream has a view}
+		\State \Return stream view
+		\EndIf
+		\EndIf			
+		
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+
+Batch's view will take much longer to compute, but takes into account every data information for the first data input till the time point it started computing.This approach provides resilience and fault tolerance to corrupted incoming data, because these could be removed while batch would recompute the views in the next round and overwrite the faulty views. Also, because each time it recomputes everything from scratch, leverages Batch layer to 'remember' every data point information. The downside, except the time complexity, is that from the point Batch started computation till the actual current point, it has no clue of what is happening. 
+
+From the other hand, Stream's view will be times quicker to compute, but will take into account the data information from that time the first query K arrived till the actual current point. This provides more up-to-date views, essentially following the trend of the incoming data, however due to Stream's nature to 'forget' each data point after it has been consumed, makes it vulnerable to faulty input that could severely disorientate it with no available point of return.
+
+\section{Our Solution - Fusion Scheme}
+\label{kmeans}
+
+In order to absorb the best features of each layer and confront the downsides, we have come up with an extension of the baseline solution. We describe this extension with both a pseudocode and a flowchart.
 
 
 \bigskip
-
-
 	\begin{algorithm}[H]
-		\caption{KMeans Solution}\label{kmeanssolution}
+		\caption{KMeans Fusion}\label{kmeansFusion}
 		\begin{algorithmic}[1]
 			\Procedure{KMeans}{$Query$ $K$}
 			\Require Stream is fed views from Batch
+			\Require Stream updates its views periodically
 			\Require $K<<K'$
 			
 			\If {Query K is new}
@@ -393,26 +419,18 @@ In order to be able to answer queries as soon as possible we came up with the an
 		\end{algorithmic}
 	\end{algorithm}
 
-
+\bigskip
 
 \begin{figure}[H]
 	\centering	
 	\includegraphics[scale=0.5]{usecase}
-	\caption{Solution flowchart}
+	\caption{KMeans Fusion flowchart}
 \end{figure}
 
-Notes:
-\begin{itemize}
-	\item A query is defined new if a lookup on $Queries$ table returns no result.
-	\item We assume $K<<K'$ \&\& $K'<<|D|$, where $|D|$ is the cardinality of points in dataset.
-	\item We assume that Stream is fed views from Batch within gradual time intervals.
-\end{itemize}
 
+In our solution Batch never provides its views as direct answers. Instead it keeps computing views only to feed Stream layer with them. Stream periodically updates his views for the active queries with the most recent batch's ones. The update function consists of a weighted average between batch and stream's views. This approach hopefully can balance a possible Stream's disorientation and put him back in track, while simultaneously adjust batch's knowledge to the most recent input data.
 
-\section{Fusion Scheme}
-\label{kmeans}
-
-
+In the baseline solution, there is the scenario that the query may have been seen before, but Stream and Batch do not have any view available. Sticking to our goal for answering as soon as possible, we take care of that scenario by inserting an on-the-fly local computation of K-out-of-K'-Means. We require that $K<<K'$ \&\& $K'<<|D|$, where $|D|$ is the cardinality of points in dataset.
 
 
 %==============================================================================
