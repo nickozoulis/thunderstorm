@@ -5,6 +5,8 @@
 \usepackage{graphicx}
 \usepackage{float}
 \graphicspath{ {images/} }
+% Multiple images
+\usepackage{subcaption}
 
 % Url links
 \usepackage{hyperref}
@@ -608,6 +610,117 @@ The data are inserted in HBase with the rate of 10 thousands lines per 90 second
 
 \section{Results}
 \label{evaluation}
+
+\subsection{Execution Times}
+Below are presented the measurements we obtained for the execution times of each K-Means mode (Batch, Local, Stream). The standard deviation error is included in the plots. The execution time of Batch and Local is defined as the time required for the K-Means algorithm to complete its iterations or converge to a result. For Stream this is not the case because its nature requires no iterations and needs only one pass over the data, meaning it can provide results almost immediately, so only for this mode, we measured the time required to look whether an answer exists in HBase, load it and serve it to the user.
+
+\bigskip
+
+\begin{figure}[H]
+	\centering	
+	\includegraphics[scale=0.5]{execution_time_k_5}
+	\caption{Execution times for K = 5}
+\end{figure}
+
+\begin{figure}[H]
+	\centering	
+	\includegraphics[scale=0.5]{execution_time_k_5}
+	\caption{Execution times for K = 10}
+\end{figure}
+
+
+\subsection{Silhouette Scores}
+
+\begin{figure}[H]
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=.8\linewidth]{silhouette/silhouette_50_50_k_5_dim_8}
+		\caption*{K = 5, Dimension = 8}
+		\label{fig:silhouette_50_50_k_5_dim_8}
+	\end{subfigure}%
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=.8\linewidth]{silhouette/silhouette_50_50_k_10_dim_8}
+		\caption*{K = 10, Dimension = 8}
+		\label{fig:silhouette_50_50_k_10_dim_8}
+	\end{subfigure}
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=.8\linewidth]{silhouette/silhouette_50_50_k_5_dim_2}
+		\caption*{K = 5, Dimension = 2}
+		\label{fig:silhouette_50_50_k_5_dim_2}
+	\end{subfigure}%
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=.8\linewidth]{silhouette/silhouette_50_50_k_10_dim_2}
+		\caption*{K = 10, Dimension = 2}
+		\label{fig:silhouette_50_50_k_10_dim_2}
+	\end{subfigure}
+	\caption{Fusion weights: 50\% Batch, 50\% Stream}
+	\label{fig:fusion_50_50}
+\end{figure}
+
+\bigskip
+
+\begin{figure}[H]
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=.8\linewidth]{silhouette/silhouette_95_5_k_5_dim_8}
+		\caption*{K = 5, Dimension = 8}
+		\label{fig:silhouette_95_5_k_5_dim_8}
+	\end{subfigure}%
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=.8\linewidth]{silhouette/silhouette_95_5_k_10_dim_8}
+		\caption*{K = 10, Dimension = 8}
+		\label{fig:silhouette_95_5_k_10_dim_8}
+	\end{subfigure}
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=.8\linewidth]{silhouette/silhouette_95_5_k_5_dim_2}
+		\caption*{K = 5, Dimension = 2}
+		\label{fig:silhouette_95_5_k_5_dim_2}
+	\end{subfigure}%
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=.8\linewidth]{silhouette/silhouette_95_5_k_10_dim_2}
+		\caption*{K = 10, Dimension = 2}
+		\label{fig:silhouette_95_5_k_10_dim_2}
+	\end{subfigure}
+	\caption{Fusion weights: 95\% Batch, 5\% Stream}
+	\label{fig:fusion_95_5}
+\end{figure}
+
+\bigskip
+
+\begin{figure}[H]
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=.8\linewidth]{silhouette/silhouette_0_100_k_5_dim_8}
+		\caption*{K = 5, Dimension = 8}
+		\label{fig:silhouette_0_100_k_5_dim_8}
+	\end{subfigure}%
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=.8\linewidth]{silhouette/silhouette_0_100_k_10_dim_8}
+		\caption*{K = 10, Dimension = 8}
+		\label{fig:silhouette_0_100_k_10_dim_8}
+	\end{subfigure}
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=.8\linewidth]{silhouette/silhouette_0_100_k_5_dim_2}
+		\caption*{K = 5, Dimension = 2}
+		\label{fig:silhouette_0_100_k_5_dim_2}
+	\end{subfigure}%
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=.8\linewidth]{silhouette/silhouette_0_100_k_10_dim_2}
+		\caption*{K = 10, Dimension = 2}
+		\label{fig:silhouette_0_100_k_10_dim_2}
+	\end{subfigure}
+	\caption{Fusion weights: 0\% Batch, 100\% Stream}
+	\label{fig:fusion_0_100}
+\end{figure}
 
 \section{Discussion}
 \label{evaluation}
