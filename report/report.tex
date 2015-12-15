@@ -117,7 +117,7 @@ Apache Spark is a fast and general engine for large-scale data processing.  Apac
 
 Apache Hadoop is probably the first open source, distributed fault tolerant system that implements the Google’s map-reduce model. In 2012, the article [Fast and interactive analytics over Hadoop data with Spark by Zaharia, Matei, et al] proposes an improved version of Hadoop called Spark. Apache Spark elaborated the Hadoop model by providing a new data structure called resilient distributed datasets (RDDs). The paper by Zaharia, Matei, et al describes RDDs as in-memory data structure. They are fault-tolerant collections of objects partitioned across cluster nodes which provide fault-tolerance without using replication. The lost data can be re-computed by starting from base data on disk. The RDDs can be read from memory multiple times by machine learning and graph algorithms faster than using distributed file-systems.  
 
-The classical hello word program for the map-reduce framework is a work count. Work count can be implemented in spark using the reduceByKey operation as follows:
+The classical hello world program for the map-reduce framework is a word count. Word count can be implemented in spark using the reduceByKey operation as follows:
 
 \begin{tabbing}
 	\hspace*{2cm}\=\hspace*{1cm}\=\hspace*{0.5cm}\=\hspace*{1cm}\=\hspace*{1cm}\= \kill
