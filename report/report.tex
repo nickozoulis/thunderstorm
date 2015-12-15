@@ -618,13 +618,13 @@ Below are presented the measurements we obtained for the execution times of each
 
 \begin{figure}[H]
 	\centering	
-	\includegraphics[scale=0.5]{execution_time_k_5}
+	\includegraphics[scale=0.5]{execution_time/execution_time_k_5}
 	\caption{Execution times for K = 5}
 \end{figure}
 
 \begin{figure}[H]
 	\centering	
-	\includegraphics[scale=0.5]{execution_time_k_5}
+	\includegraphics[scale=0.5]{execution_time/execution_time_k_10}
 	\caption{Execution times for K = 10}
 \end{figure}
 
@@ -721,6 +721,51 @@ Below are presented the measurements we obtained for the execution times of each
 	\caption{Fusion weights: 0\% Batch, 100\% Stream}
 	\label{fig:fusion_0_100}
 \end{figure}
+
+\subsection{Cluster Visualization}
+
+\begin{figure}[H]
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=.8\linewidth]{cluster_visualization/batch_50_50_k_5_start}
+		\caption*{Batch start clusters}
+		\label{fig:batch_50_50_k_5_start}
+	\end{subfigure}%
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=.8\linewidth]{cluster_visualization/batch_50_50_k_5_end}
+		\caption*{Batch end clusters}
+		\label{fig:batch_50_50_k_5_end}
+	\end{subfigure}
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=.8\linewidth]{cluster_visualization/local_50_50_k_5_start}
+		\caption*{Local start clusters}
+		\label{fig:local_50_50_k_5_start}
+	\end{subfigure}%
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=.8\linewidth]{cluster_visualization/local_50_50_k_5_end}
+		\caption*{Local end clusters}
+		\label{fig:local_50_50_k_5_end}
+	\end{subfigure}
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=.8\linewidth]{cluster_visualization/stream_50_50_k_5_start}
+		\caption*{Stream start clusters}
+		\label{fig:stream_50_50_k_5_start}
+	\end{subfigure}%
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=.8\linewidth]{cluster_visualization/stream_50_50_k_5_end}
+		\caption*{Stream end clusters}
+		\label{fig:stream_50_50_k_5_end}
+	\end{subfigure}
+	\caption{Clusters for 50\% Batch, 50\% Stream, K = 5}
+	\label{fig:clusters_k_5_50_50}
+\end{figure}
+
+
 
 \section{Discussion}
 \label{evaluation}
