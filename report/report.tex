@@ -105,6 +105,49 @@ K-Means is an unsupervised machine learning algorithm widely used for clustering
 \section{Batch Processing}
 \label{relatedwork}
 
+Apache Spark is a fast and general engine for large-scale data processing.  Apache Spark is an open source project available at Apache Software Foundation that is based on the classical map-reduce programming model. A map-reduce model is composed of a map and a reduce procedure:
+
+\begin{itemize}
+	\item Map: the map function on a worker node takes a portion of the input data and emits a (key, value) pair
+	\item Shuffle step: worker nodes group data with the same key
+	\item Reduce Step: a worker processes a key and a list of values and emits an aggregated result (key, value).
+\end{itemize}
+
+Apache Hadoop is probably the first open source, distributed fault tolerant system that implements the Google’s map-reduce model. In 2012, the article [Fast and interactive analytics over Hadoop data with Spark by Zaharia, Matei, et al] proposes an improved version of Hadoop called Spark. Apache Spark elaborated the Hadoop model by providing a new data structure called resilient distributed datasets (RDDs). The paper by Zaharia, Matei, et al describes RDDs as in-memory data structure. They are fault-tolerant collections of objects partitioned across cluster nodes which provide fault-tolerance without using replication. The lost data can be re-computed by starting from base data on disk. The RDDs can be read from memory multiple times by machine learning and graph algorithms faster than using distributed file-systems.  
+
+The classical hello word program for the map-reduce framework is a work count. Work count can be implemented in spark using the reduceByKey operation as follows:
+
+\begin{tabbing}
+	\hspace*{2cm}\=\hspace*{1cm}\=\hspace*{0.5cm}\=\hspace*{1cm}\=\hspace*{1cm}\= \kill
+	\> 1. \> JavaRDD$\textless$String$\textgreater$ textFile = spark.textFile("hdfs://..."); \\
+	\> 2. \> JavaRDD$\textless$String$\textgreater$ words = textFile.flatMap( \\
+	\>    \>  \> new FlatMapFunction$\textless$String, String$\textgreater$() \{ \\
+	\>    \>  \> \> public Iterable$\textless$String$\textgreater$ call(String s) \{ \\
+	\>    \>  \> \> \> return Arrays.asList(s.split(" ")); \\
+	\>    \>  \> \> \} \\
+	\>    \>  \> \}); \\
+	\> 3. \> JavaPairRDD$\textless$String, Integer$\textgreater$ pairs = words.mapToPair( \\
+	\>    \>  \>  new PairFunction$\textless$String, String, Integer$\textgreater$() \{ \\
+	\>    \>  \> \> public Tuple2$\textless$String, Integer$\textgreater$ call(String s) \{  \\
+	\>    \>  \> \> \> return new Tuple2$\textless$String, Integer$\textgreater$(s, 1); \\
+	\>    \>  \> \> \} \\
+	\>    \>  \> \}); \\
+	\> 4. \> JavaPairRDD$\textless$String, Integer$\textgreater$ counts = pairs.reduceByKey( \\
+	\>    \>  \> new Function2$\textless$Integer, Integer, Integer$\textgreater$() \{ \\
+	\>    \>  \> \>	public Integer call(Integer a, Integer b) \{ \\
+	\>    \>  \> \> \>	return a + b; \\
+	\>    \>  \> \>	\} \\
+	\>    \>  \> \}); \\
+	\> 5. \> counts.saveAsTextFile("hdfs://..."); \\
+\end{tabbing}
+
+At line 1, a resilient distributed datasets (RDDs) textFile is created from the input file.\\
+At line 2 each line in textFile RDD is split into words.\\
+At line 3, a map function creates a new RDD data structure (pairs) with the key a word and value 1. \\
+At line 4, the reduce function aggregates the result, counting the number of times each word appears in the text file. \\
+At line 5, the result is saved into the distributed file system.
+
+
 \section{Stream Processing}
 \label{relatedwork}
 
