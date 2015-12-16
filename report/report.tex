@@ -604,7 +604,7 @@ We have deployed and measured the response of our system in terms of execution t
 	\item 0\% Batch - 100\% Stream
 \end{itemize}
 
-The data are inserted in HBase with the rate of 10 thousands lines per 90 seconds. The queries' views are obtained every 90 seconds. Batch starts a new round of computation write after he has competed one, so it depends on the active queries. Stream polls HBase every 5 seconds to check for any new query or new input data.
+The data are inserted in HBase with the rate of 10 thousands lines per 90 seconds. The queries' views are obtained every 90 seconds. Batch starts a new round of computation write after he has competed one, so it depends on the active queries. Stream polls HBase every 5 seconds to check for any new query or new input data. Dataset of size 100,000 and dimension 8 is normalized via standard score. The queries fired were of size $K = 5$ and $K = 10$, and $K'$ value selected is 1000 so as to keep the appropriate order of magnitude ($K<<K'$ \&\& $K'<<|D|$, where $|D|$ is the cardinality of points in dataset).
 
 
 
@@ -630,6 +630,8 @@ Below are presented the measurements we obtained for the execution times of each
 
 
 \subsection{Silhouette Scores}
+
+Below are presented the measurements we obtained for the silhouette score foreach K-Means Mode and foreach Fusion scheme for queries $K  = 5$ and $K = 10$. The value of $K'$ we used was 1000. We also run the same experiment for dimension 2, mostly for sanity checking.
 
 \begin{figure}[H]
 	\begin{subfigure}{.5\textwidth}
@@ -723,6 +725,8 @@ Below are presented the measurements we obtained for the execution times of each
 \end{figure}
 
 \subsection{Cluster Visualization}
+
+Below are presented the visualizations of the clusterheads assigned by the 3 different modes (Batch, Local, Stream) at the start and at the end of data stream simulation (2-dimensional run of the experiment). For the sake of space we only present the clusterheads for the Fusion scheme Batch 50\% - Stream 50\%. 
 
 \begin{figure}[H]
 	\begin{subfigure}{.5\textwidth}
