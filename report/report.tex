@@ -845,23 +845,28 @@ Below are presented the measurements of Silhouette and Execution Time combined f
 
 The measurements we obtained from the execution times of the three modes show that Batch layer is orders of magnitude more time consuming than the Local and Stream layers. This behavior was expected and is attributed to the nature of the offline module, which has to perform iterative batch computation over a large amount of data, whereas Stream only has to see the data once and let them go while Local has to perform an in-memory iterative KMeans, but with much less datapoints.
 
-Silhouette experiments were illuminating in understanding the way different fusion schemes impact the quality of the clustering. Having the Batch 0\% - Stream 100\% $[0]$ (essentially meaning that every layer acts on its own, without any knowledge 'feeding' from batch to stream and stream to local) as a reference point enables as to compare with both the Batch 50\% - Stream 50\% $[1]$ and Batch 95\% - Stream 5\% $[2]$ .
+Silhouette experiments were illuminating in understanding the way different fusion schemes impact the quality of the clustering. Having the Batch 0\% - Stream 100\% $[0]$ (essentially meaning that every layer acts on its own, without any knowledge 'feeding' from batch to stream) as a reference point enabled as to compare with both the Batch 50\% - Stream 50\% $[1]$ and Batch 95\% - Stream 5\% $[2]$ .
 
-Fusion scheme [1] (the update is done by using half of batch's knowledge and half of stream's) seems to not actually improve the silhouette scores comparing to [0]. This could be due to the fact that the average clusterheads produced by the fusion are being moved at positions in the subspace that are not close to the actual means of the clusters. On the other hand, trusting batch's views in a higher percentage than stream's  (Fusion scheme [2]) seems to benefit the outcome clusterheads, a conclusion derived from observing the times its silhouette score reached $0.4$ and above comparing to [1].
+Fusion scheme [1] (the update is done by using half of batch's knowledge and half of stream's) seems to not actually improve the silhouette scores comparing to [0]. This could be due to the fact that the average clusterheads produced by the fusion are being moved at positions in the subspace that are not close to the actual means of the clusters. On the other hand, trusting batch's views in a higher percentage than stream's  (Fusion scheme [2]) seems to benefit the outcome clusterheads, a conclusion derived from observing the times its silhouette score reached $0.4$ and above, comparing to [1].
 
-On average we expected for Batch to perform better than the others due to its historic attributes, but an interesting observation is that Local K-Means seems to perform as good as the Stream, meaning that the fusion's update influence varies between them.
+On average we expected Batch to perform better than the others due to its historic attributes, but an interesting observation is that Local K-Means seems to perform as good as the Stream, meaning that the fusion's update influence varies between them (Stream seems to benefit from fusion more than Local).
 
-Clusterheads' visualizations informed us about the structure of the dataset and as it seems, while clusters begin quite non-uniformly at the end of each layer they are smoothed, meaning that the clustering actually has effect on the dataset. 
+Clusterheads' visualizations informed us about the structure of the dataset and as it seems, while clusters begin with quite non-uniformly borders, they are smoothed at the end of each layer computations, meaning that the clustering actually does have effect on the dataset. 
 
 %==============================================================================
 \section{Conclusions}
 \label{conclusions}
 
+Through our implementation of a system under Lambda Architecture, where machine learning algorithms can be applied, we investigated how well different fusion schemes can merge results of the offline and online learning models. More specifically, focusing on K-Means clustering algorithm we proposed an extension procedure in order to respond as soon as possible to queries covering different use cases. Furthermore, we experimented with various fusion schemes, measuring the execution time and quality impact on clustering. 
+
+The results showed us that a simple fusion scheme, like averaging views from batch and online, does not influence positively the clusterheads, where as a wider trust to batch's views seems to be redeeming in general. Moreover, our $K'-out-of-K$ extension seems to be a decent trade-off, when a low-latency response is of higher importance than the need for the best accuracy.
 
 
 
 \chapter{Future work}
 \label{future_work}
+
+We believe our approach tackles with a research problem, emerged from the very recent introduction of Lambda Architecture's notion, that has not been investigated before under similar setup. This is why we have chosen to begin with basic system design decisions, fusion schemes and small dataset, in order to establish a reference point for future use. There is need to evolve our system's internal coordination by removing HBase polling and integrating a more proper message queuing system. An other future goal is to expand the system's query handling workload by implementing more algorithms, manually programmed for both Spark and Storm implementations that could be of a greater contribution to the machine learning libraries of these open source projects. Scaling the experiments, both in dataset size and experiment time ranges, is also important in order to better emulate real world scenarios. Further improvements to Serving layer's user interface are also important, baring in mind the different target users of our system.
 
 %==============================================================================
 \bibliographystyle{plain}
