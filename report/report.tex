@@ -54,18 +54,24 @@
 
 \begin{document}
 \title{Bridging the gap between offline and online learning}
-\author{Avgerinos Fotios \\
+\author{Avgerinos Fotios - 2223896\\
         Dunlop Fraser \\
-        Constambeys Timotheos \\
-        Zoulis Nickolas}
+        Constambeys Timotheos - 2215104\\
+        Zoulis Nickolas - 2211892}
+    
+\author{\begin{tabular}{r@{ }l} 
+		Authors:      & Avgerinos Fotios - 2223896\\
+		& Dunlop Fraser \\
+		& Constambeys Timotheos - 2215104\\
+		& Zoulis Nickolas - 2211892\\[1ex] 
+		Supervisors: & Dr. Nikos Ntarmos\\
+		& Dr. Christos Anagnostopoulos
+	\end{tabular}}    
+    
 \date{18 December 2015}
 \maketitle
-\begin{abstract}
 
-The abstract goes here
-
-\end{abstract}
-\educationalconsent
+%\educationalconsent
 \tableofcontents
 %==============================================================================
 \chapter{Introduction}
@@ -837,10 +843,25 @@ Below are presented the measurements of Silhouette and Execution Time combined f
 \section{Discussion}
 \label{evaluation}
 
+The measurements we obtained from the execution times of the three modes show that Batch layer is orders of magnitude more time consuming than the Local and Stream layers. This behavior was expected and is attributed to the nature of the offline module, which has to perform iterative batch computation over a large amount of data, whereas Stream only has to see the data once and let them go while Local has to perform an in-memory iterative KMeans, but with much less datapoints.
+
+Silhouette experiments were illuminating in understanding the way different fusion schemes impact the quality of the clustering. Having the Batch 0\% - Stream 100\% $[0]$ (essentially meaning that every layer acts on its own, without any knowledge 'feeding' from batch to stream and stream to local) as a reference point enables as to compare with both the Batch 50\% - Stream 50\% $[1]$ and Batch 95\% - Stream 5\% $[2]$ .
+
+Fusion scheme [1] (the update is done by using half of batch's knowledge and half of stream's) seems to not actually improve the silhouette scores comparing to [0]. This could be due to the fact that the average clusterheads produced by the fusion are being moved at positions in the subspace that are not close to the actual means of the clusters. On the other hand, trusting batch's views in a higher percentage than stream's  (Fusion scheme [2]) seems to benefit the outcome clusterheads, a conclusion derived from observing the times its silhouette score reached $0.4$ and above comparing to [1].
+
+On average we expected for Batch to perform better than the others due to its historic attributes, but an interesting observation is that Local K-Means seems to perform as good as the Stream, meaning that the fusion's update influence varies between them.
+
+Clusterheads' visualizations informed us about the structure of the dataset and as it seems, while clusters begin quite non-uniformly at the end of each layer they are smoothed, meaning that the clustering actually has effect on the dataset. 
 
 %==============================================================================
 \section{Conclusions}
 \label{conclusions}
+
+
+
+
+\chapter{Future work}
+\label{future_work}
 
 %==============================================================================
 \bibliographystyle{plain}
