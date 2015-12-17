@@ -54,14 +54,10 @@
 
 \begin{document}
 \title{Bridging the gap between offline and online learning}
-\author{Avgerinos Fotios - 2223896\\
-        Dunlop Fraser \\
-        Constambeys Timotheos - 2215104\\
-        Zoulis Nickolas-Stylianos - 2211892}
     
 \author{\begin{tabular}{r@{ }l} 
 		Authors:      & Avgerinos Fotios - 2223896\\
-		& Dunlop Fraser \\
+		& Dunlop Fraser - 2228214\\
 		& Constambeys Timotheos - 2215104\\
 		& Zoulis Nickolas - 2211892\\[1ex] 
 		Supervisors: & Dr. Nikos Ntarmos\\
@@ -866,7 +862,7 @@ The results showed us that a simple fusion scheme, like averaging views from bat
 \chapter{Future work}
 \label{future_work}
 
-We believe our approach tackles with a research problem, emerged from the very recent introduction of Lambda Architecture's notion, that has not been investigated before under similar setup. This is why we have chosen to begin with basic system design decisions, fusion schemes and small dataset, in order to establish a reference point for future use. There is need to evolve our system's internal coordination by removing HBase polling and integrating a more proper message queuing system. An other future goal is to expand the system's query handling workload by implementing more algorithms, manually programmed for both Spark and Storm implementations that could be of a greater contribution to the machine learning libraries of these open source projects. Scaling the experiments, both in dataset size and experiment time ranges, is also important in order to better emulate real world scenarios. Further improvements to Serving layer's user interface are also important, baring in mind the different target users of our system.
+We believe our approach tackles with a research problem, emerged from the very recent introduction of Lambda Architecture's notion, that has not been investigated before under similar setup. This is why we have chosen to begin with basic system design decisions, fusion schemes and small dataset, in order to establish a reference point for future use. There is need to evolve our system's internal coordination by removing HBase polling and integrating a more proper message queuing system. An other future goal is to expand the system's query handling workload by implementing more algorithms, manually programmed for both Spark and Storm implementations that could be of a greater contribution to the machine learning libraries of these open source projects. Scaling the experiments, both in cluster size, dataset size and experiment time ranges, is also important in order to better emulate real world scenarios. Further improvements to Serving layer's user interface are also important, baring in mind the different target users of our system.
 
 %==============================================================================
 \bibliographystyle{plain}
