@@ -638,7 +638,7 @@ We have deployed and measured the response of our system in terms of execution t
 	\item 0\% Batch - 100\% Stream
 \end{itemize}
 
-The data are inserted in HBase with the rate of 10 thousands lines per 90 seconds. The queries' views are obtained every 90 seconds. Batch starts a new round of computation write after he has competed one, so it depends on the active queries. Stream polls HBase every 5 seconds to check for any new query or new input data. Dataset of size 100,000 and dimension 8 is normalized via standard score. The queries fired were of size $K = 5$ and $K = 10$, and $K'$ value selected is 1000 so as to keep the appropriate order of magnitude ($K<<K'$ \&\& $K'<<|D|$, where $|D|$ is the cardinality of points in dataset). In order to fit the $K'$ query computation into our experiment's time range, we specifically set its iteration to 100, leaving the rest as initially configuted at 50000.
+The data are inserted in HBase with the rate of 10 thousands lines per 90 seconds. The queries' views are obtained every 90 seconds. Batch starts a new round of computation right after he has completed one, so it depends on the active queries. Stream polls HBase every 5 seconds to check for any new query or new input data. Dataset of size 100,000 with 8 dimensions is normalized via standard score. The queries fired were of size $K = 5$ and $K = 10$, and $K'$ value selected is 1000 so as to keep the appropriate order of magnitude ($K<<K'$ \&\& $K'<<|D|$, where $|D|$ is the cardinality of points in dataset). In order to fit the $K'$ query computation into our experiment's time range, we specifically set its iteration to 100, leaving the rest as initially configured at 50000.
 
 
 
