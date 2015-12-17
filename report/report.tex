@@ -54,10 +54,14 @@
 
 \begin{document}
 \title{Bridging the gap between offline and online learning}
+\author{Avgerinos Fotios - 2223896\\
+        Dunlop Fraser \\
+        Constambeys Timotheos - 2215104\\
+        Zoulis Nickolas-Stylianos - 2211892}
     
 \author{\begin{tabular}{r@{ }l} 
 		Authors:      & Avgerinos Fotios - 2223896\\
-		& Dunlop Fraser - 2228214\\
+		& Dunlop Fraser \\
 		& Constambeys Timotheos - 2215104\\
 		& Zoulis Nickolas - 2211892\\[1ex] 
 		Supervisors: & Dr. Nikos Ntarmos\\
@@ -80,23 +84,23 @@ Over the last decade the area of data storage, manipulation and analysis has rap
 
 The dawn of Big Data era was marked by the development of software infrastructures that could run on commodity hardware and exploit redundancy in order to provide availability and fault tolerance. Their workflow was targeting to partition the job to numerous physical nodes in order to decrease the total computation time. These systems can be characterized as (offline) batch processing, because they compute over batches of data and do not have the requirement to respond in realtime. Many such systems may require multiple chained passes over the data in order to provide a result.
 
-With the advancement to Web 2.0 and the rise of social networks as well as the notion of the Internet of Things (machines equipped with sensors, transferring data at an arbitrary rate) altered the existing game rules. The needs changed to quick response over incoming data, without having to keep track of them or perform any asynchronous analysis over them. That said, many systems started to appear that could handle the input stream and perform online, instead of offline learning techniques. 
+With the advancement to Web 2.0 and the rise of social networks as well as the notion of the Internet of Things (machines equipped with sensors, transferring data at an arbitrary rate) the existing game rules were altered. The needs changed to quick response over incoming data, without having to keep track of them or perform any asynchronous analysis over them. That said, many systems started to appear that could handle the input stream and perform online, instead of offline learning techniques. 
 
 \section{Problem Definition}
 \label{intro}
 
-A lot of research on both offline and online systems has been made over the last years, resulting to the recording of successful commercial usage in numerous use cases. Individually speaking, batch systems can provide offline query computation, whereas streaming systems can provide online query computation. The first ones may take a lot of time to respond, but they take into account the whole picture and can recover in case of corrupted or noisy data without losing any information, as they could simply restart computations. The latter ones, while can provide low latency answers in realtime and follow the trend of input data, which is desirable if this is the use case, if any errors occur, they cannot just simply restart without losing information from their latest safepoint to the time the error was spotted.
+A lot of research on both offline and online systems has been made over the last years, resulting to the recording of successful commercial usage in numerous use cases. Individually speaking, batch systems can provide offline query computation, whereas streaming systems can provide online query computation. The first ones may take a lot of time to respond, but they take into account the whole picture and can recover in case of corrupted or noisy data without losing any information, as they could simply restart computations. The latter ones, while they can provide low latency answers in realtime and follow the trend of input data, which is desirable if this is the use case, if any errors occur, they cannot just simply restart without losing information from their latest safepoint to the time the error was spotted.
 
-So what if we wanted a robust system that could provide answers as soon as possible and an always-on experience, without compromising quality? A need for a hybrid emerges, and it was Nathan Marz who first came up with the term Lambda Architecture, which describes an architecture resilient to faults, while still remaining highly available from the perspective of a client. Lambda Architecture is comprised of three basic components, the Batch (Offline), the Speed (Stream/Realtime) and the Serving layers. Batch layer is responsible for computing query views asynchronously over batch of data. Stream is responsible for handling the most recent data input to the system and provide answers on-the-fly by maintaining an online learning model. Last but not least, the Serving layer is responsible for indexing the views of both the other layers so they can be queried in a low latency, ad-hoc way.
+So what if we wanted a robust system that could provide answers as soon as possible and an always-on experience, without compromising quality? A need for a hybrid emerges, and it was Nathan Marz who first came up with the term Lambda Architecture, which describes an architecture resilient to faults, while still remaining highly available from the perspective of a client. Lambda Architecture is comprised of three basic components, the Batch (Offline), the Speed (Stream/Realtime) and the Serving layers. Batch layer is responsible for computing query views asynchronously over batches of data. Stream is responsible for handling the most recent data input to the system and providing answers on-the-fly by maintaining an online learning model. Last but not least, the Serving layer is responsible for indexing the views of both the other layers so they can be queried in a low latency, ad-hoc way.
 
 The problem that arises is how the views of Batch and Stream can be merged and in what way. Who should be trusted more, what kind of methods should be used for the aggregation and how applicable would one method be in a different use case scenario are only some of the research questions that naturally arise. 
 
 \section{Contributions}
 \label{intro}
 
-There is not much related work about this area, for the date of its introduction to the global community is quite recent. There are records of successful use of this architecture from big technology players, for example in advertising, but not much have been published yet. This spotted research gap was a driving factor for tackling with this challenge.
+There is not much related work about this area, for the date of its introduction to the global community is quite recent. There are records of successful use of this architecture from big technology players, for example in advertising, but not much has been published yet. This spotted research gap was a driving factor for tackling this challenge.
 
-Out contribution is to investigate the trade-offs of low latency responses over quality when applying machine learning algorithms over Lambda Architecture. We have implemented a proof-of-concept system that follows this design and experimented with a well-known unsupervised learning clustering algorithm, K-Means. 
+Our contribution is to investigate the trade-offs of low latency responses over quality when applying machine learning algorithms over Lambda Architecture. We have implemented a proof-of-concept system that follows this design and experimented with a well-known unsupervised learning clustering algorithm, K-Means. 
 
 The members of the team were each assigned a specific module to implement, but in general the approach to the project was collaborative and overlapping. 
 
@@ -129,7 +133,7 @@ Apache Spark is a fast and general engine for large-scale data processing.  Apac
 	\item Reduce Step: a worker processes a key and a list of values and emits an aggregated result (key, value).
 \end{itemize}
 
-Apache Hadoop is probably the first open source, distributed fault tolerant system that implements the Google’s map-reduce model. In 2012, the article \cite{spark_2} proposes an improved version of Hadoop called Spark. Apache Spark elaborated the Hadoop model by providing a new data structure called resilient distributed datasets (RDDs). The paper by Zaharia, Matei, et al describes RDDs as in-memory data structure. They are fault-tolerant collections of objects partitioned across cluster nodes which provide fault-tolerance without using replication. The lost data can be re-computed by starting from base data on disk. The RDDs can be read from memory multiple times by machine learning and graph algorithms faster than using distributed file-systems.  
+Apache Hadoop is probably the first open source, distributed fault tolerant system that implements Google’s map-reduce model. In 2012, the article \cite{spark_2} proposes an improved version of Hadoop called Spark. Apache Spark elaborated the Hadoop model by providing a new data structure called resilient distributed datasets (RDDs). The paper by Zaharia, Matei, et al describes RDDs as an in-memory data structure. They are fault-tolerant collections of objects partitioned across cluster nodes which provide fault-tolerance without using replication. The lost data can be re-computed by starting from base data on disk. The RDDs can be read from memory multiple times by machine learning and graph algorithms faster than using distributed file-systems.
 
 The classical hello world program for the map-reduce framework is a word count. Word count can be implemented in spark using the reduceByKey operation as follows:
 
@@ -163,6 +167,9 @@ At line 3, a map function creates a new RDD data structure (pairs) with the key 
 At line 4, the reduce function aggregates the result, counting the number of times each word appears in the text file. \\
 At line 5, the result is saved into the distributed file system.
 
+It is important to mention also the existence of further optimisations on the concept of RDDs which is represented by the existence of dataframes.A dataframe is a table, or two-dimensional array-like structure, in which each column contains measurements on one variable and each row contains one case.
+Whereas a DataFrame has additional metadata due to its tabular format, which allows Spark to run certain optimizations on the finalized query,an RDD, on the other hand, is merely a Resilient Distributed Dataset that is more of a blackbox of data that cannot be optimized as the operations that can be performed against it are not as constrained.
+
 
 \section{Stream Processing}
 \label{relatedwork}
@@ -172,7 +179,7 @@ A distributed system allows better performance and scalability. In addition, fau
 
 \begin{enumerate}
 	\item Apache Storm is an open source project available at Apache Software Foundation. The project is in active development and it’s most up-to-date stable version is 0.9.5 in June 2015. It was originally created by Nathan Marz using the Clojure programming language and acquired by Twitter which made it open source. 
-	\item Apache Spark is an open source project available at Apache Software Foundation. The most recent version is v1.5.2 released in November 2015. Apache Spark improves the performance of Apache Hadoop using a distributed memory-based architecture. Apache Sark is based on the Map Reduce programming model. However it enables applications written for batch processing to work on stream processing by grouping data into mini-batches.
+	\item Apache Spark is an open source project available at Apache Software Foundation. The most recent version is v1.5.2 released in November 2015. Apache Spark improves the performance of Apache Hadoop using a distributed memory-based architecture. Apache Spark is based on the Map Reduce programming model. However it enables applications written for batch processing to work on stream processing by grouping data into mini-batches.
 	\item Apache Samza is an open source project available at Apache Software Foundation. According to Apache Documentation (http://samza.apache.org/) it is similar to the Apache Storm project. It is distributed, fault tolerant and has sub-second latency because of the Apache Kafka for messaging passing, although it is not as popular as Storm and it is in an early development.
 \end{enumerate}
 
@@ -187,9 +194,9 @@ The differences between Spark and Storm stream processing framework are:
 \label{relatedwork}
 
 
-Lambda Architecture aims to benefit from both the batch and stream layer, using one layer to balance the drawbacks of the other. Serving layer is there to offer a unified interface that integrates the views generated by the processing layers, and orchestrate the workflow of the system's response to the end user.
+Lambda Architecture aims to benefit from both the batch and stream layer, using one layer to balance the drawbacks of the other. The Serving layer is there to offer a unified interface that integrates the views generated by the processing layers, and orchestrate the workflow of the system's response to the end user.
 
-Due to its design, its straightforward that there is a plethora of options to choose for each layer (Batch, Speed, Serving) and the combinations are even more. Typical solutions for the Batch layer use a batch processing framework such as Hadoop (MapReduce) or Spark. On the other hand, Speed layer relies on streaming technology so possible choices would be Storm or Spark (with small frame window). Serving layer can be implemented with any NoSQL database such as HBase, Cassandra, ElephandDB etc.
+Due to its design, it's straightforward that there is a plethora of options to choose for each layer (Batch, Speed, Serving) and the combinations are even more. Typical solutions for the Batch layer use a batch processing framework such as Hadoop (MapReduce) or Spark. On the other hand,the Speed layer relies on streaming technology so possible choices would be Storm or Spark (with small frame window). Serving layer can be implemented with any NoSQL database such as HBase, Cassandra, ElephantDB etc.
 
 If designed properly, the architecture can show plug-n-play features without affecting the rest of the system. The selection of underlying technologies highly depends on the use case the system will have to deliver. Below is pictured an abstract view of this architecture's components and their interconnection.
 
@@ -230,15 +237,15 @@ For our project's purposes we have chosen to use the below systems for each comp
 Serving layer is the front-end of our system, responsible for a wide range of tasks. The interface with the external users is based on a shell-like environment. The complete command manual of the serving layer's shell is described in the Appendix section. Our system supports both plain K-Means and constrained queries (in current version maximum of 1 constraint expression). Behind the scenes, serving is responsible for storing and indexing the queries as well as the answers (views) that both batch and stream layer provide. For this task we use Apache HBase.
 
 \subsection{Overview of HBase}
-HBase is the open-source clone of Google's Bigtable, a highly scalable fault-tolerant database that can scale horizontally, maximizing random read and write throughput. Its design classifies it to the column-family NoSQL databases and can be conceived as a multidimensional sorted map. The relying data storage system is HDFS.
+HBase is the open-source clone of Google's Bigtable, a highly scalable fault-tolerant database that can scale horizontally, maximizing random read and write throughput. Its design classifies it to the column-family NoSQL databases and it can be conceived as a multidimensional sorted map. The relying data storage system is HDFS.
 
-The basic structure is the HTable, where each row can contain multiple columns and column families, with the restriction that the latter have to be declared at the time the table is instantiated. A column family is used to group together columns with similar access patterns to optimize read and write throughput. Each row is uniquely identified by the triple $row key-column key-timestamp$ and each value in the row is an uninterpreted array of bytes (only table's and column families' names have to be appropriate strings for a system's filepath names). More than one version of data is maintained using different timestamp label and by default the system returns the most recent one.
+The basic structure is the HTable, where each row can contain multiple columns and column families, with the restriction that the latter have to be declared at the time the table is instantiated. A column family is used to group together columns with similar access patterns to optimize read and write throughput. Each row is uniquely identified by the triple $row key-column key-timestamp$ and each value in the row is an uninterpreted array of bytes (only table's and column families' names have to be appropriate strings for a system's filepath names). More than one version of data is maintained using different timestamp labels and by default the system returns the most recent one.
 
-When an HTable reaches a threshold of rows stored in it, it partitions itself and each partition is assigned to an HRegionServer. An HRegionServer is responsible for one or more rowkey ranges. Automatic sorting is performed based on the rowkey, so clients can control their data locality via selecting custom rowkey format (rowkeys with common prefixes will be placed to close HRegionServers). There is always on HMaster that is responsible for region assignment and create/delete table operations. HMaster uses Zookeeper to maintain which servers are live and available, which uses consensus to do so.
+When an HTable reaches a threshold of rows stored in it, it partitions itself and each partition is assigned to an HRegionServer. An HRegionServer is responsible for one or more rowkey ranges. Automatic sorting is performed based on the rowkey, so clients can control their data locality via selecting custom rowkey format (rowkeys with common prefixes will be placed to close HRegionServers). There is always an HMaster that is responsible for region assignment and create/delete table operations. HMaster uses Zookeeper to maintain which servers are live and available, which uses consensus to do so.
 
 \subsection{Why HBase}
 
-The basic reasons we have inclined to HBase are its flexible column-based schema described above and its CAP theorem principles. CAP theorem states that distributed systems have to compromise on each of the following (Consistency, Availability, Partitioning). For our use case we wanted a distributed database that should be able to support consistent writes and reads, as well as low latency scans and sequential reads. Two big players that align with the above features, and also are well tested and documented, are HBase and Cassandra. The first one opts for Consistency and Partitioning, where as the latter one opts for Availability and Partitioning. For the case of Cassandra, it is possible to tune the level of consistency by using different modes (all, one, quorum). HBase is well integrated with Hadoop, so has the advantage of playing well with MapReduce, and for a future time this could be ideal for us while having to deal with raw dataset and machine learning algorithms applied to them. Both provide easy to use Java API which was in line with our system's language support. Weighting the above factors, and since HBase offered more straightforward handling of consistency than Cassandra, we have made the design decision to use HBase as our Serving layer's major component. 
+The basic reasons we were inclined to use HBase are its flexible column-based schema described above and its CAP theorem principles. CAP theorem states that distributed systems have to compromise on each of the following (Consistency, Availability, Partitioning). For our use case we wanted a distributed database that should be able to support consistent writes and reads, as well as low latency scans and sequential reads. Two big players that align with the above features, and also are well tested and documented, are HBase and Cassandra. The first one opts for Consistency and Partitioning, where as the latter one opts for Availability and Partitioning. For the case of Cassandra, it is possible to tune the level of consistency by using different modes (all, one, quorum). HBase is well integrated with Hadoop, so has the advantage of playing well with MapReduce, and for a future time this could be ideal for us while having to deal with raw dataset and machine learning algorithms applied to them. Both provide easy to use Java API which was in line with our system's language support. Weighting the above factors, and since HBase offered more straightforward handling of consistency than Cassandra, we have made the design decision to use HBase as our Serving layer's major component. 
 
 
 \subsection{Implementation of Serving layer}
@@ -261,7 +268,7 @@ The serving layer is responsible for the coordination of both Batch and Stream l
 \section{Batch Layer}
 \label{systemdescr}
 
-Batch layer is primarily responsible for applying batch processing to the entire immutable dataset present at the moment it starts computation. In order to do this, we have chosen to use Apache Spark, a fast and general engine for large-scale data processing. Due to its in-memory computing capabilities Spark can run up to x100 faster than Hadoop MapReduce and this was the primary reason we inclined to using this engine.
+Batch layer is primarily responsible for applying batch processing to the entire immutable dataset present at the moment it starts computation. In order to do this, we have chosen to use Apache Spark, a fast and general use engine for large-scale data processing. Due to its in-memory computing capabilities Spark can run up to x100 faster than Hadoop MapReduce and this was the primary reason we were inclined to use this engine.
 
 \subsection{Use of Spark}
 
@@ -442,7 +449,7 @@ We use a separate module to simulate the data stream in our system. It can be co
 \section{Baseline Solution}
 \label{kmeans}
 
-The most basic approach that we consider as baseline is that foreach incoming query, an answer can be provided directly from Stream or Batch layer, only if it has been seen before. However this answer, according to which layer provide it, will lack in some aspects.
+The most basic approach that we consider as baseline is that for each incoming query, an answer can be provided directly from Stream or Batch layer, only if it has been seen before. However this answer, depending on which layer provides it, will lack in some aspects.
 
 \bigskip
 \begin{algorithm}[H]
@@ -465,9 +472,9 @@ The most basic approach that we consider as baseline is that foreach incoming qu
 	\end{algorithmic}
 \end{algorithm}
 
-Batch's view will take much longer to compute, but takes into account every data information for the first data input till the time point it started computing.This approach provides resilience and fault tolerance to corrupted incoming data, because these could be removed while batch would recompute the views in the next round and overwrite the faulty views. Also, because each time it recomputes everything from scratch, leverages Batch layer to 'remember' every data point information. The downside, except the time complexity, is that from the point Batch started computation till the actual current point, it has no clue of what is happening. 
+Batch's view will take much longer to compute, but takes into account every data information for the first data input till the time point it started computing.This approach provides resilience and fault tolerance to corrupted incoming data, because these could be removed while batch would recompute the views in the next round and overwrite the faulty views. Also, because each time it recomputes everything from scratch,it leverages Batch layer to 'remember' every data point information. The downside, aside from the time complexity, is that from the point Batch started computation till the actual current point, it has no clue of what is happening. 
 
-From the other hand, Stream's view will be times quicker to compute, but will take into account the data information from that time the first query K arrived till the actual current point. This provides more up-to-date views, essentially following the trend of the incoming data, however due to Stream's nature to 'forget' each data point after it has been consumed, makes it vulnerable to faulty input that could severely disorientate it with no available point of return.
+On the other hand, Stream's view will be many times quicker to compute, but will take into account the data information from the time the first query K arrived till the actual current point. This provides more up-to-date views, essentially following the trend of the incoming data, however due to Stream's nature to 'forget' each data point after it has been consumed, makes it vulnerable to faulty input that could severely disorientate it with no available point of return.
 
 \section{Our Solution - Fusion Scheme}
 \label{kmeans}
@@ -862,7 +869,7 @@ The results showed us that a simple fusion scheme, like averaging views from bat
 \chapter{Future work}
 \label{future_work}
 
-We believe our approach tackles with a research problem, emerged from the very recent introduction of Lambda Architecture's notion, that has not been investigated before under similar setup. This is why we have chosen to begin with basic system design decisions, fusion schemes and small dataset, in order to establish a reference point for future use. There is need to evolve our system's internal coordination by removing HBase polling and integrating a more proper message queuing system. An other future goal is to expand the system's query handling workload by implementing more algorithms, manually programmed for both Spark and Storm implementations that could be of a greater contribution to the machine learning libraries of these open source projects. Scaling the experiments, both in cluster size, dataset size and experiment time ranges, is also important in order to better emulate real world scenarios. Further improvements to Serving layer's user interface are also important, baring in mind the different target users of our system.
+We believe our approach tackles with a research problem, emerged from the very recent introduction of Lambda Architecture's notion, that has not been investigated before under similar setup. This is why we have chosen to begin with basic system design decisions, fusion schemes and small dataset, in order to establish a reference point for future use. There is need to evolve our system's internal coordination by removing HBase polling and integrating a more proper message queuing system. An other future goal is to expand the system's query handling workload by implementing more algorithms, manually programmed for both Spark and Storm implementations that could be of a greater contribution to the machine learning libraries of these open source projects. Scaling the experiments, both in dataset size and experiment time ranges, is also important in order to better emulate real world scenarios. Further improvements to Serving layer's user interface are also important, baring in mind the different target users of our system.
 
 %==============================================================================
 \bibliographystyle{plain}
