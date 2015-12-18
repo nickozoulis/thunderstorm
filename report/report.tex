@@ -32,6 +32,30 @@
 % Appendix
 \usepackage[toc,page]{appendix}
 
+% Code listing
+
+\lstset{frame=tb,
+	language=Java,
+	aboveskip=3mm,
+	belowskip=3mm,
+	columns=flexible,
+	basicstyle={\small\ttfamily},
+	breaklines=true,
+	breakatwhitespace=true,
+	numbersep=5pt,
+	xleftmargin=\parindent,
+	numbers = left,
+	framexleftmargin=10mm,
+	frame=none,
+	backgroundcolor=\color[RGB]{245,245,244},
+	keywordstyle=\bfseries\color{blue},
+	identifierstyle=\bfseries,
+	numberstyle=\color[RGB]{0,192,192},
+	commentstyle=\it\color[RGB]{0,96,96},
+	stringstyle=\rmfamily\slshape\color[RGB]{128,0,0},
+	showstringspaces=false
+}
+
 \lstset{frame=tb,
 	language=bash,
 	aboveskip=3mm,
@@ -312,23 +336,21 @@ Storm allows multiple entities running within a cluster node based on the follow
 
 Example of a Topology from the Storm Website
 
-\begin{tabbing}
-	\hspace*{2cm}\=\hspace*{1cm}\= \kill
-	\> 1. \> Config conf = new Config(); \\
-	\>    \> // use two worker processes  \\
-	\> 2. \> conf.setNumWorkers(2); \\
-	\>    \> // set parallelism hint to 2 \\
-	\> 3. \> topologyBuilder.setSpout("blue-spout", new BlueSpout(), 2); \\
-	\> 4. \> topologyBuilder.setBolt("green-bolt", new GreenBolt(), 2) \\
-	\>    \>  \hspace*{2cm} .setNumTasks(4) \\
-	\>    \>  \hspace*{2cm} .shuffleGrouping("blue-spout"); \\
-	\> 5. \> topologyBuilder.setBolt("yellow-bolt", new YellowBolt(), 6) \\
-	\>    \>  \hspace*{2cm} .shuffleGrouping("green-bolt"); \\
-	\> 6. \> StormSubmitter.submitTopology(  "mytopology", conf , \\
-	\>    \>  \hspace*{2cm} topologyBuilder.createTopology() \\
-	\>    \>  \hspace*{2cm} ); \\
-		
-\end{tabbing}
+\begin{lstlisting}
+	Config conf = new Config(); 
+	
+	// uses two worker processes  
+	conf.setNumWorkers(2); 
+	
+	// sets parallelism hint to 2 
+	topologyBuilder.setSpout("blue-spout", new BlueSpout(), 2); 
+	
+	topologyBuilder.setBolt("green-bolt", new GreenBolt(),2).setNumTasks(4).shuffleGrouping("blue-spout"); 
+	
+	topologyBuilder.setBolt("yellow-bolt", new YellowBolt(), 6).shuffleGrouping("green-bolt"); 
+	
+	StormSubmitter.submitTopology(  "mytopology", conf ,  topologyBuilder.createTopology()); 
+\end{lstlisting}
 
 The Topology constructed from the code above creates a Topology example with a Blue Spout, a Green and a Yellow Bolt. Firstly the $conf.setNumWorkers(2);$ \space [2] creates two worker processes that are distributed on two different machines on the network
 
