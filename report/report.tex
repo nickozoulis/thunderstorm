@@ -164,29 +164,28 @@ Apache Hadoop is probably the first open source, distributed fault tolerant syst
 
 The classical hello world program for the map-reduce framework is a word count. Word count can be implemented in spark using the reduceByKey operation as follows:
 
-\begin{tabbing}
-	\hspace*{2cm}\=\hspace*{1cm}\=\hspace*{0.5cm}\=\hspace*{1cm}\=\hspace*{1cm}\= \kill
-	\> 1. \> JavaRDD$\textless$String$\textgreater$ textFile = spark.textFile("hdfs://..."); \\
-	\> 2. \> JavaRDD$\textless$String$\textgreater$ words = textFile.flatMap( \\
-	\>    \>  \> new FlatMapFunction$\textless$String, String$\textgreater$() \{ \\
-	\>    \>  \> \> public Iterable$\textless$String$\textgreater$ call(String s) \{ \\
-	\>    \>  \> \> \> return Arrays.asList(s.split(" ")); \\
-	\>    \>  \> \> \} \\
-	\>    \>  \> \}); \\
-	\> 3. \> JavaPairRDD$\textless$String, Integer$\textgreater$ pairs = words.mapToPair( \\
-	\>    \>  \>  new PairFunction$\textless$String, String, Integer$\textgreater$() \{ \\
-	\>    \>  \> \> public Tuple2$\textless$String, Integer$\textgreater$ call(String s) \{  \\
-	\>    \>  \> \> \> return new Tuple2$\textless$String, Integer$\textgreater$(s, 1); \\
-	\>    \>  \> \> \} \\
-	\>    \>  \> \}); \\
-	\> 4. \> JavaPairRDD$\textless$String, Integer$\textgreater$ counts = pairs.reduceByKey( \\
-	\>    \>  \> new Function2$\textless$Integer, Integer, Integer$\textgreater$() \{ \\
-	\>    \>  \> \>	public Integer call(Integer a, Integer b) \{ \\
-	\>    \>  \> \> \>	return a + b; \\
-	\>    \>  \> \>	\} \\
-	\>    \>  \> \}); \\
-	\> 5. \> counts.saveAsTextFile("hdfs://..."); \\
-\end{tabbing}
+\begin{lstlisting}
+
+	JavaRDD<String> textFile = spark.textFile("hdfs://..."); 
+	JavaRDD<String> words = textFile.flatMap( new FlatMapFunction<String, String()> {
+
+	public Iterable<String> call(String s) { 
+	 return Arrays.asList(s.split(" ")); 
+	}}); 
+	
+	 JavaPairRDD<String, Integer> pairs = words.mapToPair( 
+	  new PairFunction<String, String, Integer>() { 
+		 public Tuple2<String, Integer> call(String s) {  
+		 return new Tuple2<String, Integer>(s, 1); 
+	}}); 
+	
+	 JavaPairRDD<String, Integer> counts = pairs.reduceByKey( 
+		new Function2<Integer, Integer, Integer>() { 
+		public Integer call(Integer a, Integer b) { 
+		return a + b; 
+	}}); 
+	counts.saveAsTextFile("hdfs://..."); 
+\end{lstlisting}
 
 At line 1, a resilient distributed datasets (RDDs) textFile is created from the input file.\\
 At line 2 each line in textFile RDD is split into words.\\
