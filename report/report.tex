@@ -29,6 +29,9 @@
 \algnewcommand\algorithmicforeach{\textbf{for each}}
 \algdef{S}[FOR]{ForEach}[1]{\algorithmicforeach\ #1\ \algorithmicdo}
 
+% Appendix
+\usepackage[toc,page]{appendix}
+
 \lstset{frame=tb,
 	language=bash,
 	aboveskip=3mm,
@@ -256,7 +259,7 @@ Our HBase schema consists of 5 HTables:
 
 \begin{enumerate}
 	\item Raw data: Stores the whole dataset, each row consisting a data point under a single column family, using a column foreach dimension. Rowkey is a float monotonically incrementing counter.
-	\item Queries: Stores the users' queries. Rowkey is a float monotonically incrementing counter. The first row of this table is specially used to hold the maximum counter of the rows, which is used from both layers to locate the new incoming queries. The user's K-Means query is stored in two columns, a column for an Integer array of bytes containing the K cluster number and a String array of bytes in an other column (both columns under the same column faimily).
+	\item Queries: Stores the users' queries. Rowkey is a float monotonically incrementing counter. The first row of this table is specially used to hold the maximum counter of the rows, which is used from both layers to locate the new incoming queries. The user's K-Means query is stored in two columns, a column for an Integer array of bytes containing the K cluster number and a String array of bytes in an other column (both columns under the same column family).
 	\item Batch views: Stores the results of the queries processed by the batch layer as views. Rowkey is a float number indicating the query in Queries table that corresponds to this view. There is one column family that contains as many columns as the query requires. As a column identifier is use a string prefix along with an Integer monotonically increasing counter.
 	\item Stream views: Stores the results of the queries processed by the stream layer as views. The same design applies as in Batch views table.
 	\item Messages: Stores an Integer counter under a single column family and column. This counter is updated by the Batch layer at the end of each round of query computation and is used by the Stream layer in order to detect when a computation round has finished and should synchronize its views with Batch layer's views as a feeding source. 
@@ -541,6 +544,7 @@ Our experiments were conducted using the below software:
 \begin{itemize}
 	\item hadoop-2.6.2
 	\item hbase-0.98.15-hadoop2
+	\item spark-5.1.2
 	\item spark-mllib-2.10
 	\item storm-core-0.9.5
 	\item unix operating system
@@ -854,7 +858,7 @@ Fusion scheme [1] (the update is done by using half of batch's knowledge and hal
 
 On average we expected Batch to perform better than the others due to its historic attributes, but an interesting observation is that Local K-Means seems to perform as good as the Stream, meaning that the fusion's update influence varies between them (Stream seems to benefit from fusion more than Local).
 
-Clusterheads' visualizations informed us about the structure of the dataset and as it seems, while clusters begin with quite non-uniformly borders, they are smoothed at the end of each layer computations, meaning that the clustering actually does have effect on the dataset. 
+Clusterheads' visualizations informed us about the structure of the dataset and as it seems, while clusters begin with quite non-uniformly borders, they are smoothed at the end of each layer computations, meaning that the there is structure in our dataset thus clusters end to be uniform. 
 
 %==============================================================================
 \section{Conclusions}
@@ -864,6 +868,18 @@ Through our implementation of a system under Lambda Architecture, where machine 
 
 The results showed us that a simple fusion scheme, like averaging views from batch and online, does not influence positively the clusterheads, whereas placing more trust to batch's views seems to be redeeming in general. Moreover, our $K'-out-of-K$ extension seems to be a decent trade-off, when a low-latency response is of higher importance than the need for the best accuracy.
 
+\chapter{Experience}
+
+\section{Fotios Avgerinos}
+
+\section{Timotheos Constambeys}
+
+\section{Nickolas-Stylianos Zoulis}
+
+Through the course of this project I have gained invaluable experience in a wide range of aspects. We were challenged with a research field where not lots of previous work has been done and had to make important decisions on which technologies should formulate our architecture, comparing their architectural designs and based on our system's use cases. We also had to understand and implement machine learning algorithms, metrics and experiments in order to measure how well our approach performed. Last but not least, the procedure of reporting our observations in a scientific manner was something new to me and tried to make the most use of it. I was in favor of the more technical approach in order to have the chance to get my hands under the hood of these big data systems to program, configure, make them work individually as well in collaboration. I am in the happy position to say that this project is one of my most novel software contributions so far.
+
+
+
 
 
 \chapter{Future work}
@@ -871,10 +887,26 @@ The results showed us that a simple fusion scheme, like averaging views from bat
 
 We believe our approach tackles with a research problem, emerging from the very recent introduction of Lambda Architecture's notion, that has not been investigated before using a similar setup. This is why we have chosen to begin with basic system design decisions, fusion schemes and a small dataset, in order to establish a reference point for future use. There is need to evolve our system's internal coordination by removing HBase polling and integrating a more proper message queuing system. An other future goal is to expand the system's query handling workload by implementing more algorithms, manually programmed for both Spark and Storm implementations that could be of a greater contribution to the machine learning libraries of these open source projects. Scaling the experiments, both in dataset size and experiment time ranges, is also important in order to better emulate real world scenarios. Further improvements to Serving layer's user interface are also important, bearing in mind the different target users of our system.
 
+
 %==============================================================================
 \bibliographystyle{plain}
 \bibliography{report}
 
 \nocite{*}
+
+\begin{appendices}
+	\chapter{Serving layer command line manual}
+	\begin{itemize}
+	\item get [batch/stream] [qid] -> Gets the views of the input query ID from the specified table.
+		\item kmeans [numOfClusters] (; [filter]) : Inserts a (constrained) KMeans query into HBase.
+		\item put [absolute file path] : Inserts data to the raw data table.
+		\item test : Tests the connection with HBase.
+		\item scan [tableName] [options: 0,1,2] : Performs a scan of the input table.
+		\item create : Create the schema tables of the HBase.
+		\item man : Displays serving layer's manual.
+		\item clear : Clears screen.
+	\end{itemize}
+
+\end{appendices}
 
 \end{document}
