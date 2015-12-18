@@ -258,9 +258,9 @@ The basic reasons we were inclined to use HBase are its flexible column-based sc
 Our HBase schema consists of 5 HTables:
 
 \begin{enumerate}
-	\item Raw data: Stores the whole dataset, each row consisting a data point under a single column family, using a column foreach dimension. Rowkey is a float monotonically incrementing counter.
-	\item Queries: Stores the users' queries. Rowkey is a float monotonically incrementing counter. The first row of this table is specially used to hold the maximum counter of the rows, which is used from both layers to locate the new incoming queries. The user's K-Means query is stored in two columns, a column for an Integer array of bytes containing the K cluster number and a String array of bytes in an other column (both columns under the same column family).
-	\item Batch views: Stores the results of the queries processed by the batch layer as views. Rowkey is a float number indicating the query in Queries table that corresponds to this view. There is one column family that contains as many columns as the query requires. As a column identifier is use a string prefix along with an Integer monotonically increasing counter.
+	\item Raw data: Stores the whole dataset, each row consisting a data point under a single column family, using a column foreach dimension. Rowkey is a long monotonically incrementing counter.
+	\item Queries: Stores the users' queries. Rowkey is a long monotonically incrementing counter. The first row of this table is specially used to hold the maximum counter of the rows, which is used from both layers to locate the new incoming queries. The user's K-Means query is stored in two columns, a column for an Integer containing the K cluster number and a String in an other column containing the filters (both columns under the same column family).
+	\item Batch views: Stores the results of the queries processed by the batch layer as views. Rowkey is a long number indicating the query in Queries table that corresponds to this view. There is one column family that contains as many columns as the query requires. As a column identifier is use a string prefix along with an Integer monotonically increasing counter.
 	\item Stream views: Stores the results of the queries processed by the stream layer as views. The same design applies as in Batch views table.
 	\item Messages: Stores an Integer counter under a single column family and column. This counter is updated by the Batch layer at the end of each round of query computation and is used by the Stream layer in order to detect when a computation round has finished and should synchronize its views with Batch layer's views as a feeding source. 
 \end{enumerate}
@@ -443,6 +443,7 @@ The synchronization of the online and offline k-means algorithm enables the onli
 \label{systemdescr}
 We use a separate module to simulate the data stream in our system. It can be configured to periodically read ranges of data from a raw file and extract specific columns (dimensions) and put it in HBase. 
 
+The module is configured to add a specific range of rows (and dimensions of them) into HBase. More specifically we insert, from a file in local file system, 10 thousand rows every 90 seconds directly to HBase. Every row is added as an individual $Put$ hbase command and we use a monotonically incrementing counter as the rowkey. The frequency is fixed during the whole run of data stream simulation's module. The data added via this module to HBase are immutable.
 
 
 %==============================================================================
@@ -475,7 +476,7 @@ The most basic approach that we consider as baseline is that for each incoming q
 	\end{algorithmic}
 \end{algorithm}
 
-Batch's view will take much longer to compute, but takes into account every data information for the first data input till the time point it started computing.This approach provides resilience and fault tolerance to corrupted incoming data, because these could be removed while batch would recompute the views in the next round and overwrite the faulty views. Also, because each time it recomputes everything from scratch,it leverages Batch layer to 'remember' every data point information. The downside, aside from the time complexity, is that from the point Batch started computation till the actual current point, it has no clue of what is happening. 
+Batch's view will take much longer to compute, but takes into account every data information for the first data input till the time point it started computing.This approach provides resilience and fault tolerance to corrupted incoming data, because these could be removed while batch would recompute the views in the next round and overwrite the faulty views. Also, because each time it recomputes everything from scratch,it leverages Batch layer to 'remember' every data point information. The downside, aside from the time complexity, is that from the point in time that Batch started computation till the actual current point, could happen data inputs of which Batch would be unaware of.
 
 On the other hand, Stream's view will be many times quicker to compute, but will take into account the data information from the time the first query K arrived till the actual current point. This provides more up-to-date views, essentially following the trend of the incoming data, however Stream's nature to 'forget' each data point after it has been consumed, makes it vulnerable to faulty input that could severely disorient it with no available point of return.
 
@@ -852,7 +853,7 @@ Below are presented the measurements of Silhouette and Execution Time combined f
 
 The measurements we obtained from the execution times of the three modes show that the Batch layer is orders of magnitude more time consuming than the Local and Stream layers. This behavior was expected and is attributed to the nature of the offline module, which has to perform iterative batch computation over a large amount of data, whereas Stream only has to see the data once and let them go while Local has to perform an in-memory iterative KMeans, but with much less datapoints.
 
-Silhouette experiments were illuminating in understanding the way different fusion schemes impact the quality of the clustering. Having the Batch 0\% - Stream 100\% $[0]$ (essentially meaning that every layer acts on its own, without any knowledge 'feeding' from batch to stream) as a reference point enabled as to compare with both the Batch 50\% - Stream 50\% $[1]$ and Batch 95\% - Stream 5\% $[2]$ .
+Silhouette experiments were illuminating in understanding the way different fusion schemes impact the quality of the clustering. Having the Batch 0\% - Stream 100\%, call it $[0]$, (essentially meaning that every layer acts on its own, without any knowledge 'feeding' from batch to stream) as a reference point enabled as to compare with both the Batch 50\% - Stream 50\%, call it $[1]$, and Batch 95\% - Stream 5\%, call it $[2]$ .
 
 Fusion scheme [1] (the update is done by using half of batch's knowledge and half of stream's) seems to not actually improve the silhouette scores comparing to [0]. This could be due to the fact that the average clusterheads produced by the fusion are being moved at positions in the subspace that are not close to the actual means of the clusters. On the other hand, trusting batch's views in a higher percentage than stream's  (Fusion scheme [2]) seems to benefit the outcome clusterheads, a conclusion derived from observing the times its silhouette score reached $0.4$ and above, comparing to [1].
 
