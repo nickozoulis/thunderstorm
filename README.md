@@ -10,3 +10,5 @@ machine learning algorithms over Lambda Architecture.
 * Batch layer: Apache Spark
 * Serving layer: Apache HBase
 * Speed layer: Apache Storm
+
+For more information build and read /report/report.tex
